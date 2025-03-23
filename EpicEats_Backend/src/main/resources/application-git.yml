@@ -1,0 +1,24 @@
+server:
+  port: xxxx
+
+spring:
+  db:
+    username: xxxx
+    password: xxxx
+    database: xxxx
+  security:
+    user:
+      name: user
+      password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  mail:
+    host: xxxx.xxxx.com
+    port: xxx
+    username: xxxxxx@xxx.com
+    password: xxxxxxxxxxxxxxxx
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  from: xxxxxx@xxx.com
