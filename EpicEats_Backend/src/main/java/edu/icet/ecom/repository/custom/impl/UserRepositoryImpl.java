@@ -2,19 +2,14 @@ package edu.icet.ecom.repository.custom.impl;
 
 import edu.icet.ecom.entity.UserEntity;
 import edu.icet.ecom.repository.custom.UserRepository;
-import edu.icet.ecom.util.CrudUtil;
-import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.ResponseType;
-import edu.icet.ecom.util.UserRole;
+import edu.icet.ecom.util.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Date;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Repository
@@ -23,24 +18,18 @@ public class UserRepositoryImpl implements UserRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
 
-	private LocalDateTime parseLocalDateTime (String str, DateTimeFormatter formatter) {
-		return str == null || str.isEmpty() ? null : LocalDateTime.parse(str, formatter);
-	}
-
-	@Override
-	public Response<UserEntity> getByUserName (String username) {
+	private Response<UserEntity> getByFieldName (String fieldName, Object identifier) {
 		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, password, created_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND username = ?", username);
-			final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier);
 
 			return resultSet.next() ?
 				new Response<>(UserEntity.builder()
 					.employeeId(resultSet.getLong(1))
-					.username(username)
-					.password(resultSet.getString(2))
-					.createdAt(this.parseLocalDateTime(resultSet.getString(3), formatter))
-					.lastLogin(this.parseLocalDateTime(resultSet.getString(4), formatter))
-					.role(UserRole.fromName(resultSet.getString(5)))
+					.username(resultSet.getString(2))
+					.password(resultSet.getString(3))
+					.createdAt(DateTimeUtil.parseDateTime(resultSet.getString(4)))
+					.lastLogin(DateTimeUtil.parseDateTime(resultSet.getString(5)))
+					.role(UserRole.fromName(resultSet.getString(6)))
 					.build(), ResponseType.FOUND) :
 				new Response<>(null, ResponseType.NOT_FOUND);
 		} catch (Exception exception) {
@@ -49,50 +38,50 @@ public class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	@Override
-	public Response<Boolean> deleteByUserName (String name) {
-		return null;
+	private Response<Boolean> deleteByFieldName (String fieldName, Object identifier) {
+		try {
+			return (Integer) this.crudUtil.execute(
+				"UPDATE `user` SET deleted_at = ?, is_deleted = TRUE WHERE is_deleted = FALSE AND " + fieldName + " = ?",
+				DateTimeUtil.getCurrentDateTime(),
+				identifier
+			) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	private Response<Boolean> isExistsByFieldName (String tableName, String fieldName, Object identifier) {
+		try {
+			return ((ResultSet) this.crudUtil.execute(String.format("SELECT 1 FROM %s WHERE is_deleted = FALSE AND %s = ?", tableName, fieldName), identifier)).next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
-	public Response<Boolean> isExistsByFieldName (String fieldName, Object value) {
-		return null;
+	public Response<UserEntity> getByUserName (String username) {
+		return this.getByFieldName("username", username);
 	}
 
 	@Override
 	public Response<Boolean> isUsernameExist (String username) {
-		try {
-			return ((ResultSet) this.crudUtil.execute("SELECT 1 FROM `user` WHERE is_deleted = FALSE AND username = ?", username)).next() ?
-				new Response<>(true, ResponseType.FOUND) :
-				new Response<>(false, ResponseType.NOT_FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
-		}
+		return this.isExistsByFieldName("`user`", "username", username);
 	}
 
 	@Override
 	public Response<Boolean> isEmployeeExistById (Long employeeId) {
-		try {
-			return ((ResultSet) this.crudUtil.execute("SELECT 1 FROM employee WHERE is_deleted = FALSE AND id = ?", employeeId)).next() ?
-				new Response<>(true, ResponseType.FOUND) :
-				new Response<>(false, ResponseType.NOT_FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
-		}
+		return this.isExistsByFieldName("employee", "id", employeeId);
 	}
 
 	@Override
 	public Response<Boolean> isEmployeeAlreadyUser (Long employeeId) {
-		try {
-			return ((ResultSet) this.crudUtil.execute("SELECT 1 FROM `user` WHERE is_deleted = FALSE AND employee_id = ?", employeeId)).next() ?
-				new Response<>(true, ResponseType.FOUND) :
-				new Response<>(false, ResponseType.NOT_FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
-		}
+		return this.isExistsByFieldName("`user`", "employee_id", employeeId);
 	}
 
 	@Override
@@ -115,21 +104,71 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public Response<UserEntity> update (UserEntity entity) {
-		return null;
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			final String password = entity.getPassword();
+			final boolean isUpdated = (password == null ?
+				(Integer) this.crudUtil.execute(
+					"UPDATE `user` SET updated_at = ?, role = ? WHERE is_deleted = FALSE AND employee_id = ?",
+					DateTimeUtil.getCurrentDateTime(),
+					entity.getRole().name(),
+					entity.getEmployeeId()) :
+				(Integer) this.crudUtil.execute(
+					"UPDATE `user` SET password = ?, updated_at = ?, role = ? WHERE is_deleted = FALSE AND employee_id = ?",
+					password,
+					DateTimeUtil.getCurrentDateTime(),
+					entity.getRole().name(),
+					entity.getEmployeeId())
+			) != 0;
+
+			if (isUpdated) {
+				final ResultSet userNameResultSet = this.crudUtil.execute("SELECT username FROM `user` WHERE employee_id = ?", entity.getEmployeeId());
+
+				if (userNameResultSet.next()) {
+					connection.commit();
+					entity.setUsername(userNameResultSet.getString(1));
+					return new Response<>(entity, ResponseType.UPDATED);
+				}
+			}
+
+			connection.rollback();
+			return new Response<>(null, ResponseType.NOT_UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 
 	@Override
 	public Response<Boolean> delete (Long id) {
-		return null;
+		return this.deleteByFieldName("employee_id", id);
 	}
 
 	@Override
 	public Response<UserEntity> get (Long id) {
-		return null;
+		return this.getByFieldName("employee_id", id);
 	}
 
 	@Override
 	public Response<List<UserEntity>> getAll () {
-		return null;
+		return new Response<>(null, ResponseType.NOT_FOUND);
 	}
 }
