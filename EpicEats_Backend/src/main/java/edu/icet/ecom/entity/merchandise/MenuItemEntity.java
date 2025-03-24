@@ -16,4 +16,5 @@ public class MenuItemEntity {
 	private Double price;
 	private String img;
 	private MenuItemCategory category;
+	private Integer quantity;
 }
