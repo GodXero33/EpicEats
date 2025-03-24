@@ -25,6 +25,7 @@ public class User {
 
 	private String password;
 	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 	private LocalDateTime lastLogin;
 
 	@NotNull(message = "User role can't be null")

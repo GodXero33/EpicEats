@@ -1,21 +1,21 @@
 package edu.icet.ecom.dto;
 
-import edu.icet.ecom.util.ExpenseType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Expense {
+public class RestaurantTableBooking {
 	private Long id;
-	private ExpenseType expenseType;
-	private Double amount;
-	private LocalDate expenseDate;
-	private String description;
+	private Integer tableId;
+	private LocalDate bookingDate;
+	private LocalTime startTime;
+	private LocalTime endTime;
 }

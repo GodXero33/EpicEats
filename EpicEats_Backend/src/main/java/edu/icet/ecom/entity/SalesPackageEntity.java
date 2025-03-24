@@ -1,3 +1,17 @@
 package edu.icet.ecom.entity;
 
-public class SalesPackageEntity {}
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SalesPackageEntity {
+	private Long id;
+	private String name;
+	private String description;
+	private Double discountPercentage;
+}

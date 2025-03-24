@@ -12,10 +12,10 @@ import java.time.LocalTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeShiftEntity {
+public class RestaurantTableBookingEntity {
 	private Long id;
-	private Long employeeId;
-	private LocalDate shiftDate;
+	private Integer tableId;
+	private LocalDate bookingDate;
 	private LocalTime startTime;
 	private LocalTime endTime;
 }
