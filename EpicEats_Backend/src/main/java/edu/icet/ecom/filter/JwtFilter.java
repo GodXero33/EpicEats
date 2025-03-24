@@ -1,7 +1,7 @@
 package edu.icet.ecom.filter;
 
-import edu.icet.ecom.service.security.JWTService;
-import edu.icet.ecom.service.security.CustomUserDetailsService;
+import edu.icet.ecom.service.custom.security.JWTService;
+import edu.icet.ecom.service.custom.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,0 +1,16 @@
+package edu.icet.ecom.entity.merchandise;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class SalesPackageItemEntity {
+	private Long packageId;
+	private Long itemId;
+	private Integer quantity;
+}
