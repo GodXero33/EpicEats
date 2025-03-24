@@ -31,6 +31,10 @@ public class UserController {
 		return new UserResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Server error");
 	}
 
+	private <T> UserResponse<T> getInvalidUserDetailsResponse (Object error) {
+		return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", error instanceof BindingResult result ? ValidationErrorsHelper.getValidationErrors(result) : error);
+	}
+
 	@UserLoginApiDoc
 	@PostMapping("/login")
 	public UserResponse<String> login (@RequestBody User user) {
@@ -44,8 +48,8 @@ public class UserController {
 	@PostMapping("/register")
 	@UserRegisterApiDoc
 	public UserResponse<User> register (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", ValidationErrorsHelper.getValidationErrors(result));
-		if (user.getPassword() == null) return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", "Password is required");
+		if (result.hasErrors()) return this.getInvalidUserDetailsResponse(result);
+		if (user.getPassword() == null) return this.getInvalidUserDetailsResponse("Password is required");
 
 		final Response<Boolean> usernameExistResponse = this.userService.isUsernameExist(user.getUsername());
 
@@ -76,15 +80,19 @@ public class UserController {
 	@UserUpdateApiDoc
 	@PutMapping("/update")
 	public UserResponse<User> update (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", ValidationErrorsHelper.getValidationErrors(result));
-		if (user.getEmployeeId() == null) return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", "User id required for update");
+		if (result.hasErrors()) return this.getInvalidUserDetailsResponse(result);
+		if (user.getEmployeeId() == null) return this.getInvalidUserDetailsResponse("\"User employeeId required for update");
 
 		final Response<Boolean> userExistResponse = this.userService.isUsernameExist(user.getUsername());
 
 		if (userExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.getServerErrorResponse();
 		if (userExistResponse.getStatus() == ResponseType.FOUND) return new UserResponse<>(HttpStatus.CONFLICT, null, "Username is already taken");
 
+		if (user.getPassword() != null) user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+
 		final Response<User> response = this.userService.update(user);
+
+		if (response.getData() != null) response.getData().setPassword(null);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new UserResponse<>(HttpStatus.OK, response.getData(), "User updated");
@@ -94,9 +102,11 @@ public class UserController {
 	}
 
 	@UserDeleteApiDoc
-	@DeleteMapping("/delete/{username}")
-	public UserResponse<Object> delete (@PathVariable("username") String username) {
-		final Response<Boolean> response = this.userService.deleteByUsername(username);
+	@DeleteMapping("/delete/{employeeId}")
+	public UserResponse<Object> delete (@PathVariable("employeeId") Long employeeId) {
+		if (employeeId <= 0) return new UserResponse<>(HttpStatus.BAD_REQUEST, null, "employeeId can't be zero or negative");
+
+		final Response<Boolean> response = this.userService.delete(employeeId);
 
 		return switch (response.getStatus()) {
 			case DELETED -> new UserResponse<>(HttpStatus.OK, null, "User deleted");

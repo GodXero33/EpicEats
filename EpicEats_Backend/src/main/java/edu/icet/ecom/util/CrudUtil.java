@@ -1,10 +1,12 @@
 package edu.icet.ecom.util;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
 
+@Getter
 @Component
 @RequiredArgsConstructor
 public class CrudUtil {

@@ -6,9 +6,6 @@ import edu.icet.ecom.util.Response;
 
 public interface UserRepository extends CrudRepository<UserEntity> {
 	Response<UserEntity> getByUserName (String name);
-	Response<Boolean> deleteByUserName (String name);
-	Response<Boolean> isExistsByFieldName (String fieldName, Object value);
-
 	Response<Boolean> isUsernameExist (String username);
 	Response<Boolean> isEmployeeExistById (Long employeeId);
 	Response<Boolean> isEmployeeAlreadyUser (Long employeeId);

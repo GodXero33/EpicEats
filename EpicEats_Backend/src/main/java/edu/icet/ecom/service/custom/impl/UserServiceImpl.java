@@ -21,27 +21,15 @@ import java.util.List;
 @Primary
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
-	private final ModelMapper mapper;
 	private final AuthenticationManager authenticationManager;
 	private final JWTService jwtService;
 	private final SuperServiceHandler<User, UserEntity> serviceHandler;
 
 	public UserServiceImpl (UserRepository userRepository, ModelMapper mapper, AuthenticationManager authenticationManager, JWTService jwtService) {
 		this.userRepository = userRepository;
-		this.mapper = mapper;
 		this.authenticationManager = authenticationManager;
 		this.jwtService = jwtService;
 		this.serviceHandler = new SuperServiceHandler<>(userRepository, mapper, User.class, UserEntity.class);
-	}
-
-	@Override
-	public Response<User> getByUserName (String name) {
-		final Response<UserEntity> response = this.userRepository.getByUserName(name);
-
-		return new Response<>(response.getStatus() == ResponseType.FOUND ?
-			this.mapper.map(response.getData(), User.class) :
-			null
-		, response.getStatus());
 	}
 
 	@Override
@@ -67,26 +55,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Response<Boolean> delete (Long id) {
 		return this.serviceHandler.delete(id);
-	}
-
-	@Override
-	public Response<Boolean> deleteByUsername (String username) {
-		return this.userRepository.deleteByUserName(username);
-	}
-
-	@Override
-	public Response<String> isAnyUniqueKeyExist (String ...values) {
-		final String[] fieldNames = { "name", "email", "phone" };
-		Response<Boolean> response;
-
-		for (int a = 0; a < fieldNames.length; a++) {
-			response = this.userRepository.isExistsByFieldName(fieldNames[a], values[a]);
-
-			if (response.getStatus() == ResponseType.FOUND) return new Response<>(fieldNames[a], response.getStatus());
-			if (response.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(null, response.getStatus());
-		}
-
-		return new Response<>(null, ResponseType.NOT_FOUND);
 	}
 
 	@Override
