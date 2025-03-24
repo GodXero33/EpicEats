@@ -1,6 +1,5 @@
 package edu.icet.ecom.entity;
 
-import edu.icet.ecom.util.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
-	private Long employeeId;
-	private String username;
-	private String password;
-	private LocalDateTime createdAt;
+public class InventoryEntity {
+	private Long id;
+	private String name;
+	private String description;
+	private Integer quantity;
+	private String unit;
 	private LocalDateTime updatedAt;
-	private LocalDateTime lastLogin;
-	private UserRole role;
 }

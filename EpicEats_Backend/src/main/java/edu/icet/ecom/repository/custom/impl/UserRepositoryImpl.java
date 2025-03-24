@@ -20,7 +20,7 @@ public class UserRepositoryImpl implements UserRepository {
 
 	private Response<UserEntity> getByFieldName (String fieldName, Object identifier) {
 		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier);
+			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, updated_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier);
 
 			return resultSet.next() ?
 				new Response<>(UserEntity.builder()
@@ -28,8 +28,9 @@ public class UserRepositoryImpl implements UserRepository {
 					.username(resultSet.getString(2))
 					.password(resultSet.getString(3))
 					.createdAt(DateTimeUtil.parseDateTime(resultSet.getString(4)))
-					.lastLogin(DateTimeUtil.parseDateTime(resultSet.getString(5)))
-					.role(UserRole.fromName(resultSet.getString(6)))
+					.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(5)))
+					.lastLogin(DateTimeUtil.parseDateTime(resultSet.getString(6)))
+					.role(UserRole.fromName(resultSet.getString(7)))
 					.build(), ResponseType.FOUND) :
 				new Response<>(null, ResponseType.NOT_FOUND);
 		} catch (Exception exception) {
