@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class InventoryPurchaseEntity {
 	private Long id;
 	private Long inventoryId;
+	private Long menuItemId;
 	private Long supplierId;
 	private Integer quantity;
 	private Double cost;

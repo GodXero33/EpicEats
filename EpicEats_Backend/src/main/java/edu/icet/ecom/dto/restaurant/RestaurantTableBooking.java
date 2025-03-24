@@ -13,9 +13,10 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestaurantTableBooking {
-	private Long id;
 	private Integer tableId;
+	private Long customerId;
 	private LocalDate bookingDate;
 	private LocalTime startTime;
 	private LocalTime endTime;
+	private Boolean isClosed;
 }

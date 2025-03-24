@@ -1,4 +1,4 @@
-package edu.icet.ecom.config.apidoc.mail;
+package edu.icet.ecom.config.apidoc.security.user;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,12 +14,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Operation(
-	summary = "Send an email",
-	description = "This endpoint send email. Return an object with `message` property. If status code 200 email sent success. Other wise email sent failed."
+	summary = "Delete an admin (todo)",
+	description = "This endpoint delete an admin. No data return."
 )
 @ApiResponse(
 	responseCode = "200",
-	description = "Success - The Email was successfully sent.",
+	description = "Success - The admin was successfully deleted.",
+	content = @Content(
+		mediaType = "application/json",
+		schemaProperties = {
+			@SchemaProperty(name = "message", schema = @Schema(type = "string"))
+		}
+	)
+)
+@ApiResponse(
+	responseCode = "304",
+	description = "Invalid admin name - Failed to find admin with provided admin name.",
 	content = @Content(
 		mediaType = "application/json",
 		schemaProperties = {
@@ -35,12 +45,12 @@ import java.lang.annotation.Target;
 		schemaProperties = {
 			@SchemaProperty(name = "message", schema = @Schema(type = "string"))
 		}
-)
+	)
 )
 @ApiResponse(
 	responseCode = "401",
 	description = "Unauthorized - The provided Bearer token is either invalid, expired, or missing. Please ensure the token is valid and included in the request header.",
 	content = @Content()
 )
-public @interface SendEmailApiDoc {
+public @interface UserDeleteApiDoc {
 }

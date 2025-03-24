@@ -16,4 +16,5 @@ public class MenuItem {
 	private Double price;
 	private String img;
 	private MenuItemCategory category;
+	private Integer quantity;
 }

@@ -1,4 +1,4 @@
-package edu.icet.ecom.config.apidoc.user;
+package edu.icet.ecom.config.apidoc.security.user;
 
 import io.swagger.v3.oas.annotations.Operation;
 

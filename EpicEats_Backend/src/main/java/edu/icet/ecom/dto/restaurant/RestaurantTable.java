@@ -15,7 +15,6 @@ public class RestaurantTable {
 	private Integer id;
 	private Integer tableNumber;
 	private Integer capacity;
-	private Long bookingCount;
 	private LocalDateTime lastBooked;
 	private Boolean isAvailable;
 }
