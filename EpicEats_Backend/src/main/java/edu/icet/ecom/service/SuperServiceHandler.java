@@ -2,7 +2,7 @@ package edu.icet.ecom.service;
 
 import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.ResponseType;
+import edu.icet.ecom.util.enumaration.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 

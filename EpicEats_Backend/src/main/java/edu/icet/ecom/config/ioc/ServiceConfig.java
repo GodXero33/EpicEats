@@ -1,7 +1,7 @@
 package edu.icet.ecom.config.ioc;
 
-import edu.icet.ecom.dto.User;
-import edu.icet.ecom.entity.UserEntity;
+import edu.icet.ecom.dto.security.User;
+import edu.icet.ecom.entity.security.UserEntity;
 import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import lombok.RequiredArgsConstructor;
