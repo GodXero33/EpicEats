@@ -2,6 +2,10 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
+import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
+import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
+import edu.icet.ecom.repository.custom.finance.ReportRepository;
+import edu.icet.ecom.repository.custom.order.OrderRepository;
 import edu.icet.ecom.repository.custom.security.UserRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
@@ -24,6 +28,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
 	private final UserRepository userRepository;
+	private final EmployeeShiftRepository employeeShiftRepository;
+	private final ReportRepository reportRepository;
+	private final PromotionHistoryRepository promotionHistoryRepository;
+	private final OrderRepository orderRepository;
 
 	@Override
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
@@ -81,10 +89,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 			final boolean isEmployeeDeleted = (Integer) this.crudUtil.execute("UPDATE employee SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) != 0;
 			final boolean isUserDeleted = isEmployeeDeleted && this.userRepository.delete(id).getStatus() != ResponseType.SERVER_ERROR; // If employee deleted and user deleted. consider user not deleted only when server error happens because employee may not be a user.
+			final boolean isEmployeeShiftDeleted = isUserDeleted && this.employeeShiftRepository.deleteByEmployeeId(id).getData();
+			final boolean isReportDeleted = isEmployeeShiftDeleted && this.reportRepository.deleteByEmployeeId(id).getData();
+			final boolean isPromotionHistoryDeleted = isReportDeleted && this.promotionHistoryRepository.deleteByEmployeeId(id).getData();
+			final boolean isOrderDeleted = isPromotionHistoryDeleted && this.orderRepository.deleteByEmployeeId(id).getData();
 
-			if (isUserDeleted) connection.commit();
+			if (isOrderDeleted) connection.commit();
 
-			return new Response<>(isUserDeleted, isUserDeleted ? ResponseType.DELETED : ResponseType.NOT_DELETED);
+			return new Response<>(isOrderDeleted, isOrderDeleted ? ResponseType.DELETED : ResponseType.NOT_DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 

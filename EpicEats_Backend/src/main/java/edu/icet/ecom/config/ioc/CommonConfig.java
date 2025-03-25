@@ -1,5 +1,6 @@
 package edu.icet.ecom.config.ioc;
 
+import edu.icet.ecom.validation.ValidationErrorsHelper;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,5 +23,10 @@ public class CommonConfig {
 	@Bean
 	public BCryptPasswordEncoder getBCryptPasswordEncoder () {
 		return new BCryptPasswordEncoder(BCryptPasswordEncoder.BCryptVersion.$2A, 12);
+	}
+
+	@Bean
+	public ValidationErrorsHelper getValidationErrorsHelper () {
+		return new ValidationErrorsHelper();
 	}
 }

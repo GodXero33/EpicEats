@@ -3,9 +3,13 @@ package edu.icet.ecom.repository.custom.impl.finance;
 import edu.icet.ecom.entity.finance.ReportEntity;
 import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.util.Response;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
+@RequiredArgsConstructor
 public class ReportRepositoryImpl implements ReportRepository {
 	@Override
 	public Response<ReportEntity> add (ReportEntity entity) {
@@ -29,6 +33,11 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<List<ReportEntity>> getAll () {
+		return null;
+	}
+
+	@Override
+	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
 		return null;
 	}
 }

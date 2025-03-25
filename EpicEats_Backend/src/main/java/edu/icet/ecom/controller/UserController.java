@@ -1,6 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.dto.security.User;
+import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
 import edu.icet.ecom.service.custom.security.UserService;
 import edu.icet.ecom.util.Response;
@@ -9,7 +10,6 @@ import edu.icet.ecom.config.apidoc.security.user.UserDeleteApiDoc;
 import edu.icet.ecom.config.apidoc.security.user.UserLoginApiDoc;
 import edu.icet.ecom.config.apidoc.security.user.UserRegisterApiDoc;
 import edu.icet.ecom.config.apidoc.security.user.UserUpdateApiDoc;
-import edu.icet.ecom.validation.ValidationErrorsHelper;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,14 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 	private final UserService userService;
 	private final BCryptPasswordEncoder passwordEncoder;
-
-	private <T> CustomHttpResponse<T> getServerErrorResponse () {
-		return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Server error");
-	}
-
-	private <T> CustomHttpResponse<T> getInvalidUserDetailsResponse (Object error) {
-		return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", error instanceof BindingResult result ? ValidationErrorsHelper.getValidationErrors(result) : error);
-	}
+	private final ControllerResponseUtil controllerResponseUtil;
 
 	@UserLoginApiDoc
 	@PostMapping("/login")
@@ -48,22 +41,22 @@ public class UserController {
 	@PostMapping("/register")
 	@UserRegisterApiDoc
 	public CustomHttpResponse<User> register (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return this.getInvalidUserDetailsResponse(result);
-		if (user.getPassword() == null) return this.getInvalidUserDetailsResponse("Password is required");
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
+		if (user.getPassword() == null) return this.controllerResponseUtil.getInvalidUserDetailsResponse("Password is required");
 
 		final Response<Boolean> usernameExistResponse = this.userService.isUsernameExist(user.getUsername());
 
-		if (usernameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.getServerErrorResponse();
+		if (usernameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (usernameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Username is already taken");
 
 		final Response<Boolean> employeeAlreadyCustomHttpResponse = this.userService.isEmployeeAlreadyUser(user.getEmployeeId());
 
-		if (employeeAlreadyCustomHttpResponse.getStatus() == ResponseType.SERVER_ERROR) return this.getServerErrorResponse();
+		if (employeeAlreadyCustomHttpResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (employeeAlreadyCustomHttpResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "The target employee is already has user account");
 
 		final Response<Boolean> employeeExistResponse = this.userService.isEmployeeExistById(user.getEmployeeId());
 
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.getServerErrorResponse();
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "No employee has found with given employeeId");
 
 		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
@@ -74,18 +67,18 @@ public class UserController {
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "User added") :
-			this.getServerErrorResponse();
+			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
 	@UserUpdateApiDoc
 	@PutMapping("/update")
 	public CustomHttpResponse<User> update (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return this.getInvalidUserDetailsResponse(result);
-		if (user.getEmployeeId() == null) return this.getInvalidUserDetailsResponse("\"User employeeId required for update");
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
+		if (user.getEmployeeId() == null) return this.controllerResponseUtil.getInvalidUserDetailsResponse("\"User employeeId required for update");
 
 		final Response<Boolean> userExistResponse = this.userService.isUsernameExist(user.getUsername());
 
-		if (userExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.getServerErrorResponse();
+		if (userExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (userExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Username is already taken");
 
 		if (user.getPassword() != null) user.setPassword(this.passwordEncoder.encode(user.getPassword()));
@@ -96,7 +89,7 @@ public class UserController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "User updated");
-			case SERVER_ERROR -> this.getServerErrorResponse();
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "User update failed");
 		};
 	}
@@ -110,7 +103,7 @@ public class UserController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "User deleted");
-			case SERVER_ERROR -> this.getServerErrorResponse();
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete user");
 		};
 	}
