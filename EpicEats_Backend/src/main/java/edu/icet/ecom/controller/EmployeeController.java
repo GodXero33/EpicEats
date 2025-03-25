@@ -32,11 +32,11 @@ public class EmployeeController {
 		};
 	}
 
-	@PatchMapping("/un-employ/{id}")
-	public CustomHttpResponse<Boolean> unEmploy (@PathVariable("id") Long employeeId) {
+	@PatchMapping("/terminate/{id}")
+	public CustomHttpResponse<Boolean> terminate (@PathVariable("id") Long employeeId) {
 		if (employeeId <= 0) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Id can't be negative or zero.");
 
-		final Response<Boolean> response = this.employeeService.unEmploy(employeeId);
+		final Response<Boolean> response = this.employeeService.terminate(employeeId);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Un employed success");

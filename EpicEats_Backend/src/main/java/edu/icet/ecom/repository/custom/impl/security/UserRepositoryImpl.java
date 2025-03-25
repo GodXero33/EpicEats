@@ -41,24 +41,9 @@ public class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	private Response<Boolean> deleteByFieldName (String fieldName, Object identifier) {
+	private Response<Boolean> isExistsByFieldName (String fieldName, Object identifier) {
 		try {
-			return (Integer) this.crudUtil.execute(
-				"UPDATE `user` SET deleted_at = ?, is_deleted = TRUE WHERE is_deleted = FALSE AND " + fieldName + " = ?",
-				DateTimeUtil.getCurrentDateTime(),
-				identifier
-			) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
-		}
-	}
-
-	private Response<Boolean> isExistsByFieldName (String tableName, String fieldName, Object identifier) {
-		try {
-			return ((ResultSet) this.crudUtil.execute(String.format("SELECT 1 FROM %s WHERE is_deleted = FALSE AND %s = ?", tableName, fieldName), identifier)).next() ?
+			return ((ResultSet) this.crudUtil.execute("SELECT 1 FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier)).next() ?
 				new Response<>(true, ResponseType.FOUND) :
 				new Response<>(false, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
@@ -74,17 +59,24 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public Response<Boolean> isUsernameExist (String username) {
-		return this.isExistsByFieldName("`user`", "username", username);
+		return this.isExistsByFieldName("username", username);
 	}
 
 	@Override
 	public Response<Boolean> isEmployeeExistById (Long employeeId) {
-		return this.isExistsByFieldName("employee", "id", employeeId);
+		try {
+			return ((ResultSet) this.crudUtil.execute("SELECT 1 FROM employee WHERE id = ?", employeeId)).next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<Boolean> isEmployeeAlreadyUser (Long employeeId) {
-		return this.isExistsByFieldName("`user`", "employee_id", employeeId);
+		return this.isExistsByFieldName("employee_id", employeeId);
 	}
 
 	@Override
@@ -162,7 +154,18 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public Response<Boolean> delete (Long id) {
-		return this.deleteByFieldName("employee_id", id);
+		try {
+			return (Integer) this.crudUtil.execute(
+				"UPDATE `user` SET deleted_at = ?, is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?",
+				DateTimeUtil.getCurrentDateTime(),
+				id
+			) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override

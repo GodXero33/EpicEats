@@ -2,11 +2,6 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
-import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
-import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
-import edu.icet.ecom.repository.custom.finance.ReportRepository;
-import edu.icet.ecom.repository.custom.order.OrderRepository;
-import edu.icet.ecom.repository.custom.security.UserRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
@@ -16,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,11 +21,6 @@ import java.util.List;
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
-	private final UserRepository userRepository;
-	private final EmployeeShiftRepository employeeShiftRepository;
-	private final ReportRepository reportRepository;
-	private final PromotionHistoryRepository promotionHistoryRepository;
-	private final OrderRepository orderRepository;
 
 	@Override
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
@@ -61,7 +50,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Response<EmployeeEntity> update (EmployeeEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE employee SET name = ?, phone = ?, email = ?, address = ?, salary = ?, role = ?, dob = ? WHERE is_deleted = FALSE AND id = ?",
+				"UPDATE employee SET name = ?, phone = ?, email = ?, address = ?, salary = ?, role = ?, dob = ? WHERE is_terminated = FALSE AND id = ?",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
@@ -80,46 +69,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<Boolean> delete (Long id) {
-		final Connection connection = this.crudUtil.getDbConnection().getConnection();
-
-		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
-
-		try {
-			connection.setAutoCommit(false);
-
-			final boolean isEmployeeDeleted = (Integer) this.crudUtil.execute("UPDATE employee SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) != 0;
-			final boolean isUserDeleted = isEmployeeDeleted && this.userRepository.delete(id).getStatus() != ResponseType.SERVER_ERROR; // If employee deleted and user deleted. consider user not deleted only when server error happens because employee may not be a user.
-			final boolean isEmployeeShiftDeleted = isUserDeleted && this.employeeShiftRepository.deleteByEmployeeId(id).getData();
-			final boolean isReportDeleted = isEmployeeShiftDeleted && this.reportRepository.deleteByEmployeeId(id).getData();
-			final boolean isPromotionHistoryDeleted = isReportDeleted && this.promotionHistoryRepository.deleteByEmployeeId(id).getData();
-			final boolean isOrderDeleted = isPromotionHistoryDeleted && this.orderRepository.deleteByEmployeeId(id).getData();
-
-			if (isOrderDeleted) connection.commit();
-
-			return new Response<>(isOrderDeleted, isOrderDeleted ? ResponseType.DELETED : ResponseType.NOT_DELETED);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-
-			try {
-				connection.rollback();
-			} catch (SQLException rollbackException) {
-				this.logger.error(rollbackException.getMessage());
-			}
-
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		} finally {
-			try {
-				connection.setAutoCommit(true);
-			} catch (SQLException exception) {
-				this.logger.error(exception.getMessage());
-			}
-		}
+		return null;
 	}
 
 	@Override
 	public Response<EmployeeEntity> get (Long id) {
 		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_deleted = FALSE AND id = ?", id);
+			final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id);
 
 			return resultSet.next() ?
 				new Response<>(EmployeeEntity.builder()
@@ -143,7 +99,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Response<List<EmployeeEntity>> getAll () {
 		try {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
-			final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_deleted = FALSE");
+			final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE");
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
 				.id(resultSet.getLong(1))
@@ -160,6 +116,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<Boolean> terminate (Long employeeId) {
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE employee SET is_terminated = TRUE WHERE is_terminated = FALSE AND id = ?", employeeId) == 0 ?
+				new Response<>(false, ResponseType.NOT_UPDATED) :
+				new Response<>(true, ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
 		}
 	}
 }
