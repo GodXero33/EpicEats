@@ -37,7 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
-	public Response<Boolean> unEmploy (Long employeeId) {
+	public Response<Boolean> terminate (Long employeeId) {
 		return null;
 	}
 }

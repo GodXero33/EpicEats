@@ -49,15 +49,15 @@ public class UserController {
 		if (usernameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (usernameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Username is already taken");
 
-		final Response<Boolean> employeeAlreadyCustomHttpResponse = this.userService.isEmployeeAlreadyUser(user.getEmployeeId());
-
-		if (employeeAlreadyCustomHttpResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
-		if (employeeAlreadyCustomHttpResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "The target employee is already has user account");
-
 		final Response<Boolean> employeeExistResponse = this.userService.isEmployeeExistById(user.getEmployeeId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "No employee has found with given employeeId");
+
+		final Response<Boolean> employeeAlreadyUserResponse = this.userService.isEmployeeAlreadyUser(user.getEmployeeId());
+
+		if (employeeAlreadyUserResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeAlreadyUserResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "The target employee is already has user account");
 
 		user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 
