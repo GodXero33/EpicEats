@@ -39,9 +39,9 @@ public class EmployeeController {
 		final Response<Boolean> response = this.employeeService.terminate(employeeId);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Un employed success");
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Terminate employee success");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to un employ employee");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to terminate employee");
 		};
 	}
 }
