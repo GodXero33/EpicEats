@@ -25,7 +25,7 @@ EpicEats/
 ## Database Schema Overview
 
 The project uses a relational database (MySQL) to store essential information. For more details on the schema design,
-please refer to the **[db.sql](Docs/db.sql)** file and the **[EpicEats_ERD.pdf](EpicEats_ERD.pdf)** in the docs folder.
+please refer to the **[db.sql](Docs/db.sql)** file and the **[EpicEats_ERD.pdf](Docs/EpicEats_ERD.pdf)** in the docs folder.
 
 ### Key Tables Overview:
 1. **menu_item**: Contains details about the menu items (e.g., burgers, pizzas, beverages).
