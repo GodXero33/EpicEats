@@ -77,7 +77,7 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 
 	@Override
 	public Response<PromotionHistoryEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, old_role, new_role, promotion_date WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, old_role, new_role, promotion_date FROM promotion_history WHERE is_deleted = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(PromotionHistoryEntity.builder()
 					.id(id)
@@ -95,7 +95,7 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 
 	@Override
 	public Response<List<PromotionHistoryEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, old_role, new_role, promotion_date WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, old_role, new_role, promotion_date FROM promotion_history WHERE is_deleted = FALSE")) {
 			final List<PromotionHistoryEntity> promotionHistoryEntities = new ArrayList<>();
 
 			while (resultSet.next()) promotionHistoryEntities.add(PromotionHistoryEntity.builder()

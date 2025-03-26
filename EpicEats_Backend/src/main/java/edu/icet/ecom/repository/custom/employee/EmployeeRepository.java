@@ -7,4 +7,8 @@ import edu.icet.ecom.util.Response;
 public interface EmployeeRepository extends CrudRepository<EmployeeEntity> {
 	Response<Boolean> terminate (Long employeeId);
 	Response<Boolean> isExist (Long employeeId);
+	Response<Boolean> isPhoneExist (String phone);
+	Response<Boolean> isPhoneExist (String phone, Long employeeId);
+	Response<Boolean> isEmailExist (String email);
+	Response<Boolean> isEmailExist (String email, Long employeeId);
 }
