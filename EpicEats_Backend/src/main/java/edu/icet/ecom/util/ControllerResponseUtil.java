@@ -15,7 +15,7 @@ public class ControllerResponseUtil {
 		return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, data, "Server error");
 	}
 
-	public <T> CustomHttpResponse<T> getInvalidUserDetailsResponse (Object error) {
+	public <T> CustomHttpResponse<T> getInvalidDetailsResponse (Object error) {
 		return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid user details", error instanceof BindingResult result ? this.validationErrorsHelper.getValidationErrors(result) : error);
 	}
 }

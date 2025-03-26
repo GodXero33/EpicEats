@@ -28,14 +28,14 @@ public class EmployeeController {
 	private final EmployeeShiftService employeeShiftService;
 	private final ControllerResponseUtil controllerResponseUtil;
 
-	private <T> CustomHttpResponse<T> getInvalidUserDetailsResponse () {
-		return this.controllerResponseUtil.getInvalidUserDetailsResponse("Id can't be negative or zero.");
+	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
 	}
 
 	@EmployeeGetApiDoc
 	@GetMapping("/get/{id}")
 	public CustomHttpResponse<Employee> get (@PathVariable("id") Long id) {
-		if (id <= 0) return this.getInvalidUserDetailsResponse();
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Employee> response = this.employeeService.get(id);
 
@@ -53,25 +53,25 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Employee.class, "All employees found") :
-			new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Internal server error");
+			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
 	@EmployeeAddApiDoc
 	@PostMapping("/add")
 	public CustomHttpResponse<Employee> add (@Valid @RequestBody Employee employee, BindingResult result) {
-		if (result.hasErrors()) this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
+		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final Response<Employee> response = this.employeeService.add(employee);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee added successfully") :
-			new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Failed to add employee");
+			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
 	@EmployeeUpdateApiDoc
 	@PutMapping("/update")
 	public CustomHttpResponse<Employee> update (@Valid @RequestBody Employee employee, BindingResult result) {
-		if (result.hasErrors()) this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
+		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final Response<Employee> response = this.employeeService.update(employee);
 
@@ -85,7 +85,7 @@ public class EmployeeController {
 	@EmployeeTerminateApiDoc
 	@PatchMapping("/terminate/{id}")
 	public CustomHttpResponse<Boolean> terminate (@PathVariable("id") Long employeeId) {
-		if (employeeId <= 0) return this.getInvalidUserDetailsResponse();
+		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> response = this.employeeService.terminate(employeeId);
 
@@ -99,7 +99,7 @@ public class EmployeeController {
 	@EmployeeShiftGetApiDoc
 	@GetMapping("/shift/get/{id}")
 	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id) {
-		if (id <= 0) return this.getInvalidUserDetailsResponse();
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<EmployeeShift> response = this.employeeShiftService.get(id);
 
@@ -123,12 +123,66 @@ public class EmployeeController {
 	@EmployeeShiftGetByEmployeeApiDoc
 	@GetMapping("/shift/get-by-employee/{employee_id}")
 	public CustomHttpResponse<List<EmployeeShift>> getShiftsByEmployee (@PathVariable("employee_id") Long employeeId) {
-		if (employeeId <= 0) return this.getInvalidUserDetailsResponse();
+		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), EmployeeShift.class, "Employee shifts found") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@EmployeeShiftAddApiDoc
+	@PostMapping("/shift/add")
+	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<EmployeeShift> response = this.employeeShiftService.add(employeeShift);
+
+		return response.getStatus() == ResponseType.CREATED ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift has added") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@EmployeeShiftUpdateApiDoc
+	@PutMapping("/shift/update")
+	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<EmployeeShift> response = this.employeeShiftService.update(employeeShift);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update employee shift");
+		};
+	}
+
+	@EmployeeShiftDeleteApiDoc
+	@DeleteMapping("/shift/delete/{id}")
+	public CustomHttpResponse<Boolean> deleteShift (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.employeeShiftService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shift deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shift");
+		};
+	}
+
+	@EmployeeShiftDeleteByEmployeeApiDoc
+	@DeleteMapping("/shift/delete-by-employee/{employee_id}")
+	public CustomHttpResponse<Boolean> deleteShiftByEmployee (@PathVariable("employee_id") Long employeeId) {
+		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.employeeShiftService.deleteByEmployeeId(employeeId);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shifts deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shifts");
+		};
 	}
 }
