@@ -75,7 +75,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
 	@Override
 	public Response<ExpenseEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT (expense_type, amount, expense_date, description) FROM expense WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT expense_type, amount, expense_date, description FROM expense WHERE is_deleted = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(ExpenseEntity.builder()
 					.id(id)
@@ -93,7 +93,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
 	@Override
 	public Response<List<ExpenseEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT (id, expense_type, amount, expense_date, description) FROM expense WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, expense_type, amount, expense_date, description FROM expense WHERE is_deleted = FALSE")) {
 			final List<ExpenseEntity> expenseEntities = new ArrayList<>();
 
 			while (resultSet.next()) expenseEntities.add(ExpenseEntity.builder()
