@@ -21,9 +21,7 @@ public class UserRepositoryImpl implements UserRepository {
 	private final CrudUtil crudUtil;
 
 	private Response<UserEntity> getByFieldName (String fieldName, Object identifier) {
-		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, updated_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier);
-
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, updated_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier)) {
 			return resultSet.next() ?
 				new Response<>(UserEntity.builder()
 					.employeeId(resultSet.getLong(1))
@@ -121,9 +119,12 @@ public class UserRepositoryImpl implements UserRepository {
 					entity.getEmployeeId())
 			) != 0;
 
-			if (isUpdated) {
-				final ResultSet userNameResultSet = this.crudUtil.execute("SELECT username FROM `user` WHERE employee_id = ?", entity.getEmployeeId());
+			if (!isUpdated) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
 
+			try (final ResultSet userNameResultSet = this.crudUtil.execute("SELECT username FROM `user` WHERE employee_id = ?", entity.getEmployeeId())) {
 				if (userNameResultSet.next()) {
 					connection.commit();
 					entity.setUsername(userNameResultSet.getString(1));

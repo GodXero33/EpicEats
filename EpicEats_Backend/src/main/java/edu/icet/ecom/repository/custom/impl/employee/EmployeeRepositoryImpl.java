@@ -2,6 +2,7 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
+import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.List;
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
+	private final EmployeeShiftRepository employeeShiftRepository;
 
 	@Override
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
@@ -74,9 +77,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<EmployeeEntity> get (Long id) {
-		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id);
-
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeEntity.builder()
 					.id(id)
@@ -97,9 +98,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<List<EmployeeEntity>> getAll () {
-		try {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE")) {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
-			final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE");
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
 				.id(resultSet.getLong(1))
@@ -121,13 +121,49 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<Boolean> terminate (Long employeeId) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(false, ResponseType.SERVER_ERROR);
+
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE employee SET is_terminated = TRUE WHERE is_terminated = FALSE AND id = ?", employeeId) == 0 ?
-				new Response<>(false, ResponseType.NOT_UPDATED) :
-				new Response<>(true, ResponseType.UPDATED);
+			connection.setAutoCommit(false);
+
+			final boolean isEmployeeTerminated = (Integer) this.crudUtil.execute("UPDATE employee SET is_terminated = TRUE WHERE is_terminated = FALSE AND id = ?", employeeId) != 0;
+			final boolean isEmployeeShiftsDeleted = isEmployeeTerminated && this.employeeShiftRepository.deletedByEmployeeId(employeeId).getData();
+
+			if (isEmployeeShiftsDeleted) connection.commit();
+
+			return isEmployeeShiftsDeleted ?
+				new Response<>(true, ResponseType.SUCCESS) :
+				new Response<>(false, ResponseType.FAILED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
 			return new Response<>(false, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
+	}
+
+	@Override
+	public Response<Boolean> isExist (Long employeeId) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM employee WHERE is_terminated = FALSE AND id = ?", employeeId)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 }

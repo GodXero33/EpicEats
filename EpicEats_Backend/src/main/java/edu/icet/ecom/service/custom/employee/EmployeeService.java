@@ -6,4 +6,5 @@ import edu.icet.ecom.util.Response;
 
 public interface EmployeeService extends SuperService<Employee> {
 	Response<Boolean> terminate (Long employeeId);
+	Response<Boolean> isExist (Long employeeId);
 }

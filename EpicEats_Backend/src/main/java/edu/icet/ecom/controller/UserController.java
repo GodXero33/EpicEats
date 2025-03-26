@@ -41,8 +41,8 @@ public class UserController {
 	@PostMapping("/register")
 	@UserRegisterApiDoc
 	public CustomHttpResponse<User> register (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
-		if (user.getPassword() == null) return this.controllerResponseUtil.getInvalidUserDetailsResponse("Password is required");
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (user.getPassword() == null) return this.controllerResponseUtil.getInvalidDetailsResponse("Password is required");
 
 		final Response<Boolean> usernameExistResponse = this.userService.isUsernameExist(user.getUsername());
 
@@ -73,8 +73,8 @@ public class UserController {
 	@UserUpdateApiDoc
 	@PutMapping("/update")
 	public CustomHttpResponse<User> update (@Valid @RequestBody User user, BindingResult result) {
-		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidUserDetailsResponse(result);
-		if (user.getEmployeeId() == null) return this.controllerResponseUtil.getInvalidUserDetailsResponse("\"User employeeId required for update");
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (user.getEmployeeId() == null) return this.controllerResponseUtil.getInvalidDetailsResponse("\"User employeeId required for update");
 
 		final Response<Boolean> userExistResponse = this.userService.isUsernameExist(user.getUsername());
 
