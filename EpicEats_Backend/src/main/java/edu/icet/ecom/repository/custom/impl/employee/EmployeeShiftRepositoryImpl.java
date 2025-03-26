@@ -73,9 +73,7 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<EmployeeShiftEntity> get (Long id) {
-		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND id = ?", id);
-
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeShiftEntity.builder()
 					.id(id)
@@ -93,9 +91,8 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAll () {
-		try {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE")) {
 			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
-			final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE");
 
 			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
 				.id(resultSet.getLong(1))
@@ -114,9 +111,8 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAllByEmployeeId (Long employeeId) {
-		try {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND employee_id = ?", employeeId)) {
 			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
-			final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND employee_id = ?", employeeId);
 
 			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
 				.id(resultSet.getLong(1))

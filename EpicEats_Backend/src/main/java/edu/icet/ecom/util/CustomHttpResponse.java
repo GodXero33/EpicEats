@@ -14,14 +14,14 @@ public class CustomHttpResponse<T> extends ResponseEntity<Map<String, Object>> {
 	}
 
 	public CustomHttpResponse (HttpStatusCode httpStatusCode, T data, Object ...info) {
-		super(CustomHttpResponse.getResponse(data, data == null ? "null" : data.getClass().getSimpleName(), info), httpStatusCode);
+		super(CustomHttpResponse.getResponse(data, data == null ? null : data.getClass().getSimpleName(), info), httpStatusCode);
 	}
 
 	private static <T> Map<String, Object> getResponse (T data, String type, Object[] info) {
 		final Map<String, Object> response = new HashMap<>();
 
-		response.put("type", type);
-		response.put("data", data);
+		if (type != null) response.put("type", type);
+		if (data != null) response.put("data", data);
 
 		for (int a = 0; a < info.length; a++) response.put(CustomHttpResponse.INFO_KEYS[a], info[a]);
 

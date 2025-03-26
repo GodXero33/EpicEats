@@ -52,4 +52,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Response<Boolean> terminate (Long employeeId) {
 		return this.employeeRepository.terminate(employeeId);
 	}
+
+	@Override
+	public Response<Boolean> isExist (Long employeeId) {
+		return this.employeeRepository.isExist(employeeId);
+	}
 }

@@ -77,9 +77,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<EmployeeEntity> get (Long id) {
-		try {
-			final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id);
-
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeEntity.builder()
 					.id(id)
@@ -100,9 +98,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<List<EmployeeEntity>> getAll () {
-		try {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE")) {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
-			final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE");
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
 				.id(resultSet.getLong(1))
@@ -137,8 +134,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			if (isEmployeeShiftsDeleted) connection.commit();
 
 			return isEmployeeShiftsDeleted ?
-				new Response<>(false, ResponseType.FAILED) :
-				new Response<>(true, ResponseType.SUCCESS);
+				new Response<>(true, ResponseType.SUCCESS) :
+				new Response<>(false, ResponseType.FAILED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -155,6 +152,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			} catch (SQLException exception) {
 				this.logger.error(exception.getMessage());
 			}
+		}
+	}
+
+	@Override
+	public Response<Boolean> isExist (Long employeeId) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM employee WHERE is_terminated = FALSE AND id = ?", employeeId)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 }
