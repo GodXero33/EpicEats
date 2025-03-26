@@ -20,6 +20,17 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
 
+	private Response<Boolean> getExistence (String query, Object ...binds) {
+		try (final ResultSet resultSet = this.crudUtil.execute(query, binds)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
 	@Override
 	public Response<CustomerEntity> add (CustomerEntity entity) {
 		try {
@@ -106,5 +117,25 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone) {
+		return this.getExistence("SELECT 1 FROM customer WHERE phone = ?", phone);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone, Long customerId) {
+		return this.getExistence("SELECT 1 FROM customer WHERE id != ? AND phone = ?", customerId, phone);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email) {
+		return this.getExistence("SELECT 1 FROM customer WHERE email = ?", email);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email, Long customerId) {
+		return this.getExistence("SELECT 1 FROM customer WHERE id != ? AND email = ?", customerId, email);
 	}
 }

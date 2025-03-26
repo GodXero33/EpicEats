@@ -16,9 +16,11 @@ import java.util.List;
 @Primary
 public class CustomerServiceImpl implements CustomerService {
 	private final SuperServiceHandler<Customer, CustomerEntity> serviceHandler;
+	private final CustomerRepository customerRepository;
 
 	public CustomerServiceImpl (CustomerRepository customerRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(customerRepository, mapper, Customer.class, CustomerEntity.class);
+		this.customerRepository = customerRepository;
 	}
 
 	@Override
@@ -44,5 +46,25 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public Response<Boolean> delete (Long id) {
 		return this.serviceHandler.delete(id);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone) {
+		return this.customerRepository.isPhoneExist(phone);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone, Long customerId) {
+		return this.customerRepository.isPhoneExist(phone, customerId);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email) {
+		return this.customerRepository.isEmailExist(email);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email, Long customerId) {
+		return this.customerRepository.isEmailExist(email, customerId);
 	}
 }
