@@ -2,6 +2,8 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.finance.*;
 import edu.icet.ecom.dto.finance.Expense;
+import edu.icet.ecom.dto.finance.Report;
+import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.finance.ExpenseService;
 import edu.icet.ecom.service.custom.finance.ReportService;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -25,12 +27,17 @@ import java.util.List;
 public class FinanceController {
 	private final ExpenseService expenseService;
 	private final ReportService reportService;
+	private final EmployeeService employeeService;
 	private final ControllerResponseUtil controllerResponseUtil;
+
+	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
+	}
 
 	@ExpenseGetApiDoc
 	@GetMapping("/expense/get/{id}")
 	public CustomHttpResponse<Expense> getExpense (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Expense> response = this.expenseService.get(id);
 
@@ -47,7 +54,7 @@ public class FinanceController {
 		final Response<List<Expense>> response = this.expenseService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All expenses are retrieved successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Expense.class, "All expenses are retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
@@ -80,7 +87,7 @@ public class FinanceController {
 	@ExpenseDeleteApiDoc
 	@DeleteMapping("/expense/delete/{id}")
 	public CustomHttpResponse<Boolean> deleteExpense (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id must positive integer");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> response = this.expenseService.delete(id);
 
@@ -89,5 +96,46 @@ public class FinanceController {
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Falied to delete expense record");
 		};
+	}
+
+	@ReportGetApiDoc
+	@GetMapping("/report/get/{id}")
+	public CustomHttpResponse<Report> getReport (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Report> response = this.reportService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find report with given id");
+		};
+	}
+
+	@ReportGetAllApiDoc
+	@GetMapping("/report/get-all")
+	public CustomHttpResponse<List<Report>> getAllReports () {
+		final Response<List<Report>> response = this.reportService.getAll();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@ReportAddApiDoc
+	@PostMapping("/report/add")
+	public CustomHttpResponse<Report> addReport (@Valid @RequestBody Report report, BindingResult result) {
+		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employee id");
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<Report> response = this.reportService.add(report);
+
+		return response.getStatus() == ResponseType.CREATED ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report added successfully") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 }
