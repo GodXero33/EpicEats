@@ -35,9 +35,4 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 	public Response<List<PromotionHistoryEntity>> getAll () {
 		return null;
 	}
-
-	@Override
-	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
-		return null;
-	}
 }

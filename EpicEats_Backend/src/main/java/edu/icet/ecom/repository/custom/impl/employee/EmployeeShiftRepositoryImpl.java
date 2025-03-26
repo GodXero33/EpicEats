@@ -23,27 +23,93 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<EmployeeShiftEntity> add (EmployeeShiftEntity entity) {
-		return null;
+		try {
+			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
+				"INSERT INTO employee_shift (employee_id, shift_date, start_time, end_time) VALUES (?, ?, ?, ?)",
+				entity.getEmployeeId(),
+				entity.getShiftDate(),
+				entity.getStartTime(),
+				entity.getEndTime()
+			);
+
+			entity.setId(generatedId);
+
+			return new Response<>(entity, ResponseType.CREATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<EmployeeShiftEntity> update (EmployeeShiftEntity entity) {
-		return null;
+		try {
+			return (Integer) this.crudUtil.execute(
+				"UPDATE employee_shift SET employee_id = ?, shift_date = ?, start_time = ?, end_time = ? WHERE is_deleted = FALSE AND id = ?",
+				entity.getEmployeeId(),
+				entity.getShiftDate(),
+				entity.getStartTime(),
+				entity.getEndTime(),
+				entity.getId()) == 0 ?
+					new Response<>(null, ResponseType.NOT_UPDATED) :
+					new Response<>(entity, ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<Boolean> delete (Long id) {
-		return null;
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<EmployeeShiftEntity> get (Long id) {
-		return null;
+		try {
+			final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND id = ?", id);
+
+			return resultSet.next() ?
+				new Response<>(EmployeeShiftEntity.builder()
+					.id(id)
+					.employeeId(resultSet.getLong(1))
+					.shiftDate(DateTimeUtil.parseDate(resultSet.getString(2)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(3)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+					.build(), ResponseType.FOUND) :
+				new Response<>(null, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAll () {
-		return null;
+		try {
+			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
+			final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE");
+
+			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
+				.id(resultSet.getLong(1))
+				.employeeId(resultSet.getLong(2))
+				.shiftDate(DateTimeUtil.parseDate(resultSet.getString(3)))
+				.startTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.endTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+				.build());
+
+			return new Response<>(employeeShiftEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
@@ -55,9 +121,9 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
 				.id(resultSet.getLong(1))
 				.employeeId(employeeId)
-				.shiftDate(DateTimeUtil.parseDate(resultSet.getString(2)))
-				.startTime(DateTimeUtil.parseTime(resultSet.getString(3)))
-				.endTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.shiftDate(DateTimeUtil.parseDate(resultSet.getString(3)))
+				.startTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.endTime(DateTimeUtil.parseTime(resultSet.getString(5)))
 				.build());
 
 			return new Response<>(employeeShiftEntities, ResponseType.FOUND);
@@ -68,7 +134,14 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	@Override
-	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
-		return null;
+	public Response<Boolean> deletedByEmployeeId (Long employeeId) {
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?", employeeId) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }
