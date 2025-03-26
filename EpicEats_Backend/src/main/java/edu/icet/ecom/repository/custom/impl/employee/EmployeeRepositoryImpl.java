@@ -1,8 +1,10 @@
 package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
+import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
+import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
@@ -24,6 +26,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
 	private final EmployeeShiftRepository employeeShiftRepository;
+	private final PromotionHistoryRepository promotionHistoryRepository;
+
+	private Response<Boolean> getExistence (String query, Object ...binds) {
+		try (final ResultSet resultSet = this.crudUtil.execute(query, binds)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
 
 	@Override
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
@@ -51,8 +65,38 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<EmployeeEntity> update (EmployeeEntity entity) {
-		try {
-			return (Integer) this.crudUtil.execute(
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT role FROM employee WHERE is_terminated = FALSE AND id = ?", entity.getId())) {
+			connection.setAutoCommit(false);
+
+			if (!resultSet.next()) return new Response<>(null, ResponseType.NOT_UPDATED);
+
+			final EmployeeRole oldRole = EmployeeRole.fromName(resultSet.getString(1));
+
+			if (!oldRole.equals(entity.getRole())) {
+				Response<PromotionHistoryEntity> response = this.promotionHistoryRepository.add(PromotionHistoryEntity.builder()
+					.employeeId(entity.getId())
+					.promotionDate(DateTimeUtil.parseDate(DateTimeUtil.getCurrentDate()))
+					.oldRole(oldRole)
+					.newRole(entity.getRole())
+					.build());
+
+				if (response.getStatus() == ResponseType.SERVER_ERROR) {
+					connection.rollback();
+					this.logger.error("Failed to add new record to promotion history");
+					return new Response<>(null, response.getStatus());
+				}
+
+				if (response.getStatus() == ResponseType.NOT_UPDATED) {
+					connection.rollback();
+					return new Response<>(null, response.getStatus());
+				}
+			}
+
+			if ((Integer) this.crudUtil.execute(
 				"UPDATE employee SET name = ?, phone = ?, email = ?, address = ?, salary = ?, role = ?, dob = ? WHERE is_terminated = FALSE AND id = ?",
 				entity.getName(),
 				entity.getPhone(),
@@ -60,13 +104,32 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				entity.getAddress(),
 				entity.getSalary(),
 				entity.getRole().name(),
-				entity.getDob()
-			) == 0 ?
-				new Response<>(null, ResponseType.NOT_UPDATED) :
-				new Response<>(entity, ResponseType.UPDATED);
+				entity.getDob(),
+				entity.getId()
+			) != 0) {
+				connection.commit();
+				return new Response<>(entity, ResponseType.UPDATED);
+			}
+
+			connection.rollback();
+
+			return new Response<>(null, ResponseType.NOT_UPDATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
 		}
 	}
 
@@ -77,7 +140,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<EmployeeEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, salary, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeEntity.builder()
 					.id(id)
@@ -85,9 +148,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					.phone(resultSet.getString(2))
 					.email(resultSet.getString(3))
 					.address(resultSet.getString(4))
-					.role(EmployeeRole.fromName(resultSet.getString(5)))
-					.dob(DateTimeUtil.parseDate(resultSet.getString(6)))
-					.employeeSince(DateTimeUtil.parseDate(resultSet.getString(7)))
+					.salary(resultSet.getDouble(5))
+					.role(EmployeeRole.fromName(resultSet.getString(6)))
+					.dob(DateTimeUtil.parseDate(resultSet.getString(7)))
+					.employeeSince(DateTimeUtil.parseDate(resultSet.getString(8)))
 					.build(), ResponseType.FOUND) :
 				new Response<>(null, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
@@ -98,7 +162,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<List<EmployeeEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, role, dob, employee_since FROM employee WHERE is_terminated = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, salary, role, dob, employee_since FROM employee WHERE is_terminated = FALSE")) {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
@@ -107,9 +171,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				.phone(resultSet.getString(3))
 				.email(resultSet.getString(4))
 				.address(resultSet.getString(5))
-				.role(EmployeeRole.fromName(resultSet.getString(6)))
-				.dob(DateTimeUtil.parseDate(resultSet.getString(7)))
-				.employeeSince(DateTimeUtil.parseDate(resultSet.getString(8)))
+				.salary(resultSet.getDouble(6))
+				.role(EmployeeRole.fromName(resultSet.getString(7)))
+				.dob(DateTimeUtil.parseDate(resultSet.getString(8)))
+				.employeeSince(DateTimeUtil.parseDate(resultSet.getString(9)))
 				.build());
 
 			return new Response<>(employeeEntities, ResponseType.FOUND);
@@ -157,13 +222,26 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<Boolean> isExist (Long employeeId) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM employee WHERE is_terminated = FALSE AND id = ?", employeeId)) {
-			return resultSet.next() ?
-				new Response<>(true, ResponseType.FOUND) :
-				new Response<>(false, ResponseType.NOT_FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
+		return this.getExistence("SELECT 1 FROM employee WHERE is_terminated = FALSE AND id = ?", employeeId);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone) {
+		return this.getExistence("SELECT 1 FROM employee WHERE phone = ?", phone);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone, Long employeeId) {
+		return this.getExistence("SELECT 1 FROM employee WHERE id != ? AND phone = ?", employeeId, phone);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email) {
+		return this.getExistence("SELECT 1 FROM employee WHERE email = ?", email);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email, Long employeeId) {
+		return this.getExistence("SELECT 1 FROM employee WHERE id != ? AND email = ?", employeeId, email);
 	}
 }

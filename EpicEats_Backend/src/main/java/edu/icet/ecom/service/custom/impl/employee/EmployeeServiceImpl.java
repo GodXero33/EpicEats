@@ -57,4 +57,24 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Response<Boolean> isExist (Long employeeId) {
 		return this.employeeRepository.isExist(employeeId);
 	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone) {
+		return this.employeeRepository.isPhoneExist(phone);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone, Long employeeId) {
+		return this.employeeRepository.isPhoneExist(phone, employeeId);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email) {
+		return this.employeeRepository.isEmailExist(email);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email, Long employeeId) {
+		return this.employeeRepository.isEmailExist(email, employeeId);
+	}
 }
