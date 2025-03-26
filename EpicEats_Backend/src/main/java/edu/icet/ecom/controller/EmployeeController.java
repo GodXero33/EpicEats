@@ -239,4 +239,59 @@ public class EmployeeController {
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
+
+	@PromotionHistoryGetByEmployeeApiDoc
+	@GetMapping("/promotion/get-by-employee/{employee_id}")
+	public CustomHttpResponse<List<PromotionHistory>> getAllPromotionsByEmployee (@PathVariable("employee_id") Long employeeId) {
+		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAllByEmployeeId(employeeId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded for employee") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@PromotionHistoryUpdateApiShift
+	@PostMapping("/promotion/update")
+	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistory promotionHistory, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (promotionHistory.getId() == null || promotionHistory.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history id can't be null, zero or negative");
+
+		final Response<PromotionHistory> response = this.promotionHistoryService.update(promotionHistory);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Promotion history updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update promotion history");
+		};
+	}
+
+	@PromotionHistoryDeleteApiDoc
+	@DeleteMapping("/promotion/delete/{id}")
+	public CustomHttpResponse<Boolean> deletePromotion (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.promotionHistoryService.delete(id);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion history deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion history");
+		};
+	}
+
+	@PromotionHistoryDeleteByEmployeeApiDoc
+	@DeleteMapping("/promotion/delete-by-employee/{employee_id}")
+	public CustomHttpResponse<Boolean> deletePromotionsByEmployee (@PathVariable("employee_id") Long employeeId) {
+		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion histories deleted related to target employee");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion histories");
+		};
+	}
 }

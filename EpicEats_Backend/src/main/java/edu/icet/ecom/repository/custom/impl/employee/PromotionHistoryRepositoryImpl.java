@@ -112,4 +112,36 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
+
+	@Override
+	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE promotion_history SET is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?", employeeId) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<List<PromotionHistoryEntity>> getAllByEmployeeId (Long employeeId) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, old_role, new_role, promotion_date FROM promotion_history WHERE is_deleted = FALSE AND employee_id = ?", employeeId)) {
+			final List<PromotionHistoryEntity> promotionHistoryEntities = new ArrayList<>();
+
+			while (resultSet.next()) promotionHistoryEntities.add(PromotionHistoryEntity.builder()
+				.id(resultSet.getLong(1))
+				.employeeId(employeeId)
+				.oldRole(EmployeeRole.fromName(resultSet.getString(2)))
+				.newRole(EmployeeRole.fromName(resultSet.getString(3)))
+				.promotionDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+				.build());
+
+			return new Response<>(promotionHistoryEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
 }
