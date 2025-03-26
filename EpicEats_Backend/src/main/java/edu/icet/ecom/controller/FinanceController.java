@@ -2,6 +2,7 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.finance.*;
 import edu.icet.ecom.dto.finance.Expense;
+import edu.icet.ecom.dto.finance.Report;
 import edu.icet.ecom.service.custom.finance.ExpenseService;
 import edu.icet.ecom.service.custom.finance.ReportService;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -27,10 +28,14 @@ public class FinanceController {
 	private final ReportService reportService;
 	private final ControllerResponseUtil controllerResponseUtil;
 
+	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
+	}
+
 	@ExpenseGetApiDoc
 	@GetMapping("/expense/get/{id}")
 	public CustomHttpResponse<Expense> getExpense (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Expense> response = this.expenseService.get(id);
 
@@ -80,7 +85,7 @@ public class FinanceController {
 	@ExpenseDeleteApiDoc
 	@DeleteMapping("/expense/delete/{id}")
 	public CustomHttpResponse<Boolean> deleteExpense (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id must positive integer");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> response = this.expenseService.delete(id);
 
@@ -88,6 +93,20 @@ public class FinanceController {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Expense record deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Falied to delete expense record");
+		};
+	}
+
+	@ReportGetApiDoc
+	@GetMapping("/report/get/{id}")
+	public CustomHttpResponse<Report> getReport (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Report> response = this.reportService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find report with given id");
 		};
 	}
 }
