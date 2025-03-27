@@ -1,11 +1,14 @@
 package edu.icet.ecom.service.custom.impl.inventory;
 
 import edu.icet.ecom.dto.inventory.Inventory;
+import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
 import edu.icet.ecom.entity.inventory.InventoryEntity;
+import edu.icet.ecom.entity.inventory.SupplierInventoryRecordEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enumaration.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -16,9 +19,13 @@ import java.util.List;
 @Primary
 public class InventoryServiceImpl implements InventoryService {
 	private final SuperServiceHandler<Inventory, InventoryEntity> serviceHandler;
+	private final InventoryRepository inventoryRepository;
+	private final ModelMapper mapper;
 
 	public InventoryServiceImpl (InventoryRepository inventoryRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(inventoryRepository, mapper, Inventory.class, InventoryEntity.class);
+		this.inventoryRepository = inventoryRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -44,5 +51,17 @@ public class InventoryServiceImpl implements InventoryService {
 	@Override
 	public Response<Boolean> delete (Long id) {
 		return serviceHandler.delete(id);
+	}
+
+	@Override
+	public Response<List<SupplierInventoryRecord>> getAllBySupplier (Long supplierId) {
+		final Response<List<SupplierInventoryRecordEntity>> response = this.inventoryRepository.getAllBySupplier(supplierId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(inventoryRecordEntity -> new SupplierInventoryRecord(
+					this.mapper.map(inventoryRecordEntity.getInventory(), Inventory.class),
+					inventoryRecordEntity.getQuantity()
+				)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
 	}
 }
