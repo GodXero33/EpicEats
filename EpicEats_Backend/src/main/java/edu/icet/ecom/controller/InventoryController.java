@@ -2,6 +2,7 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.inventory.*;
 import edu.icet.ecom.dto.inventory.Inventory;
+import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
 import edu.icet.ecom.service.custom.inventory.SupplierService;
@@ -54,6 +55,23 @@ public class InventoryController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Inventory.class, "All inventory loaded") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@InventoryGetAllBySupplierApiDoc
+	@GetMapping("/get-by-supplier/{supplier_id}")
+	public CustomHttpResponse<List<SupplierInventoryRecord>> getAllBySupplier (@PathVariable("supplier_id") Long supplierId) {
+		if (supplierId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierId);
+
+		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No supplier found with given supplierId");
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<List<SupplierInventoryRecord>> response = this.inventoryService.getAllBySupplier(supplierId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), SupplierInventoryRecord.class, "All inventory loaded related to supplier") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
