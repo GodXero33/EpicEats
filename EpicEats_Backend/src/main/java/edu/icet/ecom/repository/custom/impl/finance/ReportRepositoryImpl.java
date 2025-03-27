@@ -45,12 +45,35 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<ReportEntity> update (ReportEntity entity) {
-		return null;
+		try {
+			return (Integer) this.crudUtil.execute(
+				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
+				entity.getType(),
+				entity.getStartDate(),
+				entity.getEndDate(),
+				entity.getGeneratedBy(),
+				entity.getTitle(),
+				entity.getDescription(),
+				entity.getId()
+			) == 0 ?
+				new Response<>(null, ResponseType.NOT_UPDATED) :
+				new Response<>(entity, ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<Boolean> delete (Long id) {
-		return null;
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE report SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
@@ -99,6 +122,36 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
-		return null;
+		try {
+			return (Integer) this.crudUtil.execute("UPDATE report SET is_deleted = TRUE WHERE is_deleted = FALSE AND generated_by = ?", employeeId) == 0 ?
+				new Response<>(false, ResponseType.NOT_DELETED) :
+				new Response<>(true, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<List<ReportEntity>> getAllByEmployeeId (Long employeeId) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, generated_at, report_type, start_date, end_date, title, description FROM report WHERE is_deleted = FALSE AND generated_by = ?", employeeId)) {
+			final List<ReportEntity> reportEntities = new ArrayList<>();
+
+			while (resultSet.next()) reportEntities.add(ReportEntity.builder()
+				.id(resultSet.getLong(1))
+				.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(2)))
+				.type(ReportType.fromName(resultSet.getString(3)))
+				.startDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+				.endDate(DateTimeUtil.parseDate(resultSet.getString(5)))
+				.generatedBy(employeeId)
+				.title(resultSet.getString(6))
+				.description(resultSet.getString(7))
+				.build());
+
+			return new Response<>(reportEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }

@@ -34,6 +34,10 @@ public class FinanceController {
 		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
 	}
 
+	private <T> CustomHttpResponse<T> getEmployeeNotFoundResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employee id");
+	}
+
 	@ExpenseGetApiDoc
 	@GetMapping("/expense/get/{id}")
 	public CustomHttpResponse<Expense> getExpense (@PathVariable("id") Long id) {
@@ -122,6 +126,23 @@ public class FinanceController {
 			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 
+	@ReportGetAllByEmployeeApiDoc
+	@GetMapping("/report/get-by-employee/{employee_id}")
+	public CustomHttpResponse<List<Report>> getAllByEmployee (@PathVariable("employee_id") Long employeeId) {
+		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<List<Report>> response = this.reportService.getAllByEmployeeId(employeeId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully created by target employee") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
 	@ReportAddApiDoc
 	@PostMapping("/report/add")
 	public CustomHttpResponse<Report> addReport (@Valid @RequestBody Report report, BindingResult result) {
@@ -129,7 +150,7 @@ public class FinanceController {
 
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
 
-		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employee id");
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 
 		final Response<Report> response = this.reportService.add(report);
@@ -137,5 +158,56 @@ public class FinanceController {
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report added successfully") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@ReportUpdateApiDoc
+	@PutMapping("/report/update")
+	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody Report report, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<Report> response = this.reportService.update(report);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report has updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update report");
+		};
+	}
+
+	@ReportDeleteApiDoc
+	@DeleteMapping("/report/delete/{id}")
+	public CustomHttpResponse<Boolean> deleteReport (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.reportService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Report deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete report");
+		};
+	}
+
+	@ReportDeleteAllByEmployeeApiDoc
+	@DeleteMapping("/report/delete-by-employee/{employee_id}")
+	public CustomHttpResponse<Boolean> deleteAllByEmployee (@PathVariable("employee_id") Long employeeId) {
+		if (employeeId <= 0) return this.getInvalidIdResponse();
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<Boolean> response = this.reportService.deleteByEmployeeId(employeeId);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Reports deleted created by target employee");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete reports of target employee");
+		};
 	}
 }
