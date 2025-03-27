@@ -59,7 +59,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new Response<>(response.getData().stream().map(inventoryRecordEntity -> new SupplierInventoryRecord(
-					this.mapper.map(inventoryRecordEntity, Inventory.class),
+					this.mapper.map(inventoryRecordEntity.getInventory(), Inventory.class),
 					inventoryRecordEntity.getQuantity()
 				)).toList(), response.getStatus()) :
 			new Response<>(null, response.getStatus());
