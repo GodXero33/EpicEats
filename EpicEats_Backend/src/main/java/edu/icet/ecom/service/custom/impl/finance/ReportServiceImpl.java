@@ -6,6 +6,7 @@ import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.finance.ReportService;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enumaration.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,14 @@ import java.util.List;
 @Service
 @Primary
 public class ReportServiceImpl implements ReportService {
-	final private SuperServiceHandler<Report, ReportEntity> serviceHandler;
+	private final SuperServiceHandler<Report, ReportEntity> serviceHandler;
+	private final ReportRepository reportRepository;
+	private final ModelMapper mapper;
 
 	public ReportServiceImpl (ReportRepository reportRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(reportRepository, mapper, Report.class, ReportEntity.class);
+		this.reportRepository = reportRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -44,5 +49,19 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public Response<Boolean> delete (Long id) {
 		return this.serviceHandler.delete(id);
+	}
+
+	@Override
+	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
+		return this.reportRepository.deleteByEmployeeId(employeeId);
+	}
+
+	@Override
+	public Response<List<Report>> getAllByEmployeeId (Long employeeId) {
+		final Response<List<ReportEntity>> response = this.reportRepository.getAllByEmployeeId(employeeId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(reportEntity -> this.mapper.map(reportEntity, Report.class)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
 	}
 }
