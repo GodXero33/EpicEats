@@ -1,7 +1,6 @@
 package edu.icet.ecom.controller;
 
-import edu.icet.ecom.config.apidoc.inventory.InventoryGetAPiDoc;
-import edu.icet.ecom.config.apidoc.inventory.InventoryGetAllApiDoc;
+import edu.icet.ecom.config.apidoc.inventory.*;
 import edu.icet.ecom.dto.inventory.Inventory;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
@@ -11,8 +10,10 @@ import edu.icet.ecom.util.CustomHttpResponse;
 import edu.icet.ecom.util.Response;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,7 +53,48 @@ public class InventoryController {
 		final Response<List<Inventory>> response = this.inventoryService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All inventory loaded") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Inventory.class, "All inventory loaded") :
 			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@InventoryAddApiDoc
+	@PostMapping("/add")
+	public CustomHttpResponse<Inventory> add (@Valid @RequestBody Inventory inventory, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Inventory> response = this.inventoryService.add(inventory);
+
+		return response.getStatus() == ResponseType.CREATED ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory added") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@InventoryUpdateApiDoc
+	@PutMapping("/update")
+	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (inventory.getId() == null || inventory.getId() <= 0) this.getInvalidIdResponse();
+
+		final Response<Inventory> response = this.inventoryService.update(inventory);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update inventory");
+		};
+	}
+
+	@InventoryDeleteApiDoc
+	@DeleteMapping("/delete/{id}")
+	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.inventoryService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Inventory delete failed");
+		};
 	}
 }
