@@ -111,4 +111,25 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
+
+	@Override
+	public Response<List<InventoryEntity>> getAllBySupplier (Long supplierId) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT i.id, i.name, i.description, i.quantity, i.unit, i.updated_at FROM inventory i JOIN supplier_inventory si ON i.id = si.inventory_id WHERE si.supplier_id = ?", supplierId)) {
+			final List<InventoryEntity> inventoryEntities = new ArrayList<>();
+
+			while (resultSet.next()) inventoryEntities.add(InventoryEntity.builder()
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.description(resultSet.getString(3))
+				.quantity(resultSet.getInt(4))
+				.unit(resultSet.getString(5))
+				.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(6)))
+				.build());
+
+			return new Response<>(inventoryEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
 }
