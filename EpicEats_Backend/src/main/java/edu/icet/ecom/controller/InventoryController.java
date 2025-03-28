@@ -2,6 +2,7 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.inventory.*;
 import edu.icet.ecom.dto.inventory.Inventory;
+import edu.icet.ecom.dto.inventory.InventoryPurchase;
 import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
@@ -149,6 +150,20 @@ public class InventoryController {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Inventory delete failed");
+		};
+	}
+
+	@InventoryPurchaseGetApiDoc
+	@GetMapping("/inventory-purchase/get/{id}")
+	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<InventoryPurchase> response = this.inventoryPurchaseService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Inventory purchase failed to find");
 		};
 	}
 }
