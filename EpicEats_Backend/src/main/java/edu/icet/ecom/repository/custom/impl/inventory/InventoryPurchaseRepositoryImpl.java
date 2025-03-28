@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,7 +24,13 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 	@Override
 	public Response<InventoryPurchaseEntity> add (InventoryPurchaseEntity entity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
 		try {
+			connection.setAutoCommit(false);
+
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
 				"INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost) VALUES (?, ?, ?, ?, ?)",
 				entity.getInventoryId(),
@@ -33,12 +40,34 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 				entity.getCost()
 			);
 
-			entity.setId(generatedId);
+			try (final ResultSet resultSet = this.crudUtil.execute("SELECT purchased_at FROM inventory_purchase WHERE id = ?", generatedId)) {
+				if (!resultSet.next()) {
+					connection.rollback();
+					return new Response<>(null, ResponseType.NOT_CREATED);
+				}
 
-			return new Response<>(entity, ResponseType.FOUND);
+				connection.commit();
+				entity.setId(generatedId);
+				entity.setPurchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(1)));
+
+				return new Response<>(entity, ResponseType.CREATED);
+			}
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
 		}
 	}
 
@@ -47,6 +76,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 		try {
 			return (Integer) this.crudUtil.execute(
 				"UPDATE inventory_purchase SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ? WHERE is_deleted = FALSE AND id = ?",
+				entity.getInventoryId(),
 				entity.getMenuItemId(),
 				entity.getSupplierId(),
 				entity.getQuantity(),

@@ -154,7 +154,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseGetApiDoc
-	@GetMapping("/inventory-purchase/get/{id}")
+	@GetMapping("/purchase/get/{id}")
 	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -164,6 +164,81 @@ public class InventoryController {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Inventory purchase failed to find");
+		};
+	}
+
+	@InventoryPurchaseGetAllApiDoc
+	@GetMapping("/purchase/get-all")
+	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase () {
+		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), InventoryPurchase.class, "ALl inventory purchases loaded successfully") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
+	}
+
+	@InventoryPurchaseAddApiDoc
+	@PostMapping("/purchase/add")
+	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (inventoryPurchase.getInventoryId() != null && inventoryPurchase.getMenuItemId() != null) return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed"); // An inventory purchase either menu item purchase or inventory purchase
+
+		final Response<Boolean> inventoryExistResponse = this.inventoryService.isExist(inventoryPurchase.getInventoryId());
+
+		if (inventoryExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
+		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplierId());
+
+		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<InventoryPurchase> response = this.inventoryPurchaseService.add(inventoryPurchase);
+
+		return switch (response.getStatus()) {
+			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase added");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add inventory purchase");
+		};
+	}
+
+	@InventoryPurchaseUpdateApiDoc
+	@PutMapping("/purchase/update")
+	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (inventoryPurchase.getId() == null || inventoryPurchase.getId() <= 0) return this.getInvalidIdResponse();
+		if (inventoryPurchase.getInventoryId() != null && inventoryPurchase.getMenuItemId() != null) return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed"); // An inventory purchase either menu item purchase or inventory purchase
+
+		final Response<Boolean> inventoryExistResponse = this.inventoryService.isExist(inventoryPurchase.getInventoryId());
+
+		if (inventoryExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
+		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplierId());
+
+		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+
+		final Response<InventoryPurchase> response = this.inventoryPurchaseService.update(inventoryPurchase);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Inventory purchase not updated");
+		};
+	}
+
+	@InventoryPurchaseDeleteApiDoc
+	@DeleteMapping("/purchase/delete/{id}")
+	public CustomHttpResponse<Boolean> deleteInventoryPurchase (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Boolean> response = this.inventoryPurchaseService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory purchase update");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete inventory purchase");
 		};
 	}
 }

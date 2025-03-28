@@ -247,4 +247,16 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			}
 		}
 	}
+
+	@Override
+	public Response<Boolean> isExist (Long id) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM inventory WHERE is_deleted = FALSE AND id = ?", id)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
 }

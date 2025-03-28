@@ -109,4 +109,9 @@ public class InventoryServiceImpl implements InventoryService {
 			) :
 			new Response<>(null, response.getStatus());
 	}
+
+	@Override
+	public Response<Boolean> isExist (Long id) {
+		return this.inventoryRepository.isExist(id);
+	}
 }
