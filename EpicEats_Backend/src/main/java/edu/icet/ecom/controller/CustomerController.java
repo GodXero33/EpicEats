@@ -34,7 +34,7 @@ public class CustomerController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Customer not found");
 		};
 	}
@@ -46,7 +46,7 @@ public class CustomerController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Customer.class, "All customers has retrieved successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@CustomerAddApiDoc
@@ -57,18 +57,18 @@ public class CustomerController {
 		final Response<Boolean> phoneExistResponse = this.customerService.isPhoneExist(customer.getPhone());
 
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer phone number is already taken");
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> emailExistResponse = this.customerService.isEmailExist(customer.getPhone());
 
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer email address is already taken");
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Customer> response = this.customerService.add(customer);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer has added") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@CustomerUpdateApiDoc
@@ -80,18 +80,18 @@ public class CustomerController {
 		final Response<Boolean> phoneExistResponse = this.customerService.isPhoneExist(customer.getPhone(), customer.getId());
 
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer phone number is already taken");
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> emailExistResponse = this.customerService.isEmailExist(customer.getPhone(), customer.getId());
 
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer email address is already taken");
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Customer> response = this.customerService.update(customer);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update customer");
 		};
 	}
@@ -105,7 +105,7 @@ public class CustomerController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Customer deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete customer");
 		};
 	}

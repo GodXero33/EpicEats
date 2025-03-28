@@ -44,7 +44,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Employee not found");
 		};
 	}
@@ -56,7 +56,7 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Employee.class, "All employees found") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@EmployeeAddApiDoc
@@ -66,19 +66,19 @@ public class EmployeeController {
 
 		final Response<Boolean> phoneExistResponse = this.employeeService.isPhoneExist(employee.getPhone());
 
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Phone number is already taken");
 
 		final Response<Boolean> emailExistResponse = this.employeeService.isEmailExist(employee.getEmail());
 
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Email address is already taken");
 
 		final Response<Employee> response = this.employeeService.add(employee);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee added successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@EmployeeUpdateApiDoc
@@ -89,19 +89,19 @@ public class EmployeeController {
 
 		final Response<Boolean> phoneExistResponse = this.employeeService.isPhoneExist(employee.getPhone(), employee.getId());
 
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Phone number is already taken");
 
 		final Response<Boolean> emailExistResponse = this.employeeService.isEmailExist(employee.getEmail(), employee.getId());
 
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Email address is already taken");
 
 		final Response<Employee> response = this.employeeService.update(employee);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee updated successfully");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update employee");
 		};
 	}
@@ -115,7 +115,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case SUCCESS -> new CustomHttpResponse<>(HttpStatus.OK, true, "Terminate employee success");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to terminate employee");
 		};
 	}
@@ -129,7 +129,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift found.");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Employee shift not found");
 		};
 	}
@@ -141,7 +141,7 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), EmployeeShift.class, "Employee shifts found") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@EmployeeShiftGetByEmployeeApiDoc
@@ -153,7 +153,7 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), EmployeeShift.class, "Employee shifts found") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@EmployeeShiftAddApiDoc
@@ -164,13 +164,13 @@ public class EmployeeController {
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeShift.getEmployeeId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employeeId");
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<EmployeeShift> response = this.employeeShiftService.add(employeeShift);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift has added") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@EmployeeShiftUpdateApiDoc
@@ -183,7 +183,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update employee shift");
 		};
 	}
@@ -197,7 +197,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shift deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shift");
 		};
 	}
@@ -211,7 +211,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shifts deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shifts");
 		};
 	}
@@ -225,7 +225,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Promotion record found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find promotion record with given id");
 		};
 	}
@@ -237,7 +237,7 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@PromotionHistoryGetByEmployeeApiDoc
@@ -249,7 +249,7 @@ public class EmployeeController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded for employee") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@PromotionHistoryUpdateApiShift
@@ -262,7 +262,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Promotion history updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update promotion history");
 		};
 	}
@@ -276,7 +276,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion history deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion history");
 		};
 	}
@@ -290,7 +290,7 @@ public class EmployeeController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion histories deleted related to target employee");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion histories");
 		};
 	}

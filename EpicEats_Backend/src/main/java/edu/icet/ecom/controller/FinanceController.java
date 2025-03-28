@@ -47,7 +47,7 @@ public class FinanceController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Expense record found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find expense record with given id");
 		};
 	}
@@ -59,7 +59,7 @@ public class FinanceController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Expense.class, "All expenses are retrieved successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@ExpenseAddApiDoc
@@ -71,7 +71,7 @@ public class FinanceController {
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Expense record created") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@ExpenseUpdateApiDoc
@@ -83,7 +83,7 @@ public class FinanceController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Expense record updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update expense record");
 		};
 	}
@@ -97,7 +97,7 @@ public class FinanceController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Expense record deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Falied to delete expense record");
 		};
 	}
@@ -111,7 +111,7 @@ public class FinanceController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find report with given id");
 		};
 	}
@@ -123,7 +123,7 @@ public class FinanceController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@ReportGetAllByEmployeeApiDoc
@@ -134,13 +134,13 @@ public class FinanceController {
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<List<Report>> response = this.reportService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully created by target employee") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@ReportAddApiDoc
@@ -151,13 +151,13 @@ public class FinanceController {
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Report> response = this.reportService.add(report);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report added successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@ReportUpdateApiDoc
@@ -168,13 +168,13 @@ public class FinanceController {
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Report> response = this.reportService.update(report);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report has updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update report");
 		};
 	}
@@ -188,7 +188,7 @@ public class FinanceController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Report deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete report");
 		};
 	}
@@ -200,13 +200,13 @@ public class FinanceController {
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> response = this.reportService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Reports deleted created by target employee");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete reports of target employee");
 		};
 	}

@@ -1,4 +1,4 @@
-package edu.icet.ecom.entity.inventory;
+package edu.icet.ecom.dto.inventory;
 
 import lombok.*;
 
@@ -8,8 +8,8 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class SupplierInventoryRecordEntity {
-	private InventoryEntity inventory;
+public class SupplierStockRecord {
+	private Inventory inventory;
 	private Long quantity;
 	private Long supplierId;
 }

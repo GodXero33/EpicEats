@@ -4,12 +4,13 @@ import edu.icet.ecom.config.apidoc.inventory.*;
 import edu.icet.ecom.dto.inventory.Inventory;
 import edu.icet.ecom.dto.inventory.InventoryPurchase;
 import edu.icet.ecom.dto.inventory.Supplier;
-import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
+import edu.icet.ecom.dto.inventory.SupplierStockRecord;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
 import edu.icet.ecom.service.custom.inventory.SupplierService;
 import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
+import edu.icet.ecom.util.CustomHttpResponseMap;
 import edu.icet.ecom.util.Response;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -31,6 +33,7 @@ public class InventoryController {
 	private final InventoryPurchaseService inventoryPurchaseService;
 	private final SupplierService supplierService;
 	private final ControllerResponseUtil controllerResponseUtil;
+	private final CustomHttpResponseMap customHttpResponseMap;
 
 	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
 		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
@@ -49,7 +52,7 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find inventory");
 		};
 	}
@@ -61,42 +64,50 @@ public class InventoryController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Inventory.class, "All inventory loaded") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@InventoryGetAllBySupplierApiDoc
 	@GetMapping("/by-supplier/{supplierId}")
-	public CustomHttpResponse<List<SupplierInventoryRecord>> getAllBySupplier (@PathVariable("supplierId") Long supplierId) {
+	public CustomHttpResponse<Map<String, Object>> getAllBySupplier (@PathVariable("supplierId") Long supplierId, @RequestParam(name = "with-supplier", defaultValue = "false") Boolean withSupplier) {
 		if (supplierId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierId);
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse(null);
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<List<SupplierInventoryRecord>> response = this.inventoryService.getAllBySupplier(supplierId);
+		final Response<List<Inventory>> response = this.inventoryService.getAllBySupplier(supplierId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), SupplierInventoryRecord.class, "All inventory loaded related to supplier") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			new CustomHttpResponse<>(
+				HttpStatus.OK,
+				this.customHttpResponseMap.builder()
+					.keys("supplier", "inventories")
+					.values(supplierId, response.getData())
+					.build(),
+				SupplierStockRecord.class,
+				"All inventory loaded related to supplier"
+			) :
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@InventoryAddApiDoc
 	@PostMapping("/")
-	public CustomHttpResponse<SupplierInventoryRecord> add (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
+	public CustomHttpResponse<SupplierStockRecord> add (@Valid @RequestBody SupplierStockRecord supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-		if (supplierInventoryRecord.getSupplierId() == null || supplierInventoryRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
+		if (supplierStockRecord.getSupplierId() == null || supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierInventoryRecord.getSupplierId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<SupplierInventoryRecord> response = this.inventoryService.add(supplierInventoryRecord);
+		final Response<SupplierStockRecord> response = this.inventoryService.add(supplierStockRecord);
 
 		return switch (response.getStatus()) {
 			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory added");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add inventory");
 		};
 	}
@@ -111,31 +122,31 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update inventory");
 		};
 	}
 
 	@InventoryUpdateStockApiDoc
 	@PatchMapping("/stock")
-	public CustomHttpResponse<SupplierInventoryRecord> updateStock (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
+	public CustomHttpResponse<SupplierStockRecord> updateStock (@Valid @RequestBody SupplierStockRecord supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		if (supplierInventoryRecord.getInventory().getId() == null ||
-			supplierInventoryRecord.getInventory().getId() <= 0 ||
-			supplierInventoryRecord.getSupplierId() == null ||
-			supplierInventoryRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
+		if (supplierStockRecord.getInventory().getId() == null ||
+			supplierStockRecord.getInventory().getId() <= 0 ||
+			supplierStockRecord.getSupplierId() == null ||
+			supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierInventoryRecord.getSupplierId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<SupplierInventoryRecord> response = this.inventoryService.updateStock(supplierInventoryRecord);
+		final Response<SupplierStockRecord> response = this.inventoryService.updateStock(supplierStockRecord);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update inventory");
 		};
 	}
@@ -149,7 +160,7 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Inventory delete failed");
 		};
 	}
@@ -163,7 +174,7 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Inventory purchase failed to find");
 		};
 	}
@@ -175,7 +186,7 @@ public class InventoryController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), InventoryPurchase.class, "ALl inventory purchases loaded successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@InventoryPurchaseAddApiDoc
@@ -187,18 +198,18 @@ public class InventoryController {
 		final Response<Boolean> inventoryExistResponse = this.inventoryService.isExist(inventoryPurchase.getInventoryId());
 
 		if (inventoryExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
-		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<InventoryPurchase> response = this.inventoryPurchaseService.add(inventoryPurchase);
 
 		return switch (response.getStatus()) {
 			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase added");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add inventory purchase");
 		};
 	}
@@ -213,18 +224,18 @@ public class InventoryController {
 		final Response<Boolean> inventoryExistResponse = this.inventoryService.isExist(inventoryPurchase.getInventoryId());
 
 		if (inventoryExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
-		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (inventoryExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<InventoryPurchase> response = this.inventoryPurchaseService.update(inventoryPurchase);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Inventory purchase not updated");
 		};
 	}
@@ -238,7 +249,7 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory purchase update");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete inventory purchase");
 		};
 	}
@@ -252,7 +263,7 @@ public class InventoryController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Supplier found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Supplier not found");
 		};
 	}
@@ -264,6 +275,6 @@ public class InventoryController {
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Supplier.class, "All suppliers are loaded") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 }

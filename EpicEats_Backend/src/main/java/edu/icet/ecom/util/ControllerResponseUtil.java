@@ -11,8 +11,8 @@ import org.springframework.validation.BindingResult;
 public class ControllerResponseUtil {
 	private final ValidationErrorsHelper validationErrorsHelper;
 
-	public <T> CustomHttpResponse<T> getServerErrorResponse (T data) {
-		return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, data, "Server error");
+	public <T> CustomHttpResponse<T> getServerErrorResponse () {
+		return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Server error");
 	}
 
 	public <T> CustomHttpResponse<T> getInvalidDetailsResponse (Object error) {
