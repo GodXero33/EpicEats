@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -127,7 +128,8 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 					.unit(resultSet.getString(5))
 					.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(6)))
 					.build(),
-				resultSet.getLong(7)
+				resultSet.getLong(7),
+				supplierId
 			));
 
 			return new Response<>(inventoryEntities, ResponseType.FOUND);
@@ -135,5 +137,69 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
+	}
+
+	@Override
+	public Response<SupplierInventoryRecordEntity> add (SupplierInventoryRecordEntity supplierInventoryRecordEntity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			final long generatedInventoryId = this.crudUtil.executeWithGeneratedKeys(
+				"INSERT INTO inventory (name, description, quantity, unit) VALUES (?, ?, ?, ?)",
+				supplierInventoryRecordEntity.getInventory().getName(),
+				supplierInventoryRecordEntity.getInventory().getDescription(),
+				supplierInventoryRecordEntity.getInventory().getQuantity(),
+				supplierInventoryRecordEntity.getInventory().getUnit()
+			);
+			final Response<InventoryEntity> newInventoryGetResponse = this.get(generatedInventoryId);
+			final boolean isSupplierInventoryRecordAdded = newInventoryGetResponse.getStatus() == ResponseType.FOUND && (Integer) this.crudUtil.execute(
+				"INSERT INTO supplier_inventory (supplier_id, inventory_id, quantity) VALUES (?, ?, ?)",
+				supplierInventoryRecordEntity.getSupplierId(),
+				generatedInventoryId,
+				supplierInventoryRecordEntity.getInventory().getQuantity() // Because we add new inventory item, supplier_inventory is new too. So quantity from direct 'SupplierInventoryRecordEntity' object can be ignored. Just can use inventory quantity
+			) != 0;
+
+			if (isSupplierInventoryRecordAdded) {
+				connection.commit();
+
+				return new Response<>(
+					new SupplierInventoryRecordEntity(
+						newInventoryGetResponse.getData(),
+						(long) supplierInventoryRecordEntity.getInventory().getQuantity(), // Same reason, if inventory is new quantity must be same to inventory quantity. Casting won't be any problem while this is very first time
+						supplierInventoryRecordEntity.getSupplierId()
+					),
+					ResponseType.CREATED
+				);
+			}
+
+			connection.rollback();
+
+			return new Response<>(null, ResponseType.NOT_CREATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
+	}
+
+	@Override
+	public Response<SupplierInventoryRecordEntity> update (SupplierInventoryRecordEntity supplierInventoryRecordEntity) {
+		return null;
 	}
 }

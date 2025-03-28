@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface InventoryRepository extends CrudRepository<InventoryEntity> {
 	Response<List<SupplierInventoryRecordEntity>> getAllBySupplier (Long supplierId);
+	Response<SupplierInventoryRecordEntity> add (SupplierInventoryRecordEntity supplierInventoryRecordEntity);
+	Response<SupplierInventoryRecordEntity> update (SupplierInventoryRecordEntity supplierInventoryRecordEntity);
 }
