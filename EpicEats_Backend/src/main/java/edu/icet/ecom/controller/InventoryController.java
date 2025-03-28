@@ -69,7 +69,7 @@ public class InventoryController {
 
 	@InventoryGetAllBySupplierApiDoc
 	@GetMapping("/by-supplier/{supplierId}")
-	public CustomHttpResponse<Map<String, Object>> getAllBySupplier (@PathVariable("supplierId") Long supplierId, @RequestParam(name = "with-supplier", defaultValue = "false") Boolean withSupplier) {
+	public CustomHttpResponse<Map<String, Object>> getAllBySupplier (@PathVariable("supplierId") Long supplierId) {
 		if (supplierId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierId);
