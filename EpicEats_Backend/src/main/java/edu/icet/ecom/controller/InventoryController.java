@@ -3,6 +3,7 @@ package edu.icet.ecom.controller;
 import edu.icet.ecom.config.apidoc.inventory.*;
 import edu.icet.ecom.dto.inventory.Inventory;
 import edu.icet.ecom.dto.inventory.InventoryPurchase;
+import edu.icet.ecom.dto.inventory.Supplier;
 import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
@@ -40,7 +41,7 @@ public class InventoryController {
 	}
 
 	@InventoryGetAPiDoc
-	@GetMapping("/get/{id}")
+	@GetMapping("/{id}")
 	public CustomHttpResponse<Inventory> get (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -54,7 +55,7 @@ public class InventoryController {
 	}
 
 	@InventoryGetAllApiDoc
-	@GetMapping("/get-all")
+	@GetMapping("/all")
 	public CustomHttpResponse<List<Inventory>> getALl () {
 		final Response<List<Inventory>> response = this.inventoryService.getAll();
 
@@ -64,8 +65,8 @@ public class InventoryController {
 	}
 
 	@InventoryGetAllBySupplierApiDoc
-	@GetMapping("/get-by-supplier/{supplier_id}")
-	public CustomHttpResponse<List<SupplierInventoryRecord>> getAllBySupplier (@PathVariable("supplier_id") Long supplierId) {
+	@GetMapping("/by-supplier/{supplierId}")
+	public CustomHttpResponse<List<SupplierInventoryRecord>> getAllBySupplier (@PathVariable("supplierId") Long supplierId) {
 		if (supplierId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierId);
@@ -81,7 +82,7 @@ public class InventoryController {
 	}
 
 	@InventoryAddApiDoc
-	@PostMapping("/add")
+	@PostMapping("/")
 	public CustomHttpResponse<SupplierInventoryRecord> add (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (supplierInventoryRecord.getSupplierId() == null || supplierInventoryRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
@@ -101,7 +102,7 @@ public class InventoryController {
 	}
 
 	@InventoryUpdateApiDoc
-	@PutMapping("update")
+	@PutMapping("/")
 	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (inventory.getId() <= 0) return this.getInvalidIdResponse();
@@ -116,7 +117,7 @@ public class InventoryController {
 	}
 
 	@InventoryUpdateStockApiDoc
-	@PutMapping("/update-stock")
+	@PatchMapping("/stock")
 	public CustomHttpResponse<SupplierInventoryRecord> updateStock (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -140,7 +141,7 @@ public class InventoryController {
 	}
 
 	@InventoryDeleteApiDoc
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -154,7 +155,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseGetApiDoc
-	@GetMapping("/purchase/get/{id}")
+	@GetMapping("/purchase/{id}")
 	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -168,7 +169,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseGetAllApiDoc
-	@GetMapping("/purchase/get-all")
+	@GetMapping("/purchase/all")
 	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase () {
 		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
 
@@ -178,7 +179,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseAddApiDoc
-	@PostMapping("/purchase/add")
+	@PostMapping("/purchase/")
 	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (inventoryPurchase.getInventoryId() != null && inventoryPurchase.getMenuItemId() != null) return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed"); // An inventory purchase either menu item purchase or inventory purchase
@@ -203,7 +204,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseUpdateApiDoc
-	@PutMapping("/purchase/update")
+	@PutMapping("/purchase/")
 	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (inventoryPurchase.getId() == null || inventoryPurchase.getId() <= 0) return this.getInvalidIdResponse();
@@ -229,7 +230,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseDeleteApiDoc
-	@DeleteMapping("/purchase/delete/{id}")
+	@DeleteMapping("/purchase/{id}")
 	public CustomHttpResponse<Boolean> deleteInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -240,5 +241,29 @@ public class InventoryController {
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete inventory purchase");
 		};
+	}
+
+	@SupplierGetApiDoc
+	@GetMapping("/supplier/{id}")
+	public CustomHttpResponse<Supplier> getSupplier (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Supplier> response = this.supplierService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Supplier found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Supplier not found");
+		};
+	}
+
+	@SupplierGetAllApiDoc
+	@GetMapping("/supplier/all")
+	public CustomHttpResponse<List<Supplier>> getAllSuppliers () {
+		final Response<List<Supplier>> response = this.supplierService.getAll();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Supplier.class, "All suppliers are loaded") :
+			this.controllerResponseUtil.getServerErrorResponse(null);
 	}
 }

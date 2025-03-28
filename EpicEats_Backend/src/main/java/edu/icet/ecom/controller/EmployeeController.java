@@ -36,7 +36,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeGetApiDoc
-	@GetMapping("/get/{id}")
+	@GetMapping("/{id}")
 	public CustomHttpResponse<Employee> get (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -50,7 +50,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeGetAllApiDoc
-	@GetMapping("/get-all")
+	@GetMapping("/all")
 	public CustomHttpResponse<List<Employee>> getAll () {
 		final Response<List<Employee>> response = this.employeeService.getAll();
 
@@ -60,7 +60,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeAddApiDoc
-	@PostMapping("/add")
+	@PostMapping("/")
 	public CustomHttpResponse<Employee> add (@Valid @RequestBody Employee employee, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -82,7 +82,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeUpdateApiDoc
-	@PutMapping("/update")
+	@PutMapping("/")
 	public CustomHttpResponse<Employee> update (@Valid @RequestBody Employee employee, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employee.getId() == null || employee.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be null, zero or negative");
@@ -121,7 +121,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftGetApiDoc
-	@GetMapping("/shift/get/{id}")
+	@GetMapping("/shift/{id}")
 	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -135,7 +135,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftGetAllApiDoc
-	@GetMapping("/shift/get-all")
+	@GetMapping("/shift/all")
 	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
 
@@ -145,8 +145,8 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftGetByEmployeeApiDoc
-	@GetMapping("/shift/get-by-employee/{employee_id}")
-	public CustomHttpResponse<List<EmployeeShift>> getShiftsByEmployee (@PathVariable("employee_id") Long employeeId) {
+	@GetMapping("/shift/by-employee/{employeeId}")
+	public CustomHttpResponse<List<EmployeeShift>> getShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAllByEmployeeId(employeeId);
@@ -157,7 +157,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftAddApiDoc
-	@PostMapping("/shift/add")
+	@PostMapping("/shift/")
 	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -174,7 +174,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftUpdateApiDoc
-	@PutMapping("/shift/update")
+	@PutMapping("/shift/")
 	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employeeShift.getId() == null || employeeShift.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Shift id can't be null, zero or negative");
@@ -189,7 +189,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftDeleteApiDoc
-	@DeleteMapping("/shift/delete/{id}")
+	@DeleteMapping("/shift/{id}")
 	public CustomHttpResponse<Boolean> deleteShift (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -203,8 +203,8 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftDeleteByEmployeeApiDoc
-	@DeleteMapping("/shift/delete-by-employee/{employee_id}")
-	public CustomHttpResponse<Boolean> deleteShiftsByEmployee (@PathVariable("employee_id") Long employeeId) {
+	@DeleteMapping("/shift/by-employee/{employeeId}")
+	public CustomHttpResponse<Boolean> deleteShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> response = this.employeeShiftService.deleteByEmployeeId(employeeId);
@@ -217,7 +217,7 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryGetApiDoc
-	@GetMapping("/promotion/get/{id}")
+	@GetMapping("/promotion/{id}")
 	public CustomHttpResponse<PromotionHistory> getPromotion (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -231,7 +231,7 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryGetAllApiDoc
-	@GetMapping("/promotion/get-all")
+	@GetMapping("/promotion/all")
 	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions () {
 		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
 
@@ -241,8 +241,8 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryGetByEmployeeApiDoc
-	@GetMapping("/promotion/get-by-employee/{employee_id}")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotionsByEmployee (@PathVariable("employee_id") Long employeeId) {
+	@GetMapping("/promotion/by-employee/{employeeId}")
+	public CustomHttpResponse<List<PromotionHistory>> getAllPromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAllByEmployeeId(employeeId);
@@ -253,7 +253,7 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryUpdateApiShift
-	@PostMapping("/promotion/update")
+	@PostMapping("/promotion/")
 	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistory promotionHistory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (promotionHistory.getId() == null || promotionHistory.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history id can't be null, zero or negative");
@@ -268,7 +268,7 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryDeleteApiDoc
-	@DeleteMapping("/promotion/delete/{id}")
+	@DeleteMapping("/promotion/{id}")
 	public CustomHttpResponse<Boolean> deletePromotion (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
@@ -282,8 +282,8 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryDeleteByEmployeeApiDoc
-	@DeleteMapping("/promotion/delete-by-employee/{employee_id}")
-	public CustomHttpResponse<Boolean> deletePromotionsByEmployee (@PathVariable("employee_id") Long employeeId) {
+	@DeleteMapping("/promotion/by-employee/{employeeId}")
+	public CustomHttpResponse<Boolean> deletePromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
 		final Response<Boolean> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);

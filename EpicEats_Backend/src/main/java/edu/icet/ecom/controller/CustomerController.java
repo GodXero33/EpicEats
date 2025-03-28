@@ -26,7 +26,7 @@ public class CustomerController {
 	private final ControllerResponseUtil controllerResponseUtil;
 
 	@CustomerGetApiDoc
-	@GetMapping("/get/{id}")
+	@GetMapping("/{id}")
 	public CustomHttpResponse<Customer> get (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Customer it can't be zero or negative");
 
@@ -40,7 +40,7 @@ public class CustomerController {
 	}
 
 	@CustomerGetAllApiDoc
-	@GetMapping("/get-all")
+	@GetMapping("/all")
 	public CustomHttpResponse<List<Customer>> getAll () {
 		final Response<List<Customer>> response = this.customerService.getAll();
 
@@ -50,7 +50,7 @@ public class CustomerController {
 	}
 
 	@CustomerAddApiDoc
-	@PostMapping("/add")
+	@PostMapping("/")
 	public CustomHttpResponse<Customer> add (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -72,7 +72,7 @@ public class CustomerController {
 	}
 
 	@CustomerUpdateApiDoc
-	@PutMapping("/update")
+	@PutMapping("/")
 	public CustomHttpResponse<Customer> update (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (customer.getId() == null || customer.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Customer id can't be null, zero or negative");
@@ -97,7 +97,7 @@ public class CustomerController {
 	}
 
 	@CustomerDeleteApiDoc
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
 
