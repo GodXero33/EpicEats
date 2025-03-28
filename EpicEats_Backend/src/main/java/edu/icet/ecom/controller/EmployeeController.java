@@ -55,7 +55,7 @@ public class EmployeeController {
 		final Response<List<Employee>> response = this.employeeService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Employee.class, "All employees found") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All employees found") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -140,7 +140,7 @@ public class EmployeeController {
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), EmployeeShift.class, "Employee shifts found") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -152,7 +152,7 @@ public class EmployeeController {
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), EmployeeShift.class, "Employee shifts found") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -236,7 +236,7 @@ public class EmployeeController {
 		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -248,7 +248,7 @@ public class EmployeeController {
 		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), PromotionHistory.class, "All promotion history loaded for employee") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded for employee") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 

@@ -63,7 +63,7 @@ public class InventoryController {
 		final Response<List<Inventory>> response = this.inventoryService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Inventory.class, "All inventory loaded") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All inventory loaded") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -86,7 +86,6 @@ public class InventoryController {
 					.keys("supplier", "inventories")
 					.values(supplierId, response.getData())
 					.build(),
-				SupplierStockRecord.class,
 				"All inventory loaded related to supplier"
 			) :
 			this.controllerResponseUtil.getServerErrorResponse();
@@ -185,7 +184,7 @@ public class InventoryController {
 		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), InventoryPurchase.class, "ALl inventory purchases loaded successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "ALl inventory purchases loaded successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -274,7 +273,7 @@ public class InventoryController {
 		final Response<List<Supplier>> response = this.supplierService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Supplier.class, "All suppliers are loaded") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All suppliers are loaded") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 }

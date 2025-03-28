@@ -58,7 +58,7 @@ public class FinanceController {
 		final Response<List<Expense>> response = this.expenseService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Expense.class, "All expenses are retrieved successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All expenses are retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -122,7 +122,7 @@ public class FinanceController {
 		final Response<List<Report>> response = this.reportService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All reports are retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -139,7 +139,7 @@ public class FinanceController {
 		final Response<List<Report>> response = this.reportService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Report.class, "All reports are retrieved successfully created by target employee") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All reports are retrieved successfully created by target employee") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
