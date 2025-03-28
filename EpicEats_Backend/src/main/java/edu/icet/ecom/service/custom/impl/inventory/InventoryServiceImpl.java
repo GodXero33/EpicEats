@@ -1,9 +1,9 @@
 package edu.icet.ecom.service.custom.impl.inventory;
 
 import edu.icet.ecom.dto.inventory.Inventory;
-import edu.icet.ecom.dto.inventory.SupplierInventoryRecord;
+import edu.icet.ecom.dto.inventory.SupplierStockRecord;
 import edu.icet.ecom.entity.inventory.InventoryEntity;
-import edu.icet.ecom.entity.inventory.SupplierInventoryRecordEntity;
+import edu.icet.ecom.entity.inventory.SupplierStockRecordEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
@@ -54,31 +54,27 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<List<SupplierInventoryRecord>> getAllBySupplier (Long supplierId) {
-		final Response<List<SupplierInventoryRecordEntity>> response = this.inventoryRepository.getAllBySupplier(supplierId);
+	public Response<List<Inventory>> getAllBySupplier (Long supplierId) {
+		final Response<List<InventoryEntity>> response = this.inventoryRepository.getAllBySupplier(supplierId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new Response<>(response.getData().stream().map(inventoryRecordEntity -> new SupplierInventoryRecord(
-					this.mapper.map(inventoryRecordEntity.getInventory(), Inventory.class),
-					inventoryRecordEntity.getQuantity(),
-					inventoryRecordEntity.getSupplierId()
-				)).toList(), response.getStatus()) :
+			new Response<>(response.getData().stream().map(inventoryEntity -> this.mapper.map(inventoryEntity, Inventory.class)).toList(), response.getStatus()) :
 			new Response<>(null, response.getStatus());
 	}
 
 	@Override
-	public Response<SupplierInventoryRecord> add (SupplierInventoryRecord supplierInventoryRecord) {
-		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.add(
-			new SupplierInventoryRecordEntity(
-				this.mapper.map(supplierInventoryRecord.getInventory(), InventoryEntity.class),
-				supplierInventoryRecord.getQuantity(),
-				supplierInventoryRecord.getSupplierId()
+	public Response<SupplierStockRecord> add (SupplierStockRecord supplierStockRecord) {
+		final Response<SupplierStockRecordEntity> response = this.inventoryRepository.add(
+			new SupplierStockRecordEntity(
+				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
+				supplierStockRecord.getQuantity(),
+				supplierStockRecord.getSupplierId()
 			)
 		);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new Response<>(
-				new SupplierInventoryRecord(
+				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
 					response.getData().getSupplierId()
@@ -89,18 +85,18 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<SupplierInventoryRecord> update (SupplierInventoryRecord supplierInventoryRecord) {
-		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.update(
-			new SupplierInventoryRecordEntity(
-				this.mapper.map(supplierInventoryRecord.getInventory(), InventoryEntity.class),
-				supplierInventoryRecord.getQuantity(),
-				supplierInventoryRecord.getSupplierId()
+	public Response<SupplierStockRecord> updateStock (SupplierStockRecord supplierStockRecord) {
+		final Response<SupplierStockRecordEntity> response = this.inventoryRepository.updateStock(
+			new SupplierStockRecordEntity(
+				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
+				supplierStockRecord.getQuantity(),
+				supplierStockRecord.getSupplierId()
 			)
 		);
 
 		return response.getStatus() == ResponseType.UPDATED ?
 			new Response<>(
-				new SupplierInventoryRecord(
+				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
 					response.getData().getSupplierId()
@@ -108,5 +104,10 @@ public class InventoryServiceImpl implements InventoryService {
 				response.getStatus()
 			) :
 			new Response<>(null, response.getStatus());
+	}
+
+	@Override
+	public Response<Boolean> isExist (Long id) {
+		return this.inventoryRepository.isExist(id);
 	}
 }

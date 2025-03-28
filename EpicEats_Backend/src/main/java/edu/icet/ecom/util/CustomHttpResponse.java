@@ -9,18 +9,13 @@ import java.util.Map;
 public class CustomHttpResponse<T> extends ResponseEntity<Map<String, Object>> {
 	private static final String[] INFO_KEYS = { "message", "error" };
 
-	public CustomHttpResponse (HttpStatusCode httpStatusCode, T data, Class<?> clazz, Object ...info) {
-		super(CustomHttpResponse.getResponse(data, clazz.getSimpleName(), info), httpStatusCode);
-	}
-
 	public CustomHttpResponse (HttpStatusCode httpStatusCode, T data, Object ...info) {
-		super(CustomHttpResponse.getResponse(data, data == null ? null : data.getClass().getSimpleName(), info), httpStatusCode);
+		super(CustomHttpResponse.getResponse(data, info), httpStatusCode);
 	}
 
-	private static <T> Map<String, Object> getResponse (T data, String type, Object[] info) {
+	private static <T> Map<String, Object> getResponse (T data, Object[] info) {
 		final Map<String, Object> response = new HashMap<>();
 
-		if (type != null) response.put("type", type);
 		if (data != null) response.put("data", data);
 
 		for (int a = 0; a < info.length; a++) response.put(CustomHttpResponse.INFO_KEYS[a], info[a]);

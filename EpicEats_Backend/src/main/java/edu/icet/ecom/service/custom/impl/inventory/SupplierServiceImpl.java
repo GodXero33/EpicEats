@@ -52,4 +52,24 @@ public class SupplierServiceImpl implements SupplierService {
 	public Response<Boolean> isExist (Long id) {
 		return supplierRepository.isExist(id);
 	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone) {
+		return this.supplierRepository.isPhoneExist(phone);
+	}
+
+	@Override
+	public Response<Boolean> isPhoneExist (String phone, Long supplierId) {
+		return this.supplierRepository.isPhoneExist(phone, supplierId);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email) {
+		return this.supplierRepository.isEmailExist(email);
+	}
+
+	@Override
+	public Response<Boolean> isEmailExist (String email, Long supplierId) {
+		return this.supplierRepository.isEmailExist(email, supplierId);
+	}
 }

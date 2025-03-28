@@ -1,14 +1,13 @@
 package edu.icet.ecom.dto.misc;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Getter
+@Setter
+@Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Data
 public class Email {
 	private String to;
 	private String subject;

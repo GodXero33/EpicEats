@@ -26,7 +26,7 @@ public class CustomerController {
 	private final ControllerResponseUtil controllerResponseUtil;
 
 	@CustomerGetApiDoc
-	@GetMapping("/get/{id}")
+	@GetMapping("/{id}")
 	public CustomHttpResponse<Customer> get (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Customer it can't be zero or negative");
 
@@ -34,45 +34,45 @@ public class CustomerController {
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer found");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Customer not found");
 		};
 	}
 
 	@CustomerGetAllApiDoc
-	@GetMapping("/get-all")
+	@GetMapping("/all")
 	public CustomHttpResponse<List<Customer>> getAll () {
 		final Response<List<Customer>> response = this.customerService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Customer.class, "All customers has retrieved successfully") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@CustomerAddApiDoc
-	@PostMapping("/add")
+	@PostMapping("/")
 	public CustomHttpResponse<Customer> add (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final Response<Boolean> phoneExistResponse = this.customerService.isPhoneExist(customer.getPhone());
 
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer phone number is already taken");
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> emailExistResponse = this.customerService.isEmailExist(customer.getPhone());
 
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer email address is already taken");
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Customer> response = this.customerService.add(customer);
 
 		return response.getStatus() == ResponseType.CREATED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer has added") :
-			this.controllerResponseUtil.getServerErrorResponse(null);
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@CustomerUpdateApiDoc
-	@PutMapping("/update")
+	@PutMapping("/")
 	public CustomHttpResponse<Customer> update (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (customer.getId() == null || customer.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Customer id can't be null, zero or negative");
@@ -80,24 +80,24 @@ public class CustomerController {
 		final Response<Boolean> phoneExistResponse = this.customerService.isPhoneExist(customer.getPhone(), customer.getId());
 
 		if (phoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer phone number is already taken");
-		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (phoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Boolean> emailExistResponse = this.customerService.isEmailExist(customer.getPhone(), customer.getId());
 
 		if (emailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Customer email address is already taken");
-		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
+		if (emailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<Customer> response = this.customerService.update(customer);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Customer updated");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update customer");
 		};
 	}
 
 	@CustomerDeleteApiDoc
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/{id}")
 	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
 
@@ -105,7 +105,7 @@ public class CustomerController {
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Customer deleted");
-			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(false);
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete customer");
 		};
 	}

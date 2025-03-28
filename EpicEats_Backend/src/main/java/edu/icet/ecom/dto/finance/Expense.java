@@ -1,15 +1,14 @@
 package edu.icet.ecom.dto.finance;
 
 import edu.icet.ecom.util.enumaration.ExpenseType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Expense {
