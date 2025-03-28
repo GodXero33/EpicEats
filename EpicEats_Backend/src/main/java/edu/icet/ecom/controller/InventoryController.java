@@ -99,6 +99,7 @@ public class InventoryController {
 		};
 	}
 
+	@InventoryUpdateApiDoc
 	@PutMapping("update")
 	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
@@ -113,7 +114,7 @@ public class InventoryController {
 		};
 	}
 
-	@InventoryUpdateApiDoc
+	@InventoryUpdateStockApiDoc
 	@PutMapping("/update-stock")
 	public CustomHttpResponse<SupplierInventoryRecord> updateStock (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
