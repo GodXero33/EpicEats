@@ -45,7 +45,7 @@ public class CustomerController {
 		final Response<List<Customer>> response = this.customerService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), Customer.class, "All customers has retrieved successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All customers has retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
