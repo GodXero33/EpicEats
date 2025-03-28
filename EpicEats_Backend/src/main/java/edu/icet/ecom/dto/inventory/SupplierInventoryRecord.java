@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class SupplierInventoryRecord {
 	private Inventory inventory;
 	private Long quantity;
+	private Long supplierId;
 }

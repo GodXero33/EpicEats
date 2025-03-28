@@ -60,8 +60,53 @@ public class InventoryServiceImpl implements InventoryService {
 		return response.getStatus() == ResponseType.FOUND ?
 			new Response<>(response.getData().stream().map(inventoryRecordEntity -> new SupplierInventoryRecord(
 					this.mapper.map(inventoryRecordEntity.getInventory(), Inventory.class),
-					inventoryRecordEntity.getQuantity()
+					inventoryRecordEntity.getQuantity(),
+					inventoryRecordEntity.getSupplierId()
 				)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
+	}
+
+	@Override
+	public Response<SupplierInventoryRecord> add (SupplierInventoryRecord supplierInventoryRecord) {
+		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.add(
+			new SupplierInventoryRecordEntity(
+				this.mapper.map(supplierInventoryRecord.getInventory(), InventoryEntity.class),
+				supplierInventoryRecord.getQuantity(),
+				supplierInventoryRecord.getSupplierId()
+			)
+		);
+
+		return response.getStatus() == ResponseType.CREATED ?
+			new Response<>(
+				new SupplierInventoryRecord(
+					this.mapper.map(response.getData().getInventory(), Inventory.class),
+					response.getData().getQuantity(),
+					response.getData().getSupplierId()
+				),
+				response.getStatus()
+			) :
+			new Response<>(null, response.getStatus());
+	}
+
+	@Override
+	public Response<SupplierInventoryRecord> update (SupplierInventoryRecord supplierInventoryRecord) {
+		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.update(
+			new SupplierInventoryRecordEntity(
+				this.mapper.map(supplierInventoryRecord.getInventory(), InventoryEntity.class),
+				supplierInventoryRecord.getQuantity(),
+				supplierInventoryRecord.getSupplierId()
+			)
+		);
+
+		return response.getStatus() == ResponseType.UPDATED ?
+			new Response<>(
+				new SupplierInventoryRecord(
+					this.mapper.map(response.getData().getInventory(), Inventory.class),
+					response.getData().getQuantity(),
+					response.getData().getSupplierId()
+				),
+				response.getStatus()
+			) :
 			new Response<>(null, response.getStatus());
 	}
 }
