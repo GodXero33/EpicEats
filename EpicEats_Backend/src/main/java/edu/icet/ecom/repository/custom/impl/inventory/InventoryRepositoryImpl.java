@@ -25,22 +25,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 	@Override
 	public Response<InventoryEntity> add (InventoryEntity entity) {
-		try {
-			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO inventory (name, description, quantity, unit) VALUES (?, ?, ?, ?)",
-				entity.getName(),
-				entity.getDescription(),
-				entity.getQuantity(),
-				entity.getUnit()
-			);
-
-			entity.setId(generatedId);
-
-			return new Response<>(entity, ResponseType.CREATED);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
+		return new Response<>(null, ResponseType.NOT_CREATED);
 	}
 
 	@Override
@@ -199,7 +184,67 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 	}
 
 	@Override
-	public Response<SupplierInventoryRecordEntity> update (SupplierInventoryRecordEntity supplierInventoryRecordEntity) {
-		return null;
+	public Response<SupplierInventoryRecordEntity> updateStock (SupplierInventoryRecordEntity supplierInventoryRecordEntity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			final int quantity = supplierInventoryRecordEntity.getInventory().getQuantity();
+			final long inventoryId = supplierInventoryRecordEntity.getInventory().getId();
+			final long supplierId = supplierInventoryRecordEntity.getSupplierId();
+
+			if ((Integer) this.crudUtil.execute("UPDATE inventory SET quantity = quantity + ? WHERE is_deleted = FALSE AND id = ?", quantity, inventoryId) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			if ((Integer) this.crudUtil.execute("UPDATE supplier_inventory SET quantity = quantity + ? WHERE supplier_id = ? AND inventory_id = ?", quantity, supplierId, inventoryId) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			try (final ResultSet supplierInventoryResultSet = this.crudUtil.execute(
+				"SELECT quantity FROM supplier_inventory WHERE supplier_id = ? AND inventory_id = ?",
+				supplierId,
+				inventoryId
+			)) {
+				if (!supplierInventoryResultSet.next()) {
+					connection.rollback();
+					return new Response<>(null, ResponseType.NOT_UPDATED);
+				}
+
+				final Response<InventoryEntity> inventoryGetResponse = this.get(inventoryId);
+
+				if (inventoryGetResponse.getStatus() != ResponseType.FOUND) {
+					connection.rollback();
+					return new Response<>(null, ResponseType.NOT_UPDATED);
+				}
+
+				connection.commit();
+				supplierInventoryRecordEntity.setQuantity(supplierInventoryResultSet.getLong(1));
+				supplierInventoryRecordEntity.setInventory(inventoryGetResponse.getData());
+
+				return new Response<>(supplierInventoryRecordEntity, ResponseType.UPDATED);
+			}
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 }

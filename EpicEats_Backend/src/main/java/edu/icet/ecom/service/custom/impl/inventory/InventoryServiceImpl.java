@@ -89,8 +89,8 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<SupplierInventoryRecord> update (SupplierInventoryRecord supplierInventoryRecord) {
-		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.update(
+	public Response<SupplierInventoryRecord> updateStock (SupplierInventoryRecord supplierInventoryRecord) {
+		final Response<SupplierInventoryRecordEntity> response = this.inventoryRepository.updateStock(
 			new SupplierInventoryRecordEntity(
 				this.mapper.map(supplierInventoryRecord.getInventory(), InventoryEntity.class),
 				supplierInventoryRecord.getQuantity(),

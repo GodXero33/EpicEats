@@ -99,9 +99,23 @@ public class InventoryController {
 		};
 	}
 
+	@PutMapping("update")
+	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (inventory.getId() <= 0) return this.getInvalidIdResponse();
+
+		final Response<Inventory> response = this.inventoryService.update(inventory);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse(null);
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update inventory");
+		};
+	}
+
 	@InventoryUpdateApiDoc
-	@PutMapping("/update")
-	public CustomHttpResponse<SupplierInventoryRecord> update (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
+	@PutMapping("/update-stock")
+	public CustomHttpResponse<SupplierInventoryRecord> updateStock (@Valid @RequestBody SupplierInventoryRecord supplierInventoryRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		if (supplierInventoryRecord.getInventory().getId() == null ||
@@ -114,7 +128,7 @@ public class InventoryController {
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse(null);
 
-		final Response<SupplierInventoryRecord> response = this.inventoryService.update(supplierInventoryRecord);
+		final Response<SupplierInventoryRecord> response = this.inventoryService.updateStock(supplierInventoryRecord);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory updated");

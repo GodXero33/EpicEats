@@ -10,5 +10,5 @@ import java.util.List;
 public interface InventoryService extends SuperService<Inventory> {
 	Response<List<SupplierInventoryRecord>> getAllBySupplier (Long supplierId);
 	Response<SupplierInventoryRecord> add (SupplierInventoryRecord supplierInventoryRecord);
-	Response<SupplierInventoryRecord> update (SupplierInventoryRecord supplierInventoryRecord);
+	Response<SupplierInventoryRecord> updateStock (SupplierInventoryRecord supplierInventoryRecord);
 }
