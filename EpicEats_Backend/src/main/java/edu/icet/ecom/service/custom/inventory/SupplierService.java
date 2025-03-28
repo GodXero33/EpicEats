@@ -6,4 +6,8 @@ import edu.icet.ecom.util.Response;
 
 public interface SupplierService extends SuperService<Supplier> {
 	Response<Boolean> isExist (Long id);
+	Response<Boolean> isPhoneExist (String phone);
+	Response<Boolean> isPhoneExist (String phone, Long supplierId);
+	Response<Boolean> isEmailExist (String email);
+	Response<Boolean> isEmailExist (String email, Long supplierId);
 }
