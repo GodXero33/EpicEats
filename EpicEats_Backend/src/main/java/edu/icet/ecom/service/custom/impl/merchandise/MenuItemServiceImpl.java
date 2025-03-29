@@ -7,9 +7,13 @@ import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.merchandise.MenuItemService;
 import edu.icet.ecom.util.Response;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
+@Primary
 public class MenuItemServiceImpl implements MenuItemService {
 	private final SuperServiceHandler<MenuItem, MenuItemEntity> serviceHandler;
 

@@ -95,7 +95,7 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 	@Override
 	public Response<List<MenuItemEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE AND id = ?")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE")) {
 			final List<MenuItemEntity> menuItemEntities = new ArrayList<>();
 
 			while (resultSet.next()) menuItemEntities.add(MenuItemEntity.builder()
