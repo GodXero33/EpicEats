@@ -49,7 +49,7 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return serviceHandler.delete(id);
 	}
 

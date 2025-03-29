@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestaurantTableEntity {
-	private Integer id;
+	private Long id;
 	private Integer tableNumber;
 	private Integer capacity;
 	private LocalDateTime lastBooked;

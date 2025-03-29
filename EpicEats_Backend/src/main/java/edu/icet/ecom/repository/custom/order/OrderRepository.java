@@ -5,5 +5,5 @@ import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.util.Response;
 
 public interface OrderRepository extends CrudRepository<OrderEntity> {
-	Response<Boolean> deleteByEmployeeId (Long employeeId);
+	Response<Object> deleteByEmployeeId (Long employeeId);
 }

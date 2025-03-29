@@ -9,5 +9,5 @@ public interface SuperService<D> {
 	Response<List<D>> getAll ();
 	Response<D> add (D dto);
 	Response<D> update (D dto);
-	Response<Boolean> delete (Long id);
+	Response<Object> delete (Long id);
 }

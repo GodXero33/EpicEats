@@ -47,12 +47,12 @@ public class EmployeeShiftServiceImpl implements EmployeeShiftService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
 	}
 
 	@Override
-	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
+	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return this.employeeShiftRepository.deletedByEmployeeId(employeeId);
 	}
 

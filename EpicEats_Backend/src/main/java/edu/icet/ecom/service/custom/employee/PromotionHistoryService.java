@@ -7,6 +7,6 @@ import edu.icet.ecom.util.Response;
 import java.util.List;
 
 public interface PromotionHistoryService extends SuperService<PromotionHistory> {
-	Response<Boolean> deleteByEmployeeId (Long employeeId);
+	Response<Object> deleteByEmployeeId (Long employeeId);
 	Response<List<PromotionHistory>> getAllByEmployeeId (Long employeeId);
 }

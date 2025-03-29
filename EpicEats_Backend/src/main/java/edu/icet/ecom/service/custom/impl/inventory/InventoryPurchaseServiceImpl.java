@@ -42,7 +42,7 @@ public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
 	}
 }

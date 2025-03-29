@@ -7,6 +7,6 @@ import edu.icet.ecom.util.Response;
 import java.util.List;
 
 public interface EmployeeShiftService extends SuperService<EmployeeShift> {
-	Response<Boolean> deleteByEmployeeId (Long employeeId);
+	Response<Object> deleteByEmployeeId (Long employeeId);
 	Response<List<EmployeeShift>> getAllByEmployeeId (Long employeeId);
 }

@@ -56,7 +56,7 @@ public class SuperServiceHandler<D, E> implements SuperService<D> {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.repository.delete(id);
 	}
 }

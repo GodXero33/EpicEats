@@ -35,7 +35,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				new Response<>(false, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return null;
 	}
 
@@ -185,22 +185,22 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public Response<Boolean> terminate (Long employeeId) {
+	public Response<Object> terminate (Long employeeId) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
-		if (connection == null) return new Response<>(false, ResponseType.SERVER_ERROR);
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
 
 		try {
 			connection.setAutoCommit(false);
 
 			final boolean isEmployeeTerminated = (Integer) this.crudUtil.execute("UPDATE employee SET is_terminated = TRUE WHERE is_terminated = FALSE AND id = ?", employeeId) != 0;
-			final boolean isEmployeeShiftsDeleted = isEmployeeTerminated && this.employeeShiftRepository.deletedByEmployeeId(employeeId).getData();
+			final boolean isEmployeeShiftsDeleted = isEmployeeTerminated && this.employeeShiftRepository.deletedByEmployeeId(employeeId).getStatus() == ResponseType.DELETED;
 
 			if (isEmployeeShiftsDeleted) connection.commit();
 
 			return isEmployeeShiftsDeleted ?
-				new Response<>(true, ResponseType.SUCCESS) :
-				new Response<>(false, ResponseType.FAILED);
+				new Response<>(null, ResponseType.SUCCESS) :
+				new Response<>(null, ResponseType.FAILED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -210,7 +210,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				this.logger.error(rollbackException.getMessage());
 			}
 
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		} finally {
 			try {
 				connection.setAutoCommit(true);

@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface EmployeeShiftRepository extends CrudRepository<EmployeeShiftEntity> {
 	Response<List<EmployeeShiftEntity>> getAllByEmployeeId (Long employeeId);
-	Response<Boolean> deletedByEmployeeId (Long employeeId);
+	Response<Object> deletedByEmployeeId (Long employeeId);
 }
