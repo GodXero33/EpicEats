@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
+import java.util.List;
 
 @Getter
 @Component
@@ -19,6 +20,26 @@ public class CrudUtil {
 
 		for (int a = 0; a < dataLength; a++) {
 			final Object data = binds[a];
+
+			if (data == null) {
+				preparedStatement.setNull(a + 1, Types.NULL);
+			} else {
+				preparedStatement.setObject(a + 1, data);
+			}
+		}
+
+		if (query.matches("(?i)^select.*")) return (T) preparedStatement.executeQuery();
+
+		return (T) ((Integer) preparedStatement.executeUpdate());
+	}
+
+	@SuppressWarnings({ "unchecked", "resource" })
+	public <T, U> T execute (final String query, List<U> binds) throws SQLException {
+		final PreparedStatement preparedStatement = this.dbConnection.getConnection().prepareStatement(query);
+		final int dataLength = binds.size();
+
+		for (int a = 0; a < dataLength; a++) {
+			final Object data = binds.get(a);
 
 			if (data == null) {
 				preparedStatement.setNull(a + 1, Types.NULL);

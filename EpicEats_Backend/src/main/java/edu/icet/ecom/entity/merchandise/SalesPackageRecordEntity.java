@@ -10,10 +10,9 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesPackageEntity {
-	private Long id;
+public class SalesPackageRecordEntity {
 	private String name;
 	private String description;
 	private Double discountPercentage;
-	private List<Long> menuItemIDs;
+	private List<SalesPackageItemEntity> salesPackageItems;
 }
