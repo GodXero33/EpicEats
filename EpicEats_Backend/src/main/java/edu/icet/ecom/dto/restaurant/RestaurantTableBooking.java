@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestaurantTableBooking {
-	private Integer tableId;
+	private Long tableId;
 	private Long customerId;
 	private LocalDate bookingDate;
 	private LocalTime startTime;

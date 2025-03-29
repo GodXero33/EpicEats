@@ -1,34 +1,44 @@
 package edu.icet.ecom.service.custom.impl.merchandise;
 
 import edu.icet.ecom.dto.merchandise.SalesPackage;
+import edu.icet.ecom.entity.merchandise.SalesPackageEntity;
+import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
+import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
 import edu.icet.ecom.util.Response;
+import org.modelmapper.ModelMapper;
 
 import java.util.List;
 
 public class SalesPackageServiceImpl implements SalesPackageService {
+	private final SuperServiceHandler<SalesPackage, SalesPackageEntity> serviceHandler;
+
+	public SalesPackageServiceImpl (SalesPackageRepository salesPackageRepository, ModelMapper mapper) {
+		this.serviceHandler = new SuperServiceHandler<>(salesPackageRepository, mapper, SalesPackage.class, SalesPackageEntity.class);
+	}
+
 	@Override
 	public Response<SalesPackage> get (Long id) {
-		return null;
+		return this.serviceHandler.get(id);
 	}
 
 	@Override
 	public Response<List<SalesPackage>> getAll () {
-		return null;
+		return this.serviceHandler.getAll();
 	}
 
 	@Override
 	public Response<SalesPackage> add (SalesPackage dto) {
-		return null;
+		return this.serviceHandler.add(dto);
 	}
 
 	@Override
 	public Response<SalesPackage> update (SalesPackage dto) {
-		return null;
+		return this.serviceHandler.update(dto);
 	}
 
 	@Override
 	public Response<Object> delete (Long id) {
-		return null;
+		return this.serviceHandler.delete(id);
 	}
 }
