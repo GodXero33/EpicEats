@@ -60,11 +60,11 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		try {
 			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
+				new Response<>(null, ResponseType.NOT_DELETED) :
+				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -130,11 +130,11 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	@Override
-	public Response<Boolean> deletedByEmployeeId (Long employeeId) {
+	public Response<Object> deletedByEmployeeId (Long employeeId) {
 		try {
 			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?", employeeId) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
+				new Response<>(null, ResponseType.NOT_DELETED) :
+				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);

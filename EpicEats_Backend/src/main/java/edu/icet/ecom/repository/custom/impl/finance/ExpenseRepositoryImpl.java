@@ -62,14 +62,14 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		try {
 			return (Integer) this.crudUtil.execute("UPDATE expense SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
+				new Response<>(null, ResponseType.NOT_DELETED) :
+				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 

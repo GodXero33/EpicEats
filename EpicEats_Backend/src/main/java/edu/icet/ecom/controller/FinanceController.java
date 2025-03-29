@@ -90,15 +90,15 @@ public class FinanceController {
 
 	@ExpenseDeleteApiDoc
 	@DeleteMapping("/expense/{id}")
-	public CustomHttpResponse<Boolean> deleteExpense (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> deleteExpense (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.expenseService.delete(id);
+		final Response<Object> response = this.expenseService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Expense record deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Expense record deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Falied to delete expense record");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Falied to delete expense record");
 		};
 	}
 
@@ -181,33 +181,34 @@ public class FinanceController {
 
 	@ReportDeleteApiDoc
 	@DeleteMapping("/report/{id}")
-	public CustomHttpResponse<Boolean> deleteReport (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> deleteReport (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.reportService.delete(id);
+		final Response<Object> response = this.reportService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Report deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Report deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete report");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete report");
 		};
 	}
 
 	@ReportDeleteAllByEmployeeApiDoc
 	@DeleteMapping("/report/by-employee/{employeeId}")
-	public CustomHttpResponse<Boolean> deleteAllByEmployee (@PathVariable("employeeId") Long employeeId) {
+	public CustomHttpResponse<Object> deleteAllByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<Boolean> response = this.reportService.deleteByEmployeeId(employeeId);
+		final Response<Object> response = this.reportService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Reports deleted created by target employee");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Reports deleted created by target employee");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete reports of target employee");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete reports of target " +
+				"employee");
 		};
 	}
 }

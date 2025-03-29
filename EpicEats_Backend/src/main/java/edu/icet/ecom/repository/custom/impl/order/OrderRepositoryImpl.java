@@ -22,7 +22,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return null;
 	}
 
@@ -37,7 +37,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 	}
 
 	@Override
-	public Response<Boolean> deleteByEmployeeId (Long employeeId) {
+	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return null;
 	}
 }

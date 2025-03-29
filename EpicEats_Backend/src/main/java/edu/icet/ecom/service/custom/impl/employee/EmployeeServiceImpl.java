@@ -44,12 +44,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
 	}
 
 	@Override
-	public Response<Boolean> terminate (Long employeeId) {
+	public Response<Object> terminate (Long employeeId) {
 		return this.employeeRepository.terminate(employeeId);
 	}
 

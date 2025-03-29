@@ -98,15 +98,15 @@ public class CustomerController {
 
 	@CustomerDeleteApiDoc
 	@DeleteMapping("/{id}")
-	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
 
-		final Response<Boolean> response = this.customerService.delete(id);
+		final Response<Object> response = this.customerService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Customer deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Customer deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete customer");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete customer");
 		};
 	}
 }

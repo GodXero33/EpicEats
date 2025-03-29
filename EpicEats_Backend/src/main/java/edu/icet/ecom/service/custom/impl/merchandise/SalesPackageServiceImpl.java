@@ -28,7 +28,7 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return null;
 	}
 }

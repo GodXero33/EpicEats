@@ -99,7 +99,7 @@ public class UserController {
 	public CustomHttpResponse<Object> delete (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "employeeId can't be zero or negative");
 
-		final Response<Boolean> response = this.userService.delete(employeeId);
+		final Response<Object> response = this.userService.delete(employeeId);
 
 		return switch (response.getStatus()) {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "User deleted");

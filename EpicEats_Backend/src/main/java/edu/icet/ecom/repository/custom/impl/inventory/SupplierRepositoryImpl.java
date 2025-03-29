@@ -27,7 +27,7 @@ public class SupplierRepositoryImpl implements SupplierRepository {
 				new Response<>(false, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 
@@ -71,11 +71,11 @@ public class SupplierRepositoryImpl implements SupplierRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		try {
 			return (Integer) this.crudUtil.execute("UPDATE supplier SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
+				new Response<>(null, ResponseType.NOT_DELETED) :
+				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -101,14 +101,15 @@ public class SupplierRepositoryImpl implements SupplierRepository {
 
 	@Override
 	public Response<List<SupplierEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address FROM supplier WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address FROM supplier WHERE is_deleted = FALSE")) {
 			final List<SupplierEntity> supplierEntities = new ArrayList<>();
 
 			while (resultSet.next()) supplierEntities.add(SupplierEntity.builder()
-				.name(resultSet.getString(1))
-				.phone(resultSet.getString(2))
-				.email(resultSet.getString(3))
-				.address(resultSet.getString(4))
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.phone(resultSet.getString(3))
+				.email(resultSet.getString(4))
+				.address(resultSet.getString(5))
 				.build());
 
 			return new Response<>(supplierEntities, ResponseType.FOUND);

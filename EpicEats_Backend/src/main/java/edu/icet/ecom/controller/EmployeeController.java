@@ -111,12 +111,12 @@ public class EmployeeController {
 	public CustomHttpResponse<Boolean> terminate (@PathVariable("id") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.employeeService.terminate(employeeId);
+		final Response<Object> response = this.employeeService.terminate(employeeId);
 
 		return switch (response.getStatus()) {
-			case SUCCESS -> new CustomHttpResponse<>(HttpStatus.OK, true, "Terminate employee success");
+			case SUCCESS -> new CustomHttpResponse<>(HttpStatus.OK, null, "Terminate employee success");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to terminate employee");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to terminate employee");
 		};
 	}
 
@@ -190,29 +190,29 @@ public class EmployeeController {
 
 	@EmployeeShiftDeleteApiDoc
 	@DeleteMapping("/shift/{id}")
-	public CustomHttpResponse<Boolean> deleteShift (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> deleteShift (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.employeeShiftService.delete(id);
+		final Response<Object> response = this.employeeShiftService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shift deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Employee shift deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shift");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete shift");
 		};
 	}
 
 	@EmployeeShiftDeleteByEmployeeApiDoc
 	@DeleteMapping("/shift/by-employee/{employeeId}")
-	public CustomHttpResponse<Boolean> deleteShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
+	public CustomHttpResponse<Object> deleteShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.employeeShiftService.deleteByEmployeeId(employeeId);
+		final Response<Object> response = this.employeeShiftService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Employee shifts deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Employee shifts deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete shifts");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete shifts");
 		};
 	}
 
@@ -269,29 +269,30 @@ public class EmployeeController {
 
 	@PromotionHistoryDeleteApiDoc
 	@DeleteMapping("/promotion/{id}")
-	public CustomHttpResponse<Boolean> deletePromotion (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> deletePromotion (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.promotionHistoryService.delete(id);
+		final Response<Object> response = this.promotionHistoryService.delete(id);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion history deleted");
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion history deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion history");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete promotion history");
 		};
 	}
 
 	@PromotionHistoryDeleteByEmployeeApiDoc
 	@DeleteMapping("/promotion/by-employee/{employeeId}")
-	public CustomHttpResponse<Boolean> deletePromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
+	public CustomHttpResponse<Object> deletePromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);
+		final Response<Object> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Promotion histories deleted related to target employee");
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion histories deleted related to " +
+				"target employee");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete promotion histories");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete promotion histories");
 		};
 	}
 }

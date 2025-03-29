@@ -46,7 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
 				new Response<>(false, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 
@@ -68,7 +68,7 @@ public class UserRepositoryImpl implements UserRepository {
 				new Response<>(false, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 
@@ -154,18 +154,18 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		try {
 			return (Integer) this.crudUtil.execute(
 				"UPDATE `user` SET deleted_at = ?, is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?",
 				DateTimeUtil.getCurrentDateTime(),
 				id
 			) == 0 ?
-				new Response<>(false, ResponseType.NOT_DELETED) :
-				new Response<>(true, ResponseType.DELETED);
+				new Response<>(null, ResponseType.NOT_DELETED) :
+				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 

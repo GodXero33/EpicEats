@@ -44,7 +44,7 @@ public class SupplierServiceImpl implements SupplierService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
 	}
 

@@ -7,6 +7,6 @@ import edu.icet.ecom.util.Response;
 import java.util.List;
 
 public interface PromotionHistoryRepository extends CrudRepository<PromotionHistoryEntity> {
-	Response<Boolean> deleteByEmployeeId (Long employeeId);
+	Response<Object> deleteByEmployeeId (Long employeeId);
 	Response<List<PromotionHistoryEntity>> getAllByEmployeeId (Long employeeId);
 }

@@ -44,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
 	}
 

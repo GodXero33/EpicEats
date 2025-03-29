@@ -7,6 +7,6 @@ import edu.icet.ecom.util.Response;
 import java.util.List;
 
 public interface ReportService extends SuperService<Report> {
-	Response<Boolean> deleteByEmployeeId (Long employeeId);
+	Response<Object> deleteByEmployeeId (Long employeeId);
 	Response<List<Report>> getAllByEmployeeId (Long employeeId);
 }

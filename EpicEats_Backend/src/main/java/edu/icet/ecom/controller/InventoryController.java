@@ -152,15 +152,15 @@ public class InventoryController {
 
 	@InventoryDeleteApiDoc
 	@DeleteMapping("/{id}")
-	public CustomHttpResponse<Boolean> delete (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.inventoryService.delete(id);
+		final Response<Object> response = this.inventoryService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Inventory deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Inventory delete failed");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Inventory delete failed");
 		};
 	}
 
@@ -241,15 +241,15 @@ public class InventoryController {
 
 	@InventoryPurchaseDeleteApiDoc
 	@DeleteMapping("/purchase/{id}")
-	public CustomHttpResponse<Boolean> deleteInventoryPurchase (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Object> deleteInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> response = this.inventoryPurchaseService.delete(id);
+		final Response<Object> response = this.inventoryPurchaseService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, true, "Inventory purchase update");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Inventory purchase update");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
-			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, false, "Failed to delete inventory purchase");
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete inventory purchase");
 		};
 	}
 
@@ -275,5 +275,65 @@ public class InventoryController {
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All suppliers are loaded") :
 			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@SupplierAddApiDoc
+	@PostMapping("/supplier")
+	public CustomHttpResponse<Supplier> addSupplier (@Valid @RequestBody Supplier supplier, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Boolean> supplierPhoneExistResponse = this.supplierService.isPhoneExist(supplier.getPhone());
+
+		if (supplierPhoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Supplier phone number already taken");
+		if (supplierPhoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<Boolean> supplierEmailExistResponse = this.supplierService.isEmailExist(supplier.getEmail());
+
+		if (supplierEmailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Supplier email address already taken");
+		if (supplierEmailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<Supplier> response = this.supplierService.add(supplier);
+
+		return response.getStatus() == ResponseType.CREATED ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Supplier added") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@SupplierUpdateApiDoc
+	@PutMapping("/supplier")
+	public CustomHttpResponse<Supplier> updateSupplier (@Valid @RequestBody Supplier supplier, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Boolean> supplierPhoneExistResponse = this.supplierService.isPhoneExist(supplier.getPhone(), supplier.getId());
+
+		if (supplierPhoneExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Supplier phone number already taken");
+		if (supplierPhoneExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<Boolean> supplierEmailExistResponse = this.supplierService.isEmailExist(supplier.getEmail(), supplier.getId());
+
+		if (supplierEmailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Supplier email address already taken");
+		if (supplierEmailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<Supplier> response = this.supplierService.add(supplier);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Supplier updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update supplier");
+		};
+	}
+
+	@SupplierDeleteApiDoc
+	@DeleteMapping("/supplier/{id}")
+	public CustomHttpResponse<Object> deleteSupplier (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Object> response = this.supplierService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Supplier deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete supplier");
+		};
 	}
 }

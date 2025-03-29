@@ -18,7 +18,7 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
-	public Response<Boolean> delete (Long id) {
+	public Response<Object> delete (Long id) {
 		return null;
 	}
 
