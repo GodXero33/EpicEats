@@ -15,7 +15,11 @@ public class ControllerResponseUtil {
 		return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Server error");
 	}
 
-	public <T> CustomHttpResponse<T> getInvalidDetailsResponse (Object error) {
-		return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid details", error instanceof BindingResult result ? this.validationErrorsHelper.getValidationErrors(result) : error);
+	public <T> CustomHttpResponse<T> getInvalidDetailsResponse (String errorMessage) {
+		return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid details", errorMessage);
+	}
+
+	public <T> CustomHttpResponse<T> getInvalidDetailsResponse (BindingResult bindingResult) {
+		return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Invalid details", this.validationErrorsHelper.getValidationErrors(bindingResult));
 	}
 }
