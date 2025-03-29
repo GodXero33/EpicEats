@@ -13,7 +13,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -96,6 +98,51 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 	@Override
 	public Response<List<MenuItemEntity>> getAll () {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE")) {
+			final List<MenuItemEntity> menuItemEntities = new ArrayList<>();
+
+			while (resultSet.next()) menuItemEntities.add(MenuItemEntity.builder()
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.price(resultSet.getDouble(3))
+				.img(resultSet.getString(4))
+				.category(MenuItemCategory.fromName(resultSet.getString(5)))
+				.quantity(resultSet.getInt(6))
+				.build());
+
+			return new Response<>(menuItemEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+
+	@Override
+	public Response<Boolean> isAllMenuItemsExist (List<Long> ids) {
+		final String query = "SELECT COUNT(*) FROM menu_item WHERE is_deleted = FALSE AND id IN (" +String.join(", ", Collections.nCopies(ids.size(), "?")) + ")";
+
+		try (final ResultSet resultSet = this.crudUtil.execute(query, ids.toArray())) {
+			resultSet.next();
+
+			return resultSet.getInt(1) == ids.size() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<List<MenuItemEntity>> getAllByIDs (List<Long> ids) {
+		try (final ResultSet resultSet = this.crudUtil.execute(
+			String.format(
+				"%s (%s)",
+				"SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE AND id IN",
+				String.join(", ", Collections.nCopies(ids.size(), "?"))
+			),
+			ids
+		)) {
 			final List<MenuItemEntity> menuItemEntities = new ArrayList<>();
 
 			while (resultSet.next()) menuItemEntities.add(MenuItemEntity.builder()

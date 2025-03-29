@@ -16,9 +16,11 @@ import java.util.List;
 @Primary
 public class MenuItemServiceImpl implements MenuItemService {
 	private final SuperServiceHandler<MenuItem, MenuItemEntity> serviceHandler;
+	private final MenuItemRepository menuItemRepository;
 
 	public MenuItemServiceImpl (MenuItemRepository menuItemRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(menuItemRepository, mapper, MenuItem.class, MenuItemEntity.class);
+		this.menuItemRepository = menuItemRepository;
 	}
 
 	@Override
@@ -44,5 +46,10 @@ public class MenuItemServiceImpl implements MenuItemService {
 	@Override
 	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
+	}
+
+	@Override
+	public Response<Boolean> isAllMenuItemsExist (List<Long> ids) {
+		return this.menuItemRepository.isAllMenuItemsExist(ids);
 	}
 }
