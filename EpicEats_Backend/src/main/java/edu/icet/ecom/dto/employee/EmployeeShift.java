@@ -13,7 +13,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class EmployeeShift {
 	private Long id;
-	private Long employeeId;
+	private Employee employee;
 	private LocalDate shiftDate;
 	private LocalTime startTime;
 	private LocalTime endTime;

@@ -161,7 +161,7 @@ public class EmployeeController {
 	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeShift.getEmployeeId());
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeShift.getEmployee().getId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employeeId");
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
