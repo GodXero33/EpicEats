@@ -26,7 +26,8 @@ public class ReportRepositoryImpl implements ReportRepository {
 	public Response<ReportEntity> add (ReportEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?)",
+				entity.getType().name(),
 				entity.getStartDate(),
 				entity.getEndDate(),
 				entity.getGeneratedBy(),
@@ -48,7 +49,7 @@ public class ReportRepositoryImpl implements ReportRepository {
 		try {
 			return (Integer) this.crudUtil.execute(
 				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getType(),
+				entity.getType().name(),
 				entity.getStartDate(),
 				entity.getEndDate(),
 				entity.getGeneratedBy(),
