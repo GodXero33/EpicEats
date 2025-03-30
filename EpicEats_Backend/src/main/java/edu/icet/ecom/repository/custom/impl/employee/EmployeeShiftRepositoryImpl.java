@@ -74,7 +74,7 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	/**
-	 * Pass complete employee data while front end might not have employee data.
+	 * Pass complete employee data while frontend might not have employee data.
 	 */
 	@Override
 	public Response<EmployeeShiftEntity> get (Long id) {
@@ -105,7 +105,7 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	/**
-	 * Pass complete employee data because all shifts contains an employee, and it will be easier to front end have complete employee data bind here so don't have to send requests to get employees data again.
+	 * Pass complete employee data because all shifts contains an employee, and it will be easier to frontend have complete employee data bind here so don't have to send requests to get employees data again.
 	 */
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAll () {
@@ -138,7 +138,7 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	/**
-	 * No need to send employee data. If front end has employee id that means front end also have employee data.
+	 * No need to send employee data. If frontend has employee id that means frontend also have employee data.
 	 */
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAllByEmployeeId (Long employeeId) {
