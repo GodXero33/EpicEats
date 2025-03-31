@@ -190,21 +190,19 @@ public class InventoryController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
-	private CustomHttpResponse<InventoryPurchase> validateInventoryPurchase (InventoryPurchase inventoryPurchase) {
-		final boolean isInventoryProvided = inventoryPurchase.getInventory() != null;
-		final boolean isMenuItemProvided = inventoryPurchase.getMenuItem() != null;
-		final boolean isSupplierProvided = inventoryPurchase.getMenuItem() != null;
+	private CustomHttpResponse<InventoryPurchase> getResponseAfterInventoryPurchaseValidation (InventoryPurchase inventoryPurchase) {
+		final Long inventoryId = (inventoryPurchase.getInventory() != null) ? inventoryPurchase.getInventory().getId() : null;
+		final Long menuItemId = (inventoryPurchase.getMenuItem() != null) ? inventoryPurchase.getMenuItem().getId() : null;
 
-		if (!isInventoryProvided && !isMenuItemProvided) return this.controllerResponseUtil.getInvalidDetailsResponse("One of inventory or menu item details must provide with id");
-		if (!isSupplierProvided) return this.controllerResponseUtil.getInvalidDetailsResponse("Supplier details with id must provide");
+		if (inventoryId == null && menuItemId == null)
+			return this.controllerResponseUtil.getInvalidDetailsResponse("One of inventory or menu item details must be provided with an ID");
 
-		final boolean isBothInventoryAndMenuItemIDsNull = isInventoryProvided && inventoryPurchase.getInventory().getId() != null && inventoryPurchase.getMenuItem().getId() != null;
+		if (inventoryId != null && menuItemId != null)
+			return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed");
 
-		if (isBothInventoryAndMenuItemIDsNull) return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed");
-
-		final Response<Boolean> inventoryOrMenuItemExistResponse = isInventoryProvided ?
-			this.inventoryService.isExist(inventoryPurchase.getInventory().getId()) :
-			this.menuItemService.isExist(inventoryPurchase.getMenuItem().getId());
+		final Response<Boolean> inventoryOrMenuItemExistResponse = inventoryId == null ?
+			this.menuItemService.isExist(inventoryPurchase.getMenuItem().getId()) :
+			this.inventoryService.isExist(inventoryPurchase.getInventory().getId());
 
 		if (inventoryOrMenuItemExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
 		if (inventoryOrMenuItemExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -222,9 +220,9 @@ public class InventoryController {
 	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final CustomHttpResponse<InventoryPurchase> inventoryPurchaseValidationResponse = this.validateInventoryPurchase(inventoryPurchase);
+		final CustomHttpResponse<InventoryPurchase> responseAfterInventoryPurchaseValidation = this.getResponseAfterInventoryPurchaseValidation(inventoryPurchase);
 
-		if (inventoryPurchaseValidationResponse != null) return inventoryPurchaseValidationResponse;
+		if (responseAfterInventoryPurchaseValidation != null) return responseAfterInventoryPurchaseValidation;
 
 		final Response<InventoryPurchase> response = this.inventoryPurchaseService.add(inventoryPurchase);
 
@@ -240,9 +238,9 @@ public class InventoryController {
 	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final CustomHttpResponse<InventoryPurchase> inventoryPurchaseValidationResponse = this.validateInventoryPurchase(inventoryPurchase);
+		final CustomHttpResponse<InventoryPurchase> responseAfterInventoryPurchaseValidation = this.getResponseAfterInventoryPurchaseValidation(inventoryPurchase);
 
-		if (inventoryPurchaseValidationResponse != null) return inventoryPurchaseValidationResponse;
+		if (responseAfterInventoryPurchaseValidation != null) return responseAfterInventoryPurchaseValidation;
 
 		final Response<InventoryPurchase> response = this.inventoryPurchaseService.update(inventoryPurchase);
 
