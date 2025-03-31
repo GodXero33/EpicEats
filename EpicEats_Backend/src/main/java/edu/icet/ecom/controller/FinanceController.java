@@ -148,7 +148,7 @@ public class FinanceController {
 	public CustomHttpResponse<Report> addReport (@Valid @RequestBody Report report, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy().getId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -165,7 +165,7 @@ public class FinanceController {
 	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody Report report, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy());
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy().getId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();

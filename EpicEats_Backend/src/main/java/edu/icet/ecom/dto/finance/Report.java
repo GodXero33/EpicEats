@@ -1,5 +1,6 @@
 package edu.icet.ecom.dto.finance;
 
+import edu.icet.ecom.dto.employee.Employee;
 import edu.icet.ecom.util.enumaration.ReportType;
 import lombok.*;
 
@@ -18,7 +19,7 @@ public class Report {
 	private ReportType type;
 	private LocalDate startDate;
 	private LocalDate endDate;
-	private Long generatedBy;
+	private Employee generatedBy;
 	private String title;
 	private String description;
 }
