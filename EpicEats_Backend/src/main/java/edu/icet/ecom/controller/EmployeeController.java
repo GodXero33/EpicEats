@@ -156,15 +156,27 @@ public class EmployeeController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
+	private CustomHttpResponse<EmployeeShift> getResponseAfterEmployeeShiftValidation (EmployeeShift employeeShift) {
+		final long employeeId = employeeShift.getEmployee().getId();
+
+		if (employeeId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be negative or zero");
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employeeId");
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		return null;
+	}
+
 	@EmployeeShiftAddApiDoc
 	@PostMapping("/shift/")
 	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeShift.getEmployee().getId());
+		final CustomHttpResponse<EmployeeShift> responseAfterEmployeeShiftValidation = this.getResponseAfterEmployeeShiftValidation(employeeShift);
 
-		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employeeId");
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (responseAfterEmployeeShiftValidation != null) return responseAfterEmployeeShiftValidation;
 
 		final Response<EmployeeShift> response = this.employeeShiftService.add(employeeShift);
 
@@ -178,6 +190,10 @@ public class EmployeeController {
 	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employeeShift.getId() == null || employeeShift.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Shift id can't be null, zero or negative");
+
+		final CustomHttpResponse<EmployeeShift> responseAfterEmployeeShiftValidation = this.getResponseAfterEmployeeShiftValidation(employeeShift);
+
+		if (responseAfterEmployeeShiftValidation != null) return responseAfterEmployeeShiftValidation;
 
 		final Response<EmployeeShift> response = this.employeeShiftService.update(employeeShift);
 
@@ -257,6 +273,12 @@ public class EmployeeController {
 	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistory promotionHistory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (promotionHistory.getId() == null || promotionHistory.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history id can't be null, zero or negative");
+		if (promotionHistory.getEmployee().getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history employee id can't be null, zero or negative");
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(promotionHistory.getEmployee().getId());
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employee id");
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<PromotionHistory> response = this.promotionHistoryService.update(promotionHistory);
 

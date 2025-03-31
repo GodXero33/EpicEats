@@ -118,6 +118,18 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 
 	@Override
+	public Response<Boolean> isExist (Long id) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM menu_item WHERE is_deleted = FALSE AND id = ?", id)) {
+			return resultSet.next() ?
+				new Response<>(true, ResponseType.FOUND) :
+				new Response<>(false, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
 	public Response<Boolean> isAllMenuItemsExist (List<Long> ids) {
 		final String query = "SELECT COUNT(*) FROM menu_item WHERE is_deleted = FALSE AND id IN (" +String.join(", ", Collections.nCopies(ids.size(), "?")) + ")";
 

@@ -143,15 +143,27 @@ public class FinanceController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
+	private CustomHttpResponse<Report> getResponseAfterReportValidation (Report report) {
+		final long employeeId = report.getGeneratedBy().getId();
+
+		if (employeeId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be negative or zero");
+
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
+
+		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
+		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		return null;
+	}
+
 	@ReportAddApiDoc
 	@PostMapping("/report/")
 	public CustomHttpResponse<Report> addReport (@Valid @RequestBody Report report, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy().getId());
+		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(report);
 
-		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (responseAfterReportValidation != null) return responseAfterReportValidation;
 
 		final Response<Report> response = this.reportService.add(report);
 
@@ -165,10 +177,9 @@ public class FinanceController {
 	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody Report report, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(report.getGeneratedBy().getId());
+		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(report);
 
-		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
-		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (responseAfterReportValidation != null) return responseAfterReportValidation;
 
 		final Response<Report> response = this.reportService.update(report);
 

@@ -50,7 +50,7 @@ public class SupplierServiceImpl implements SupplierService {
 
 	@Override
 	public Response<Boolean> isExist (Long id) {
-		return supplierRepository.isExist(id);
+		return this.supplierRepository.isExist(id);
 	}
 
 	@Override
