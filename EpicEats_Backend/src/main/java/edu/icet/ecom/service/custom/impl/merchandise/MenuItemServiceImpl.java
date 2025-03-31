@@ -49,6 +49,11 @@ public class MenuItemServiceImpl implements MenuItemService {
 	}
 
 	@Override
+	public Response<Boolean> isExist (Long id) {
+		return this.menuItemRepository.isExist(id);
+	}
+
+	@Override
 	public Response<Boolean> isAllMenuItemsExist (List<Long> ids) {
 		return this.menuItemRepository.isAllMenuItemsExist(ids);
 	}

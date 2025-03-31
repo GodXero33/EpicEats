@@ -1,5 +1,6 @@
 package edu.icet.ecom.entity.inventory;
 
+import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,9 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InventoryPurchaseEntity {
 	private Long id;
-	private Long inventoryId;
-	private Long menuItemId;
-	private Long supplierId;
+	private InventoryEntity inventory;
+	private MenuItemEntity menuItem;
+	private SupplierEntity supplier;
 	private Integer quantity;
 	private Double cost;
 	private LocalDateTime purchasedAt;
