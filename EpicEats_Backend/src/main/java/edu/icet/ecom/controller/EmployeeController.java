@@ -122,10 +122,10 @@ public class EmployeeController {
 
 	@EmployeeShiftGetApiDoc
 	@GetMapping("/shift/{id}")
-	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id) {
+	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<EmployeeShift> response = this.employeeShiftService.get(id);
+		final Response<EmployeeShift> response = isFull ? this.employeeShiftService.getFull(id) : this.employeeShiftService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift found.");
@@ -136,8 +136,8 @@ public class EmployeeController {
 
 	@EmployeeShiftGetAllApiDoc
 	@GetMapping("/shift/all")
-	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
-		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
+	public CustomHttpResponse<List<EmployeeShift>> getAllShifts (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+		final Response<List<EmployeeShift>> response = isFull ? this.employeeShiftService.getAllFull() : this.employeeShiftService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :

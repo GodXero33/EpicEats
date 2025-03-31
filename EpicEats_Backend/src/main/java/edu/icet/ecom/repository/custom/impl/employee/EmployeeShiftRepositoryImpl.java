@@ -73,11 +73,49 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 		}
 	}
 
+	@Override
+	public Response<EmployeeShiftEntity> get (Long id) {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.shift_date, es.start_time, es.end_time, e.id FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.id = ? AND es.is_deleted = FALSE AND e.is_terminated = FALSE", id)) {
+			return resultSet.next() ?
+				new Response<>(EmployeeShiftEntity.builder()
+					.id(id)
+					.shiftDate(DateTimeUtil.parseDate(resultSet.getString(1)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(2)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(3)))
+					.employee(EmployeeEntity.builder().id(resultSet.getLong(4)).build())
+					.build(), ResponseType.FOUND) :
+				new Response<>(null, ResponseType.NOT_FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<List<EmployeeShiftEntity>> getAll () {
+		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.id, es.shift_date, es.start_time, es.end_time, e.id FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.is_deleted = FALSE AND e.is_terminated = FALSE")) {
+			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
+
+			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
+				.id(resultSet.getLong(1))
+				.shiftDate(DateTimeUtil.parseDate(resultSet.getString(2)))
+				.startTime(DateTimeUtil.parseTime(resultSet.getString(3)))
+				.endTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.employee(EmployeeEntity.builder().id(resultSet.getLong(5)).build())
+				.build());
+
+			return new Response<>(employeeShiftEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
 	/**
 	 * Pass complete employee data while frontend might not have employee data.
 	 */
 	@Override
-	public Response<EmployeeShiftEntity> get (Long id) {
+	public Response<EmployeeShiftEntity> getFull (Long id) {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.shift_date, es.start_time, es.end_time, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.id = ? AND es.is_deleted = FALSE AND e.is_terminated = FALSE", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeShiftEntity.builder()
@@ -108,7 +146,7 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	 * Pass complete employee data because all shifts contains an employee, and it will be easier to frontend have complete employee data bind here so don't have to send requests to get employees data again.
 	 */
 	@Override
-	public Response<List<EmployeeShiftEntity>> getAll () {
+	public Response<List<EmployeeShiftEntity>> getAllFull () {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.id, es.shift_date, es.start_time, es.end_time, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.is_deleted = FALSE AND e.is_terminated = FALSE")) {
 			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
 

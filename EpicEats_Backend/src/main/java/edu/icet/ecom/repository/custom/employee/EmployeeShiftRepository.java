@@ -7,6 +7,8 @@ import edu.icet.ecom.util.Response;
 import java.util.List;
 
 public interface EmployeeShiftRepository extends CrudRepository<EmployeeShiftEntity> {
+	Response<EmployeeShiftEntity> getFull (Long id);
+	Response<List<EmployeeShiftEntity>> getAllFull ();
 	Response<List<EmployeeShiftEntity>> getAllByEmployeeId (Long employeeId);
 	Response<Object> deletedByEmployeeId (Long employeeId);
 }
