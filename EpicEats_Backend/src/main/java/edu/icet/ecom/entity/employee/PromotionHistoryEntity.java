@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PromotionHistoryEntity {
 	private Long id;
-	private Long employeeId;
+	private EmployeeEntity employee;
 	private EmployeeRole oldRole;
 	private EmployeeRole newRole;
 	private LocalDate promotionDate;

@@ -78,7 +78,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 			if (!oldRole.equals(entity.getRole())) {
 				Response<PromotionHistoryEntity> response = this.promotionHistoryRepository.add(PromotionHistoryEntity.builder()
-					.employeeId(entity.getId())
+					.employee(entity)
 					.promotionDate(DateTimeUtil.parseDate(DateTimeUtil.getCurrentDate()))
 					.oldRole(oldRole)
 					.newRole(entity.getRole())
