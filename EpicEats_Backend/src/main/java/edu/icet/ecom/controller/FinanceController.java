@@ -104,10 +104,10 @@ public class FinanceController {
 
 	@ReportGetApiDoc
 	@GetMapping("/report/{id}")
-	public CustomHttpResponse<Report> getReport (@PathVariable("id") Long id) {
+	public CustomHttpResponse<Report> getReport (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<Report> response = this.reportService.get(id);
+		final Response<Report> response = isFull ? this.reportService.getFull(id) : this.reportService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report found");
@@ -118,8 +118,8 @@ public class FinanceController {
 
 	@ReportGetAllApiDoc
 	@GetMapping("/report/all")
-	public CustomHttpResponse<List<Report>> getAllReports () {
-		final Response<List<Report>> response = this.reportService.getAll();
+	public CustomHttpResponse<List<Report>> getAllReports (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+		final Response<List<Report>> response = isFull ? this.reportService.getAllFull() : this.reportService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All reports are retrieved successfully") :

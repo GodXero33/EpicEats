@@ -122,10 +122,10 @@ public class EmployeeController {
 
 	@EmployeeShiftGetApiDoc
 	@GetMapping("/shift/{id}")
-	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id) {
+	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<EmployeeShift> response = this.employeeShiftService.get(id);
+		final Response<EmployeeShift> response = isFull ? this.employeeShiftService.getFull(id) : this.employeeShiftService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift found.");
@@ -136,8 +136,8 @@ public class EmployeeController {
 
 	@EmployeeShiftGetAllApiDoc
 	@GetMapping("/shift/all")
-	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
-		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
+	public CustomHttpResponse<List<EmployeeShift>> getAllShifts (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+		final Response<List<EmployeeShift>> response = isFull ? this.employeeShiftService.getAllFull() : this.employeeShiftService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
@@ -218,10 +218,10 @@ public class EmployeeController {
 
 	@PromotionHistoryGetApiDoc
 	@GetMapping("/promotion/{id}")
-	public CustomHttpResponse<PromotionHistory> getPromotion (@PathVariable("id") Long id) {
+	public CustomHttpResponse<PromotionHistory> getPromotion (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<PromotionHistory> response = this.promotionHistoryService.get(id);
+		final Response<PromotionHistory> response = isFull ? this.promotionHistoryService.getFull(id) : this.promotionHistoryService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Promotion record found");
@@ -232,8 +232,8 @@ public class EmployeeController {
 
 	@PromotionHistoryGetAllApiDoc
 	@GetMapping("/promotion/all")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions () {
-		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
+	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+		final Response<List<PromotionHistory>> response = isFull ? this.promotionHistoryService.getAllFull() : this.promotionHistoryService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded") :

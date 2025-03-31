@@ -52,6 +52,25 @@ public class PromotionHistoryServiceImpl implements PromotionHistoryService {
 	}
 
 	@Override
+	public Response<PromotionHistory> getFull (Long id) {
+		final Response<PromotionHistoryEntity> response = this.promotionHistoryRepository.getFull(id);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), PromotionHistory.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<List<PromotionHistory>> getAllFull () {
+		final Response<List<PromotionHistoryEntity>> response = this.promotionHistoryRepository.getAllFull();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(promotionHistoryEntity -> this.mapper.map(promotionHistoryEntity, PromotionHistory.class)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
+	}
+
+	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return this.promotionHistoryRepository.deleteByEmployeeId(employeeId);
 	}

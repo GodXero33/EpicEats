@@ -1,12 +1,12 @@
 package edu.icet.ecom.service.custom.employee;
 
 import edu.icet.ecom.dto.employee.EmployeeShift;
-import edu.icet.ecom.service.SuperService;
+import edu.icet.ecom.service.FullDataService;
 import edu.icet.ecom.util.Response;
 
 import java.util.List;
 
-public interface EmployeeShiftService extends SuperService<EmployeeShift> {
+public interface EmployeeShiftService extends FullDataService<EmployeeShift> {
 	Response<Object> deleteByEmployeeId (Long employeeId);
 	Response<List<EmployeeShift>> getAllByEmployeeId (Long employeeId);
 }

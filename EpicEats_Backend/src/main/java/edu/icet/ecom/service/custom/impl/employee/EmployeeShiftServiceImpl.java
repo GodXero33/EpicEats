@@ -52,6 +52,25 @@ public class EmployeeShiftServiceImpl implements EmployeeShiftService {
 	}
 
 	@Override
+	public Response<EmployeeShift> getFull (Long id) {
+		final Response<EmployeeShiftEntity> response = this.employeeShiftRepository.getFull(id);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), EmployeeShift.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<List<EmployeeShift>> getAllFull () {
+		final Response<List<EmployeeShiftEntity>> response = this.employeeShiftRepository.getAllFull();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(employeeShiftEntity -> this.mapper.map(employeeShiftEntity, EmployeeShift.class)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
+	}
+
+	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return this.employeeShiftRepository.deletedByEmployeeId(employeeId);
 	}
