@@ -33,9 +33,9 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
 				"INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost) VALUES (?, ?, ?, ?, ?)",
-				entity.getInventoryId(),
-				entity.getMenuItemId(),
-				entity.getSupplierId(),
+				entity.getInventory().getId(),
+				entity.getMenuItem().getId(),
+				entity.getSupplier().getId(),
 				entity.getQuantity(),
 				entity.getCost()
 			);
@@ -76,9 +76,9 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 		try {
 			return (Integer) this.crudUtil.execute(
 				"UPDATE inventory_purchase SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getInventoryId(),
-				entity.getMenuItemId(),
-				entity.getSupplierId(),
+				entity.getInventory().getId(),
+				entity.getMenuItem().getId(),
+				entity.getSupplier().getId(),
 				entity.getQuantity(),
 				entity.getCost(),
 				entity.getId()
@@ -109,9 +109,9 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			return resultSet.next() ?
 				new Response<>(InventoryPurchaseEntity.builder()
 					.id(id)
-					.inventoryId(resultSet.getLong(1))
-					.menuItemId(resultSet.getLong(2))
-					.supplierId(resultSet.getLong(3))
+					.inventory(null)
+					.menuItem(null)
+					.supplier(null)
 					.quantity(resultSet.getInt(4))
 					.cost(resultSet.getDouble(5))
 					.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(6)))
@@ -130,9 +130,9 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 			while (resultSet.next()) inventoryPurchaseEntities.add(InventoryPurchaseEntity.builder()
 				.id(resultSet.getLong(1))
-				.inventoryId(resultSet.getLong(2))
-				.menuItemId(resultSet.getLong(3))
-				.supplierId(resultSet.getLong(4))
+				.inventory(null)
+				.menuItem(null)
+				.supplier(null)
 				.quantity(resultSet.getInt(5))
 				.cost(resultSet.getDouble(6))
 				.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(7)))

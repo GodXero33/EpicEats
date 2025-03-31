@@ -1,5 +1,6 @@
 package edu.icet.ecom.dto.inventory;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -9,7 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SupplierStockRecord {
+	@NotNull(message = "Inventory can't be null")
 	private Inventory inventory;
 	private Long quantity;
-	private Long supplierId;
+	@NotNull(message = "Supplier can't be null")
+	private Supplier supplier;
 }

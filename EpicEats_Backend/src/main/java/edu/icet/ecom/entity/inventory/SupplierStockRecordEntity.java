@@ -11,5 +11,5 @@ import lombok.*;
 public class SupplierStockRecordEntity {
 	private InventoryEntity inventory;
 	private Long quantity;
-	private Long supplierId;
+	private SupplierEntity supplier;
 }
