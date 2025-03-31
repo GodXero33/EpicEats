@@ -1,6 +1,7 @@
 package edu.icet.ecom.dto.employee;
 
 import edu.icet.ecom.util.enumaration.EmployeeRole;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PromotionHistory {
 	private Long id;
+	@NotNull(message = "Employee can't be null")
 	private Employee employee;
 	private EmployeeRole oldRole;
 	private EmployeeRole newRole;

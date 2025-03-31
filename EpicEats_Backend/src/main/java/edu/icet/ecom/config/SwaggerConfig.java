@@ -24,6 +24,7 @@ public class SwaggerConfig {
 					.url("https://www.godxero.dev.net"))
 		).servers(List.of(
 			new Server().url("http://localhost:8080").description("Local Server"),
+			new Server().url("http://192.168.8.159:8080").description("Lan Server"),
 			new Server().url("http://prepared-foxhound-prime.ngrok-free.app").description("Ngrok Server")
 		));
 	}

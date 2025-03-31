@@ -139,7 +139,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			final Response<InventoryEntity> newInventoryGetResponse = this.get(generatedInventoryId);
 			final boolean isSupplierInventoryRecordAdded = newInventoryGetResponse.getStatus() == ResponseType.FOUND && (Integer) this.crudUtil.execute(
 				"INSERT INTO supplier_inventory (supplier_id, inventory_id, quantity) VALUES (?, ?, ?)",
-				supplierStockRecordEntity.getSupplierId(),
+				supplierStockRecordEntity.getSupplier().getId(),
 				generatedInventoryId,
 				supplierStockRecordEntity.getInventory().getQuantity() // Because we add new inventory item, supplier_inventory is new too. So quantity from direct 'SupplierInventoryRecordEntity' object can be ignored. Just can use inventory quantity
 			) != 0;
@@ -151,7 +151,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 					new SupplierStockRecordEntity(
 						newInventoryGetResponse.getData(),
 						(long) supplierStockRecordEntity.getInventory().getQuantity(), // Same reason, if inventory is new quantity must be same to inventory quantity. Casting won't be any problem while this is very first time
-						supplierStockRecordEntity.getSupplierId()
+						supplierStockRecordEntity.getSupplier()
 					),
 					ResponseType.CREATED
 				);
@@ -190,7 +190,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 			final int quantity = supplierStockRecordEntity.getInventory().getQuantity();
 			final long inventoryId = supplierStockRecordEntity.getInventory().getId();
-			final long supplierId = supplierStockRecordEntity.getSupplierId();
+			final long supplierId = supplierStockRecordEntity.getSupplier().getId();
 
 			if ((Integer) this.crudUtil.execute("UPDATE inventory SET quantity = quantity + ? WHERE is_deleted = FALSE AND id = ?", quantity, inventoryId) == 0) {
 				connection.rollback();

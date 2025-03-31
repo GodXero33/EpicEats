@@ -97,9 +97,9 @@ public class InventoryController {
 	@PostMapping("/")
 	public CustomHttpResponse<SupplierStockRecord> add (@Valid @RequestBody SupplierStockRecord supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-		if (supplierStockRecord.getSupplierId() == null || supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
+		if (supplierStockRecord.getSupplier().getId() == null || supplierStockRecord.getSupplier().getId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplier().getId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -135,10 +135,10 @@ public class InventoryController {
 
 		if (supplierStockRecord.getInventory().getId() == null ||
 			supplierStockRecord.getInventory().getId() <= 0 ||
-			supplierStockRecord.getSupplierId() == null ||
-			supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
+			supplierStockRecord.getSupplier().getId() == null ||
+			supplierStockRecord.getSupplier().getId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplier().getId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();

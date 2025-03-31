@@ -1,8 +1,10 @@
 package edu.icet.ecom.service.custom.impl.inventory;
 
 import edu.icet.ecom.dto.inventory.Inventory;
+import edu.icet.ecom.dto.inventory.Supplier;
 import edu.icet.ecom.dto.inventory.SupplierStockRecord;
 import edu.icet.ecom.entity.inventory.InventoryEntity;
+import edu.icet.ecom.entity.inventory.SupplierEntity;
 import edu.icet.ecom.entity.inventory.SupplierStockRecordEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
@@ -68,7 +70,7 @@ public class InventoryServiceImpl implements InventoryService {
 			new SupplierStockRecordEntity(
 				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
 				supplierStockRecord.getQuantity(),
-				supplierStockRecord.getSupplierId()
+				this.mapper.map(supplierStockRecord.getSupplier(), SupplierEntity.class)
 			)
 		);
 
@@ -77,7 +79,7 @@ public class InventoryServiceImpl implements InventoryService {
 				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
-					response.getData().getSupplierId()
+					this.mapper.map(supplierStockRecord.getSupplier(), Supplier.class)
 				),
 				response.getStatus()
 			) :
@@ -90,7 +92,7 @@ public class InventoryServiceImpl implements InventoryService {
 			new SupplierStockRecordEntity(
 				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
 				supplierStockRecord.getQuantity(),
-				supplierStockRecord.getSupplierId()
+				this.mapper.map(supplierStockRecord.getSupplier(), SupplierEntity.class)
 			)
 		);
 
@@ -99,7 +101,7 @@ public class InventoryServiceImpl implements InventoryService {
 				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
-					response.getData().getSupplierId()
+					this.mapper.map(supplierStockRecord.getSupplier(), Supplier.class)
 				),
 				response.getStatus()
 			) :
