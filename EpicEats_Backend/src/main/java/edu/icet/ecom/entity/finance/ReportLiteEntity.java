@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportCreateEntity {
+public class ReportLiteEntity {
 	private Long id;
 	private LocalDateTime generatedAt;
 	private ReportType type;
