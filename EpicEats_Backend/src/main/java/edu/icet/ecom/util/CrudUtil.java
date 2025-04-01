@@ -28,7 +28,7 @@ public class CrudUtil {
 			}
 		}
 
-		if (query.matches("(?i)^select.*")) return (T) preparedStatement.executeQuery();
+		if (query.replaceAll("^\\s+", "").matches("(?is)^SELECT\\b.*")) return (T) preparedStatement.executeQuery();
 
 		return (T) ((Integer) preparedStatement.executeUpdate());
 	}
@@ -48,7 +48,7 @@ public class CrudUtil {
 			}
 		}
 
-		if (query.matches("(?i)^select.*")) return (T) preparedStatement.executeQuery();
+		if (query.replaceAll("^\\s+", "").matches("(?is)^SELECT\\b.*")) return (T) preparedStatement.executeQuery();
 
 		return (T) ((Integer) preparedStatement.executeUpdate());
 	}

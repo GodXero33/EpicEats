@@ -168,10 +168,10 @@ public class InventoryController {
 
 	@InventoryPurchaseGetApiDoc
 	@GetMapping("/purchase/{id}")
-	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
+	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<InventoryPurchase> response = this.inventoryPurchaseService.get(id);
+		final Response<InventoryPurchase> response = isFull ? this.inventoryPurchaseService.getFull(id) : this.inventoryPurchaseService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
@@ -182,8 +182,8 @@ public class InventoryController {
 
 	@InventoryPurchaseGetAllApiDoc
 	@GetMapping("/purchase/all")
-	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase () {
-		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
+	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+		final Response<List<InventoryPurchase>> response = isFull ? this.inventoryPurchaseService.getAllFull() : this.inventoryPurchaseService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "ALl inventory purchases loaded successfully") :
