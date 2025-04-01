@@ -231,7 +231,7 @@ public class ReportRepositoryImpl implements ReportRepository {
 		try {
 			connection.setAutoCommit(false);
 
-			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
+			if ((Integer) this.crudUtil.execute(
 				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
 				entity.getType().name(),
 				entity.getStartDate(),
@@ -240,7 +240,10 @@ public class ReportRepositoryImpl implements ReportRepository {
 				entity.getTitle(),
 				entity.getDescription(),
 				entity.getId()
-			);
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
 
 			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getGeneratedBy());
 
@@ -257,7 +260,7 @@ public class ReportRepositoryImpl implements ReportRepository {
 			connection.commit();
 
 			final ReportEntity report = ReportEntity.builder()
-				.id(generatedId)
+				.id(entity.getId())
 				.generatedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
 				.type(entity.getType())
 				.startDate(entity.getStartDate())
