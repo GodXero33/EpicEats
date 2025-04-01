@@ -3,6 +3,7 @@ package edu.icet.ecom.controller;
 import edu.icet.ecom.config.apidoc.finance.*;
 import edu.icet.ecom.dto.finance.Expense;
 import edu.icet.ecom.dto.finance.Report;
+import edu.icet.ecom.dto.finance.ReportCreate;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.finance.ExpenseService;
 import edu.icet.ecom.service.custom.finance.ReportService;
@@ -143,12 +144,10 @@ public class FinanceController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
-	private CustomHttpResponse<Report> getResponseAfterReportValidation (Report report) {
-		final long employeeId = report.getGeneratedBy().getId();
+	private CustomHttpResponse<Report> getResponseAfterReportValidation (ReportCreate reportCreate) {
+		if (reportCreate.getGeneratedBy() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be negative or zero");
 
-		if (employeeId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be negative or zero");
-
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(employeeId);
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(reportCreate.getGeneratedBy());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getEmployeeNotFoundResponse();
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -158,30 +157,32 @@ public class FinanceController {
 
 	@ReportAddApiDoc
 	@PostMapping("/report/")
-	public CustomHttpResponse<Report> addReport (@Valid @RequestBody Report report, BindingResult result) {
+	public CustomHttpResponse<Report> addReport (@Valid @RequestBody ReportCreate reportCreate, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(report);
+		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(reportCreate);
 
 		if (responseAfterReportValidation != null) return responseAfterReportValidation;
 
-		final Response<Report> response = this.reportService.add(report);
+		final Response<Report> response = this.reportService.add(reportCreate);
 
-		return response.getStatus() == ResponseType.CREATED ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report added successfully") :
-			this.controllerResponseUtil.getServerErrorResponse();
+		return switch (response.getStatus()) {
+			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report added successfully");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Report adding failed");
+		};
 	}
 
 	@ReportUpdateApiDoc
 	@PutMapping("/report/")
-	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody Report report, BindingResult result) {
+	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody ReportCreate reportCreate, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(report);
+		final CustomHttpResponse<Report> responseAfterReportValidation = this.getResponseAfterReportValidation(reportCreate);
 
 		if (responseAfterReportValidation != null) return responseAfterReportValidation;
 
-		final Response<Report> response = this.reportService.update(report);
+		final Response<Report> response = this.reportService.update(reportCreate);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Report has updated");
