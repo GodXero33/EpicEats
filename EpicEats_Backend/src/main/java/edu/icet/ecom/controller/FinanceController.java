@@ -1,10 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.finance.*;
-import edu.icet.ecom.dto.finance.Expense;
-import edu.icet.ecom.dto.finance.Report;
-import edu.icet.ecom.dto.finance.ReportLite;
-import edu.icet.ecom.dto.finance.ReportsByEmployee;
+import edu.icet.ecom.dto.finance.*;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.finance.ExpenseService;
 import edu.icet.ecom.service.custom.finance.ReportService;
@@ -120,8 +117,8 @@ public class FinanceController {
 
 	@ReportGetAllApiDoc
 	@GetMapping("/report/all")
-	public CustomHttpResponse<List<Report>> getAllReports (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
-		final Response<List<Report>> response = isFull ? this.reportService.getAllFull() : this.reportService.getAll();
+	public CustomHttpResponse<AllReports> getAllReports () {
+		final Response<AllReports> response = this.reportService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All reports are retrieved successfully") :

@@ -1,8 +1,10 @@
 package edu.icet.ecom.service.custom.impl.finance;
 
+import edu.icet.ecom.dto.finance.AllReports;
 import edu.icet.ecom.dto.finance.Report;
 import edu.icet.ecom.dto.finance.ReportLite;
 import edu.icet.ecom.dto.finance.ReportsByEmployee;
+import edu.icet.ecom.entity.finance.AllReportsEntity;
 import edu.icet.ecom.entity.finance.ReportLiteEntity;
 import edu.icet.ecom.entity.finance.ReportEntity;
 import edu.icet.ecom.entity.finance.ReportsByEmployeeEntity;
@@ -90,6 +92,16 @@ public class ReportServiceImpl implements ReportService {
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), Report.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<AllReports> getAllStructured () {
+		final Response<AllReportsEntity> response = this.reportRepository.getAllStructured();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllReports.class) :
 			null
 			, response.getStatus());
 	}
