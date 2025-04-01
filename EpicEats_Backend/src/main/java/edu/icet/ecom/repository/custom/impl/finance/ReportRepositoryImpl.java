@@ -1,7 +1,9 @@
 package edu.icet.ecom.repository.custom.impl.finance;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
+import edu.icet.ecom.entity.finance.ReportCreateEntity;
 import edu.icet.ecom.entity.finance.ReportEntity;
+import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,48 +26,16 @@ import java.util.List;
 public class ReportRepositoryImpl implements ReportRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
+	private final EmployeeRepository employeeRepository;
 
 	@Override
 	public Response<ReportEntity> add (ReportEntity entity) {
-		try {
-			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?)",
-				entity.getType().name(),
-				entity.getStartDate(),
-				entity.getEndDate(),
-				entity.getGeneratedBy().getId(),
-				entity.getTitle(),
-				entity.getDescription()
-			);
-
-			entity.setId(generatedId);
-
-			return new Response<>(entity, ResponseType.CREATED);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
+		return new Response<>(null, ResponseType.SERVER_ERROR);
 	}
 
 	@Override
 	public Response<ReportEntity> update (ReportEntity entity) {
-		try {
-			return (Integer) this.crudUtil.execute(
-				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getType().name(),
-				entity.getStartDate(),
-				entity.getEndDate(),
-				entity.getGeneratedBy().getId(),
-				entity.getTitle(),
-				entity.getDescription(),
-				entity.getId()
-			) == 0 ?
-				new Response<>(null, ResponseType.NOT_UPDATED) :
-				new Response<>(entity, ResponseType.UPDATED);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
+		return new Response<>(null, ResponseType.SERVER_ERROR);
 	}
 
 	@Override
@@ -184,6 +155,138 @@ public class ReportRepositoryImpl implements ReportRepository {
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<ReportEntity> add (ReportCreateEntity entity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
+				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?)",
+				entity.getType().name(),
+				entity.getStartDate(),
+				entity.getEndDate(),
+				entity.getGeneratedBy(),
+				entity.getTitle(),
+				entity.getDescription()
+			);
+
+			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getGeneratedBy());
+
+			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, employeeGetResponse.getStatus());
+			}
+
+			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_CREATED);
+			}
+
+			connection.commit();
+
+			final ReportEntity report = ReportEntity.builder()
+				.id(generatedId)
+				.generatedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
+				.type(entity.getType())
+				.startDate(entity.getStartDate())
+				.endDate(entity.getEndDate())
+				.generatedBy(employeeGetResponse.getData())
+				.title(entity.getTitle())
+				.description(entity.getDescription())
+				.build();
+
+			return new Response<>(report, ResponseType.CREATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
+	}
+
+	@Override
+	public Response<ReportEntity> update (ReportCreateEntity entity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			if ((Integer) this.crudUtil.execute(
+				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
+				entity.getType().name(),
+				entity.getStartDate(),
+				entity.getEndDate(),
+				entity.getGeneratedBy(),
+				entity.getTitle(),
+				entity.getDescription(),
+				entity.getId()
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getGeneratedBy());
+
+			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, employeeGetResponse.getStatus());
+			}
+
+			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			connection.commit();
+
+			final ReportEntity report = ReportEntity.builder()
+				.id(entity.getId())
+				.generatedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
+				.type(entity.getType())
+				.startDate(entity.getStartDate())
+				.endDate(entity.getEndDate())
+				.generatedBy(employeeGetResponse.getData())
+				.title(entity.getTitle())
+				.description(entity.getDescription())
+				.build();
+
+			return new Response<>(report, ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
 		}
 	}
 

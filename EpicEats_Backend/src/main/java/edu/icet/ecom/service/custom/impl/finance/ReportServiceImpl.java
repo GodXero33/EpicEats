@@ -1,6 +1,8 @@
 package edu.icet.ecom.service.custom.impl.finance;
 
 import edu.icet.ecom.dto.finance.Report;
+import edu.icet.ecom.dto.finance.ReportCreate;
+import edu.icet.ecom.entity.finance.ReportCreateEntity;
 import edu.icet.ecom.entity.finance.ReportEntity;
 import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
@@ -68,6 +70,26 @@ public class ReportServiceImpl implements ReportService {
 		return response.getStatus() == ResponseType.FOUND ?
 			new Response<>(response.getData().stream().map(reportEntity -> this.mapper.map(reportEntity, Report.class)).toList(), response.getStatus()) :
 			new Response<>(null, response.getStatus());
+	}
+
+	@Override
+	public Response<Report> add (ReportCreate reportCreate) {
+		final Response<ReportEntity> response = this.reportRepository.add(this.mapper.map(reportCreate, ReportCreateEntity.class));
+
+		return new Response<>(response.getStatus() == ResponseType.CREATED ?
+			this.mapper.map(response.getData(), Report.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<Report> update (ReportCreate reportCreate) {
+		final Response<ReportEntity> response = this.reportRepository.update(this.mapper.map(reportCreate, ReportCreateEntity.class));
+
+		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
+			this.mapper.map(response.getData(), Report.class) :
+			null
+			, response.getStatus());
 	}
 
 	@Override
