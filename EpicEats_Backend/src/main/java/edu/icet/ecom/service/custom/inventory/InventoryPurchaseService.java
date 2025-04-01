@@ -1,7 +1,8 @@
 package edu.icet.ecom.service.custom.inventory;
 
 import edu.icet.ecom.dto.inventory.InventoryPurchase;
+import edu.icet.ecom.service.FullDataService;
 import edu.icet.ecom.service.SuperService;
 
-public interface InventoryPurchaseService extends SuperService<InventoryPurchase> {
+public interface InventoryPurchaseService extends FullDataService<InventoryPurchase> {
 }

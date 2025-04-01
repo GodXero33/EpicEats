@@ -6,6 +6,7 @@ import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enumaration.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,13 @@ import java.util.List;
 @Primary
 public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 	private final SuperServiceHandler<InventoryPurchase, InventoryPurchaseEntity> serviceHandler;
+	private final InventoryPurchaseRepository inventoryPurchaseRepository;
+	private final ModelMapper mapper;
 
 	public InventoryPurchaseServiceImpl (InventoryPurchaseRepository inventoryPurchaseRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(inventoryPurchaseRepository, mapper, InventoryPurchase.class, InventoryPurchaseEntity.class);
+		this.inventoryPurchaseRepository = inventoryPurchaseRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -44,5 +49,24 @@ public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 	@Override
 	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
+	}
+
+	@Override
+	public Response<InventoryPurchase> getFull (Long id) {
+		final Response<InventoryPurchaseEntity> response = this.inventoryPurchaseRepository.getFull(id);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), InventoryPurchase.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<List<InventoryPurchase>> getAllFull () {
+		final Response<List<InventoryPurchaseEntity>> response = this.inventoryPurchaseRepository.getAllFull();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(inventoryPurchaseEntity -> this.mapper.map(inventoryPurchaseEntity, InventoryPurchase.class)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
 	}
 }
