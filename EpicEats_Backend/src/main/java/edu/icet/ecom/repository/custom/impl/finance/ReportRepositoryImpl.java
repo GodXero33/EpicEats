@@ -56,50 +56,6 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<ReportEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE AND r.id = ?", id)) {
-			return resultSet.next() ?
-				new Response<>(ReportEntity.builder()
-					.id(id)
-					.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(1)))
-					.type(ReportType.fromName(resultSet.getString(2)))
-					.startDate(DateTimeUtil.parseDate(resultSet.getString(3)))
-					.endDate(DateTimeUtil.parseDate(resultSet.getString(4)))
-					.title(resultSet.getString(5))
-					.description(resultSet.getString(6))
-					.generatedBy(EmployeeEntity.builder().id(resultSet.getLong(7)).build())
-					.build(), ResponseType.FOUND) :
-				new Response<>(null, ResponseType.NOT_FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
-	}
-
-	@Override
-	public Response<List<ReportEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.id, r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE")) {
-			final List<ReportEntity> reportEntities = new ArrayList<>();
-
-			while (resultSet.next()) reportEntities.add(ReportEntity.builder()
-				.id(resultSet.getLong(1))
-				.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(2)))
-				.type(ReportType.fromName(resultSet.getString(3)))
-				.startDate(DateTimeUtil.parseDate(resultSet.getString(4)))
-				.endDate(DateTimeUtil.parseDate(resultSet.getString(5)))
-				.title(resultSet.getString(6))
-				.description(resultSet.getString(7))
-				.generatedBy(EmployeeEntity.builder().id(resultSet.getLong(8)).build())
-				.build());
-
-			return new Response<>(reportEntities, ResponseType.FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
-	}
-
-	@Override
-	public Response<ReportEntity> getFull (Long id) {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE AND r.id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(ReportEntity.builder()
@@ -130,36 +86,8 @@ public class ReportRepositoryImpl implements ReportRepository {
 	}
 
 	@Override
-	public Response<List<ReportEntity>> getAllFull () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.id, r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE")) {
-			final List<ReportEntity> reportEntities = new ArrayList<>();
-
-			while (resultSet.next()) reportEntities.add(ReportEntity.builder()
-				.id(resultSet.getLong(1))
-				.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(2)))
-				.type(ReportType.fromName(resultSet.getString(3)))
-				.startDate(DateTimeUtil.parseDate(resultSet.getString(4)))
-				.endDate(DateTimeUtil.parseDate(resultSet.getString(5)))
-				.title(resultSet.getString(6))
-				.description(resultSet.getString(7))
-				.generatedBy(EmployeeEntity.builder()
-					.id(resultSet.getLong(8))
-					.name(resultSet.getString(9))
-					.phone(resultSet.getString(10))
-					.email(resultSet.getString(11))
-					.address(resultSet.getString(12))
-					.salary(resultSet.getDouble(13))
-					.role(EmployeeRole.fromName(resultSet.getString(14)))
-					.dob(DateTimeUtil.parseDate(resultSet.getString(15)))
-					.employeeSince(DateTimeUtil.parseDate(resultSet.getString(16)))
-					.build())
-				.build());
-
-			return new Response<>(reportEntities, ResponseType.FOUND);
-		} catch (SQLException exception) {
-			this.logger.error(exception.getMessage());
-			return new Response<>(null, ResponseType.SERVER_ERROR);
-		}
+	public Response<List<ReportEntity>> getAll () {
+		return new Response<>(null, ResponseType.SERVER_ERROR);
 	}
 
 	@Override
