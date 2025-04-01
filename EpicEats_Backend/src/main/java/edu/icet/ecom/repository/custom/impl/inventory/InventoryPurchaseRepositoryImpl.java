@@ -1,10 +1,14 @@
 package edu.icet.ecom.repository.custom.impl.inventory;
 
+import edu.icet.ecom.entity.inventory.InventoryEntity;
 import edu.icet.ecom.entity.inventory.InventoryPurchaseEntity;
+import edu.icet.ecom.entity.inventory.SupplierEntity;
+import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enumaration.MenuItemCategory;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -15,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -105,18 +110,73 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 	@Override
 	public Response<InventoryPurchaseEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT inventory_id, menu_item_id, supplier_id, quantity, cost, purchased_at FROM inventory_purchase WHERE is_deleted = FALSE AND id = ?", id)) {
-			return resultSet.next() ?
-				new Response<>(InventoryPurchaseEntity.builder()
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			    ip.quantity,
+			    ip.cost,
+			    ip.purchased_at,
+			    s.id,
+			    s.name,
+			    s.phone,
+			    s.email,
+			    s.address,
+			    mi.id,
+			    mi.name,
+			    mi.price,
+			    mi.img,
+			    mi.category,
+			    mi.quantity,
+			    inv.id,
+			    inv.name,
+			    inv.description,
+			    inv.quantity,
+			    inv.unit,
+			    inv.updated_at,
+			    CASE
+			        WHEN mi.id IS NOT NULL THEN 'menu_item'
+			        WHEN inv.id IS NOT NULL THEN 'inventory'
+			    END AS type
+			FROM inventory_purchase ip
+			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
+			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
+			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
+			WHERE ip.is_deleted = FALSE AND ip.id = ?
+			""", id)) {
+			if (resultSet.next()) {
+				final boolean isMenuItem = Objects.equals(resultSet.getString(21), "menu_item");
+
+				return new Response<>(InventoryPurchaseEntity.builder()
 					.id(id)
-					.inventory(null)
-					.menuItem(null)
-					.supplier(null)
-					.quantity(resultSet.getInt(4))
-					.cost(resultSet.getDouble(5))
-					.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(6)))
-					.build(), ResponseType.FOUND) :
-				new Response<>(null, ResponseType.NOT_FOUND);
+					.quantity(resultSet.getInt(1))
+					.cost(resultSet.getDouble(2))
+					.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(3)))
+					.supplier(SupplierEntity.builder()
+						.id(resultSet.getLong(4))
+						.name(resultSet.getString(5))
+						.phone(resultSet.getString(6))
+						.email(resultSet.getString(7))
+						.address(resultSet.getString(8))
+						.build())
+					.menuItem(isMenuItem ? MenuItemEntity.builder()
+						.id(resultSet.getLong(9))
+						.name(resultSet.getString(10))
+						.price(resultSet.getDouble(11))
+						.img(resultSet.getString(12))
+						.category(MenuItemCategory.fromName(resultSet.getString(13)))
+						.quantity(resultSet.getInt(14))
+						.build() : null)
+					.inventory(!isMenuItem ? InventoryEntity.builder()
+						.id(resultSet.getLong(15))
+						.name(resultSet.getString(16))
+						.description(resultSet.getString(17))
+						.quantity(resultSet.getInt(18))
+						.unit(resultSet.getString(19))
+						.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(20)))
+						.build() : null)
+					.build(), ResponseType.FOUND);
+			}
+
+			return new Response<>(null, ResponseType.NOT_FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -125,18 +185,74 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 	@Override
 	public Response<List<InventoryPurchaseEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, inventory_id, menu_item_id, supplier_id, quantity, cost, purchased_at FROM inventory_purchase WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			    ip.id,
+			    ip.quantity,
+			    ip.cost,
+			    ip.purchased_at,
+			    s.id,
+			    s.name,
+			    s.phone,
+			    s.email,
+			    s.address,
+			    mi.id,
+			    mi.name,
+			    mi.price,
+			    mi.img,
+			    mi.category,
+			    mi.quantity,
+			    inv.id,
+			    inv.name,
+			    inv.description,
+			    inv.quantity,
+			    inv.unit,
+			    inv.updated_at,
+			    CASE
+			        WHEN mi.id IS NOT NULL THEN 'menu_item'
+			        WHEN inv.id IS NOT NULL THEN 'inventory'
+			    END AS type
+			FROM inventory_purchase ip
+			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
+			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
+			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
+			WHERE ip.is_deleted = FALSE
+			""")) {
 			final List<InventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
 
-			while (resultSet.next()) inventoryPurchaseEntities.add(InventoryPurchaseEntity.builder()
-				.id(resultSet.getLong(1))
-				.inventory(null)
-				.menuItem(null)
-				.supplier(null)
-				.quantity(resultSet.getInt(5))
-				.cost(resultSet.getDouble(6))
-				.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(7)))
-				.build());
+			while (resultSet.next()) {
+				final boolean isMenuItem = Objects.equals(resultSet.getString(22), "menu_item");
+
+				inventoryPurchaseEntities.add(InventoryPurchaseEntity.builder()
+					.id(resultSet.getLong(1))
+					.quantity(resultSet.getInt(2))
+					.cost(resultSet.getDouble(3))
+					.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(4)))
+					.supplier(SupplierEntity.builder()
+						.id(resultSet.getLong(5))
+						.name(resultSet.getString(6))
+						.phone(resultSet.getString(7))
+						.email(resultSet.getString(8))
+						.address(resultSet.getString(9))
+						.build())
+					.menuItem(isMenuItem ? MenuItemEntity.builder()
+						.id(resultSet.getLong(10))
+						.name(resultSet.getString(11))
+						.price(resultSet.getDouble(12))
+						.img(resultSet.getString(13))
+						.category(MenuItemCategory.fromName(resultSet.getString(14)))
+						.quantity(resultSet.getInt(15))
+						.build() : null)
+					.inventory(!isMenuItem ? InventoryEntity.builder()
+						.id(resultSet.getLong(16))
+						.name(resultSet.getString(17))
+						.description(resultSet.getString(18))
+						.quantity(resultSet.getInt(19))
+						.unit(resultSet.getString(20))
+						.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(21)))
+						.build() : null)
+					.build());
+			}
 
 			return new Response<>(inventoryPurchaseEntities, ResponseType.FOUND);
 		} catch (SQLException exception) {
