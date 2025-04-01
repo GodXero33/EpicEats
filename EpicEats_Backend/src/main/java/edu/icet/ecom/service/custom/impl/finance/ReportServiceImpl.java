@@ -1,9 +1,11 @@
 package edu.icet.ecom.service.custom.impl.finance;
 
 import edu.icet.ecom.dto.finance.Report;
-import edu.icet.ecom.dto.finance.ReportCreate;
-import edu.icet.ecom.entity.finance.ReportCreateEntity;
+import edu.icet.ecom.dto.finance.ReportLite;
+import edu.icet.ecom.dto.finance.ReportsByEmployee;
+import edu.icet.ecom.entity.finance.ReportLiteEntity;
 import edu.icet.ecom.entity.finance.ReportEntity;
+import edu.icet.ecom.entity.finance.ReportsByEmployeeEntity;
 import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.finance.ReportService;
@@ -73,8 +75,8 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public Response<Report> add (ReportCreate reportCreate) {
-		final Response<ReportEntity> response = this.reportRepository.add(this.mapper.map(reportCreate, ReportCreateEntity.class));
+	public Response<Report> add (ReportLite report) {
+		final Response<ReportEntity> response = this.reportRepository.add(this.mapper.map(report, ReportLiteEntity.class));
 
 		return new Response<>(response.getStatus() == ResponseType.CREATED ?
 			this.mapper.map(response.getData(), Report.class) :
@@ -83,8 +85,8 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public Response<Report> update (ReportCreate reportCreate) {
-		final Response<ReportEntity> response = this.reportRepository.update(this.mapper.map(reportCreate, ReportCreateEntity.class));
+	public Response<Report> update (ReportLite report) {
+		final Response<ReportEntity> response = this.reportRepository.update(this.mapper.map(report, ReportLiteEntity.class));
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), Report.class) :
@@ -98,11 +100,12 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public Response<List<Report>> getAllByEmployeeId (Long employeeId) {
-		final Response<List<ReportEntity>> response = this.reportRepository.getAllByEmployeeId(employeeId);
+	public Response<ReportsByEmployee> getAllByEmployeeId (Long employeeId) {
+		final Response<ReportsByEmployeeEntity> response = this.reportRepository.getAllByEmployeeId(employeeId);
 
-		return response.getStatus() == ResponseType.FOUND ?
-			new Response<>(response.getData().stream().map(reportEntity -> this.mapper.map(reportEntity, Report.class)).toList(), response.getStatus()) :
-			new Response<>(null, response.getStatus());
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), ReportsByEmployee.class) :
+			null
+			, response.getStatus());
 	}
 }

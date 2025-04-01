@@ -1,8 +1,9 @@
 package edu.icet.ecom.repository.custom.impl.finance;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
-import edu.icet.ecom.entity.finance.ReportCreateEntity;
+import edu.icet.ecom.entity.finance.ReportLiteEntity;
 import edu.icet.ecom.entity.finance.ReportEntity;
+import edu.icet.ecom.entity.finance.ReportsByEmployeeEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.finance.ReportRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -159,7 +160,7 @@ public class ReportRepositoryImpl implements ReportRepository {
 	}
 
 	@Override
-	public Response<ReportEntity> add (ReportCreateEntity entity) {
+	public Response<ReportEntity> add (ReportLiteEntity report) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -169,40 +170,40 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
 				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?)",
-				entity.getType().name(),
-				entity.getStartDate(),
-				entity.getEndDate(),
-				entity.getGeneratedBy(),
-				entity.getTitle(),
-				entity.getDescription()
+				report.getType().name(),
+				report.getStartDate(),
+				report.getEndDate(),
+				report.getGeneratedBy(),
+				report.getTitle(),
+				report.getDescription()
 			);
 
-			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getGeneratedBy());
+			final Response<EmployeeEntity> getEmployeeResponse = this.employeeRepository.get(report.getGeneratedBy());
 
-			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+			if (getEmployeeResponse.getStatus() == ResponseType.SERVER_ERROR) {
 				connection.rollback();
-				return new Response<>(null, employeeGetResponse.getStatus());
+				return new Response<>(null, getEmployeeResponse.getStatus());
 			}
 
-			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) {
+			if (getEmployeeResponse.getStatus() == ResponseType.NOT_FOUND) {
 				connection.rollback();
 				return new Response<>(null, ResponseType.NOT_CREATED);
 			}
 
 			connection.commit();
 
-			final ReportEntity report = ReportEntity.builder()
+			final ReportEntity createdReport = ReportEntity.builder()
 				.id(generatedId)
 				.generatedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
-				.type(entity.getType())
-				.startDate(entity.getStartDate())
-				.endDate(entity.getEndDate())
-				.generatedBy(employeeGetResponse.getData())
-				.title(entity.getTitle())
-				.description(entity.getDescription())
+				.type(report.getType())
+				.startDate(report.getStartDate())
+				.endDate(report.getEndDate())
+				.generatedBy(getEmployeeResponse.getData())
+				.title(report.getTitle())
+				.description(report.getDescription())
 				.build();
 
-			return new Response<>(report, ResponseType.CREATED);
+			return new Response<>(createdReport, ResponseType.CREATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -223,7 +224,7 @@ public class ReportRepositoryImpl implements ReportRepository {
 	}
 
 	@Override
-	public Response<ReportEntity> update (ReportCreateEntity entity) {
+	public Response<ReportEntity> update (ReportLiteEntity report) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -233,44 +234,44 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 			if ((Integer) this.crudUtil.execute(
 				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getType().name(),
-				entity.getStartDate(),
-				entity.getEndDate(),
-				entity.getGeneratedBy(),
-				entity.getTitle(),
-				entity.getDescription(),
-				entity.getId()
+				report.getType().name(),
+				report.getStartDate(),
+				report.getEndDate(),
+				report.getGeneratedBy(),
+				report.getTitle(),
+				report.getDescription(),
+				report.getId()
 			) == 0) {
 				connection.rollback();
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
-			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getGeneratedBy());
+			final Response<EmployeeEntity> getEmployeeResponse = this.employeeRepository.get(report.getGeneratedBy());
 
-			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+			if (getEmployeeResponse.getStatus() == ResponseType.SERVER_ERROR) {
 				connection.rollback();
-				return new Response<>(null, employeeGetResponse.getStatus());
+				return new Response<>(null, getEmployeeResponse.getStatus());
 			}
 
-			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) {
+			if (getEmployeeResponse.getStatus() == ResponseType.NOT_FOUND) {
 				connection.rollback();
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
 			connection.commit();
 
-			final ReportEntity report = ReportEntity.builder()
-				.id(entity.getId())
+			final ReportEntity updatedReport = ReportEntity.builder()
+				.id(report.getId())
 				.generatedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
-				.type(entity.getType())
-				.startDate(entity.getStartDate())
-				.endDate(entity.getEndDate())
-				.generatedBy(employeeGetResponse.getData())
-				.title(entity.getTitle())
-				.description(entity.getDescription())
+				.type(report.getType())
+				.startDate(report.getStartDate())
+				.endDate(report.getEndDate())
+				.generatedBy(getEmployeeResponse.getData())
+				.title(report.getTitle())
+				.description(report.getDescription())
 				.build();
 
-			return new Response<>(report, ResponseType.UPDATED);
+			return new Response<>(updatedReport, ResponseType.UPDATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -303,21 +304,30 @@ public class ReportRepositoryImpl implements ReportRepository {
 	}
 
 	@Override
-	public Response<List<ReportEntity>> getAllByEmployeeId (Long employeeId) { // If frontend has employee id that means other employee's data also there. No need to send again.
+	public Response<ReportsByEmployeeEntity> getAllByEmployeeId (Long employeeId) {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, generated_at, report_type, start_date, end_date, title, description FROM report WHERE is_deleted = FALSE AND generated_by = ?", employeeId)) {
-			final List<ReportEntity> reportEntities = new ArrayList<>();
+			final Response<EmployeeEntity> reportGeneratedEmployeeResponse = this.employeeRepository.get(employeeId);
 
-			while (resultSet.next()) reportEntities.add(ReportEntity.builder()
-				.id(resultSet.getLong(1))
-				.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(2)))
-				.type(ReportType.fromName(resultSet.getString(3)))
-				.startDate(DateTimeUtil.parseDate(resultSet.getString(4)))
-				.endDate(DateTimeUtil.parseDate(resultSet.getString(5)))
-				.title(resultSet.getString(6))
-				.description(resultSet.getString(7))
-				.build());
+			if (reportGeneratedEmployeeResponse.getStatus() == ResponseType.SERVER_ERROR)
+				return new Response<>(null, ResponseType.SERVER_ERROR);
 
-			return new Response<>(reportEntities, ResponseType.FOUND);
+			final List<ReportLiteEntity> reportEntities = new ArrayList<>();
+
+			while (resultSet.next())
+				reportEntities.add(ReportLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.generatedAt(DateTimeUtil.parseDateTime(resultSet.getString(2)))
+					.type(ReportType.fromName(resultSet.getString(3)))
+					.startDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+					.endDate(DateTimeUtil.parseDate(resultSet.getString(5)))
+					.title(resultSet.getString(6))
+					.description(resultSet.getString(7))
+					.build());
+
+			return new Response<>(ReportsByEmployeeEntity.builder()
+				.reports(reportEntities)
+				.generatedBy(reportGeneratedEmployeeResponse.getData())
+				.build(), ResponseType.FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
