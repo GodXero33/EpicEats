@@ -2,9 +2,14 @@ package edu.icet.ecom.repository.custom.impl.inventory;
 
 import edu.icet.ecom.entity.inventory.InventoryEntity;
 import edu.icet.ecom.entity.inventory.InventoryPurchaseEntity;
+import edu.icet.ecom.entity.inventory.InventoryPurchaseLiteEntity;
 import edu.icet.ecom.entity.inventory.SupplierEntity;
 import edu.icet.ecom.entity.merchandise.MenuItemEntity;
+import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
+import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
+import edu.icet.ecom.repository.custom.inventory.SupplierRepository;
+import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
@@ -26,9 +31,32 @@ import java.util.Objects;
 public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
+	private final InventoryRepository inventoryRepository;
+	private final MenuItemRepository menuItemRepository;
+	private final SupplierRepository supplierRepository;
 
 	@Override
 	public Response<InventoryPurchaseEntity> add (InventoryPurchaseEntity entity) {
+		return new Response<>(null, ResponseType.SERVER_ERROR);
+	}
+
+	@Override
+	public Response<InventoryPurchaseEntity> update (InventoryPurchaseEntity entity) {
+		return new Response<>(null, ResponseType.SERVER_ERROR);
+	}
+
+	private <T> T getItemFromRepository (CrudRepository<T> repository, Long id) throws SQLException {
+		if (id == null) return null;
+
+		final Response<T> response = repository.get(id);
+
+		if (response.getStatus() == ResponseType.SERVER_ERROR) throw new SQLException("Failed to retrieve inventory item");
+
+		return response.getStatus() == ResponseType.FOUND ? response.getData() : null;
+	}
+
+	@Override
+	public Response<InventoryPurchaseEntity> add (InventoryPurchaseLiteEntity entity) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -38,25 +66,35 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
 				"INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost) VALUES (?, ?, ?, ?, ?)",
-				entity.getInventory().getId(),
-				entity.getMenuItem().getId(),
-				entity.getSupplier().getId(),
+				entity.getInventoryId(),
+				entity.getMenuItemId(),
+				entity.getSupplierId(),
 				entity.getQuantity(),
 				entity.getCost()
 			);
 
-			try (final ResultSet resultSet = this.crudUtil.execute("SELECT purchased_at FROM inventory_purchase WHERE id = ?", generatedId)) {
-				if (!resultSet.next()) {
-					connection.rollback();
-					return new Response<>(null, ResponseType.NOT_CREATED);
-				}
+			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, entity.getInventoryId());
+			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, entity.getMenuItemId());
+			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, entity.getSupplierId());
 
-				connection.commit();
-				entity.setId(generatedId);
-				entity.setPurchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(1)));
-
-				return new Response<>(entity, ResponseType.CREATED);
+			if ((inventory == null && menuItem == null) || supplier == null) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_CREATED);
 			}
+
+			connection.commit();
+
+			final InventoryPurchaseEntity inventoryPurchaseEntity = InventoryPurchaseEntity.builder()
+				.id(generatedId)
+				.inventory(inventory)
+				.menuItem(menuItem)
+				.supplier(supplier)
+				.quantity(entity.getQuantity())
+				.cost(entity.getCost())
+				.purchasedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
+				.build();
+
+			return new Response<>(inventoryPurchaseEntity, ResponseType.CREATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -77,22 +115,67 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<InventoryPurchaseEntity> update (InventoryPurchaseEntity entity) {
+	public Response<InventoryPurchaseEntity> update (InventoryPurchaseLiteEntity entity) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
 		try {
-			return (Integer) this.crudUtil.execute(
+			connection.setAutoCommit(false);
+
+			final boolean isUpdated = (Integer) this.crudUtil.execute(
 				"UPDATE inventory_purchase SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getInventory().getId(),
-				entity.getMenuItem().getId(),
-				entity.getSupplier().getId(),
+				entity.getInventoryId(),
+				entity.getMenuItemId(),
+				entity.getSupplierId(),
 				entity.getQuantity(),
 				entity.getCost(),
 				entity.getId()
-			) == 0 ?
-				new Response<>(null, ResponseType.NOT_UPDATED) :
-				new Response<>(entity, ResponseType.UPDATED);
+			) != 0;
+
+			if (!isUpdated) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, entity.getInventoryId());
+			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, entity.getMenuItemId());
+			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, entity.getSupplierId());
+
+			if ((inventory == null && menuItem == null) || supplier == null) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			connection.commit();
+
+			final InventoryPurchaseEntity inventoryPurchaseEntity = InventoryPurchaseEntity.builder()
+				.id(entity.getId())
+				.inventory(inventory)
+				.menuItem(menuItem)
+				.supplier(supplier)
+				.quantity(entity.getQuantity())
+				.cost(entity.getCost())
+				.purchasedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
+				.build();
+
+			return new Response<>(inventoryPurchaseEntity, ResponseType.UPDATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
+
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
 		}
 	}
 
@@ -106,6 +189,10 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
+	}
+
+	private boolean isResultSetIsMenuItem (String resultMenuItemColumn) {
+		return Objects.equals(resultMenuItemColumn, "menu_item");
 	}
 
 	@Override
@@ -129,7 +216,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			WHERE ip.is_deleted = FALSE AND ip.id = ?
 			""", id)) {
 			if (resultSet.next()) {
-				final boolean isMenuItem = Objects.equals(resultSet.getString(7), "menu_item");
+				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(7));
 
 				return new Response<>(InventoryPurchaseEntity.builder()
 					.id(id)
@@ -173,7 +260,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			final List<InventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
 
 			while (resultSet.next()) {
-				final boolean isMenuItem = Objects.equals(resultSet.getString(8), "menu_item");
+				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(8));
 
 				inventoryPurchaseEntities.add(InventoryPurchaseEntity.builder()
 					.id(resultSet.getLong(1))
@@ -228,7 +315,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			WHERE ip.is_deleted = FALSE AND ip.id = ?
 			""", id)) {
 			if (resultSet.next()) {
-				final boolean isMenuItem = Objects.equals(resultSet.getString(21), "menu_item");
+				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(21));
 
 				return new Response<>(InventoryPurchaseEntity.builder()
 					.id(id)
@@ -306,7 +393,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			final List<InventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
 
 			while (resultSet.next()) {
-				final boolean isMenuItem = Objects.equals(resultSet.getString(22), "menu_item");
+				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(22));
 
 				inventoryPurchaseEntities.add(InventoryPurchaseEntity.builder()
 					.id(resultSet.getLong(1))

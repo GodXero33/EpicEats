@@ -87,6 +87,7 @@ public class SupplierRepositoryImpl implements SupplierRepository {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address FROM supplier WHERE is_deleted = FALSE AND id = ?", id)) {
 			return resultSet.next() ?
 				new Response<>(SupplierEntity.builder()
+					.id(id)
 					.name(resultSet.getString(1))
 					.phone(resultSet.getString(2))
 					.email(resultSet.getString(3))
