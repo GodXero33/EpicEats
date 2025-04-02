@@ -1,10 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.inventory.*;
-import edu.icet.ecom.dto.inventory.Inventory;
-import edu.icet.ecom.dto.inventory.InventoryPurchase;
-import edu.icet.ecom.dto.inventory.Supplier;
-import edu.icet.ecom.dto.inventory.SupplierStockRecord;
+import edu.icet.ecom.dto.inventory.*;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
 import edu.icet.ecom.service.custom.inventory.SupplierService;
@@ -190,24 +187,21 @@ public class InventoryController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
-	private CustomHttpResponse<InventoryPurchase> getResponseAfterInventoryPurchaseValidation (InventoryPurchase inventoryPurchase) {
-		final Long inventoryId = (inventoryPurchase.getInventory() != null) ? inventoryPurchase.getInventory().getId() : null;
-		final Long menuItemId = (inventoryPurchase.getMenuItem() != null) ? inventoryPurchase.getMenuItem().getId() : null;
-
-		if (inventoryId == null && menuItemId == null)
+	private CustomHttpResponse<InventoryPurchase> getResponseAfterInventoryPurchaseValidation (InventoryPurchaseLite inventoryPurchase) {
+		if (inventoryPurchase.getInventoryId() == null && inventoryPurchase.getMenuItemId() == null)
 			return this.controllerResponseUtil.getInvalidDetailsResponse("One of inventory or menu item details must be provided with an ID");
 
-		if (inventoryId != null && menuItemId != null)
+		if (inventoryPurchase.getInventoryId() != null && inventoryPurchase.getMenuItemId() != null)
 			return this.controllerResponseUtil.getInvalidDetailsResponse("Can't have both inventoryId and menuItemId fields. Only one value allowed");
 
-		final Response<Boolean> inventoryOrMenuItemExistResponse = inventoryId == null ?
-			this.menuItemService.isExist(inventoryPurchase.getMenuItem().getId()) :
-			this.inventoryService.isExist(inventoryPurchase.getInventory().getId());
+		final Response<Boolean> inventoryOrMenuItemExistResponse = inventoryPurchase.getInventoryId() == null ?
+			this.menuItemService.isExist(inventoryPurchase.getMenuItemId()) :
+			this.inventoryService.isExist(inventoryPurchase.getInventoryId());
 
 		if (inventoryOrMenuItemExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No inventory found with given inventoryId");
 		if (inventoryOrMenuItemExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplier().getId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(inventoryPurchase.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -217,7 +211,7 @@ public class InventoryController {
 
 	@InventoryPurchaseAddApiDoc
 	@PostMapping("/purchase/")
-	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
+	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchaseLite inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final CustomHttpResponse<InventoryPurchase> responseAfterInventoryPurchaseValidation = this.getResponseAfterInventoryPurchaseValidation(inventoryPurchase);
@@ -235,7 +229,7 @@ public class InventoryController {
 
 	@InventoryPurchaseUpdateApiDoc
 	@PutMapping("/purchase/")
-	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchase inventoryPurchase, BindingResult result) {
+	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchaseLite inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final CustomHttpResponse<InventoryPurchase> responseAfterInventoryPurchaseValidation = this.getResponseAfterInventoryPurchaseValidation(inventoryPurchase);
@@ -326,7 +320,7 @@ public class InventoryController {
 		if (supplierEmailExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Supplier email address already taken");
 		if (supplierEmailExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 
-		final Response<Supplier> response = this.supplierService.add(supplier);
+		final Response<Supplier> response = this.supplierService.update(supplier);
 
 		return switch (response.getStatus()) {
 			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Supplier updated");

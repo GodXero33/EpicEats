@@ -58,25 +58,6 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public Response<Report> getFull (Long id) {
-		final Response<ReportEntity> response = this.reportRepository.getFull(id);
-
-		return new Response<>(response.getStatus() == ResponseType.FOUND ?
-			this.mapper.map(response.getData(), Report.class) :
-			null
-			, response.getStatus());
-	}
-
-	@Override
-	public Response<List<Report>> getAllFull () {
-		final Response<List<ReportEntity>> response = this.reportRepository.getAllFull();
-
-		return response.getStatus() == ResponseType.FOUND ?
-			new Response<>(response.getData().stream().map(reportEntity -> this.mapper.map(reportEntity, Report.class)).toList(), response.getStatus()) :
-			new Response<>(null, response.getStatus());
-	}
-
-	@Override
 	public Response<Report> add (ReportLite report) {
 		final Response<ReportEntity> response = this.reportRepository.add(this.mapper.map(report, ReportLiteEntity.class));
 
