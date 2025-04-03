@@ -30,12 +30,21 @@ public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 
 	@Override
 	public Response<InventoryPurchase> get (Long id) {
-		return this.serviceHandler.get(id);
+		final Response<InventoryPurchaseEntity> response = this.inventoryPurchaseRepository.get(id);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), InventoryPurchase.class) :
+			null
+			, response.getStatus());
 	}
 
 	@Override
 	public Response<List<InventoryPurchase>> getAll () {
-		return this.serviceHandler.getAll();
+		final Response<List<InventoryPurchaseEntity>> response = this.inventoryPurchaseRepository.getAll();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new Response<>(response.getData().stream().map(inventoryPurchaseEntity -> this.mapper.map(inventoryPurchaseEntity, InventoryPurchase.class)).toList(), response.getStatus()) :
+			new Response<>(null, response.getStatus());
 	}
 
 	@Override
@@ -51,25 +60,6 @@ public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 	@Override
 	public Response<Object> delete (Long id) {
 		return this.serviceHandler.delete(id);
-	}
-
-	@Override
-	public Response<InventoryPurchase> getFull (Long id) {
-		final Response<InventoryPurchaseEntity> response = this.inventoryPurchaseRepository.getFull(id);
-
-		return new Response<>(response.getStatus() == ResponseType.FOUND ?
-			this.mapper.map(response.getData(), InventoryPurchase.class) :
-			null
-			, response.getStatus());
-	}
-
-	@Override
-	public Response<List<InventoryPurchase>> getAllFull () {
-		final Response<List<InventoryPurchaseEntity>> response = this.inventoryPurchaseRepository.getAllFull();
-
-		return response.getStatus() == ResponseType.FOUND ?
-			new Response<>(response.getData().stream().map(inventoryPurchaseEntity -> this.mapper.map(inventoryPurchaseEntity, InventoryPurchase.class)).toList(), response.getStatus()) :
-			new Response<>(null, response.getStatus());
 	}
 
 	@Override

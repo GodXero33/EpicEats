@@ -71,10 +71,10 @@ public class InventoryController {
 	public CustomHttpResponse<Map<String, Object>> getAllBySupplier (@PathVariable("supplierId") Long supplierId) {
 		if (supplierId <= 0) return this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierId);
+		final Response<Supplier> supplierGetResponse = this.supplierService.get(supplierId);
 
-		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
-		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse();
+		if (supplierGetResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
+		if (supplierGetResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<List<Inventory>> response = this.inventoryService.getAllBySupplier(supplierId);
 
@@ -83,7 +83,7 @@ public class InventoryController {
 				HttpStatus.OK,
 				this.customHttpResponseMap.builder()
 					.keys("supplier", "inventories")
-					.values(supplierId, response.getData())
+					.values(supplierGetResponse.getData(), response.getData())
 					.build(),
 				"All inventory loaded related to supplier"
 			) :
@@ -165,10 +165,10 @@ public class InventoryController {
 
 	@InventoryPurchaseGetApiDoc
 	@GetMapping("/purchase/{id}")
-	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<InventoryPurchase> response = isFull ? this.inventoryPurchaseService.getFull(id) : this.inventoryPurchaseService.get(id);
+		final Response<InventoryPurchase> response = this.inventoryPurchaseService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
@@ -179,8 +179,8 @@ public class InventoryController {
 
 	@InventoryPurchaseGetAllApiDoc
 	@GetMapping("/purchase/all")
-	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
-		final Response<List<InventoryPurchase>> response = isFull ? this.inventoryPurchaseService.getAllFull() : this.inventoryPurchaseService.getAll();
+	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase () {
+		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "ALl inventory purchases loaded successfully") :
@@ -253,7 +253,7 @@ public class InventoryController {
 		final Response<Object> response = this.inventoryPurchaseService.delete(id);
 
 		return switch (response.getStatus()) {
-			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Inventory purchase update");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Inventory purchase deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete inventory purchase");
 		};
