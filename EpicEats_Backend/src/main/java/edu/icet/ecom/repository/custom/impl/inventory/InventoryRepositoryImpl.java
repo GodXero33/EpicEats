@@ -1,8 +1,11 @@
 package edu.icet.ecom.repository.custom.impl.inventory;
 
 import edu.icet.ecom.entity.inventory.InventoryEntity;
+import edu.icet.ecom.entity.inventory.SupplierEntity;
 import edu.icet.ecom.entity.inventory.SupplierStockRecordEntity;
+import edu.icet.ecom.entity.inventory.SupplierStockRecordLiteEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
+import edu.icet.ecom.repository.custom.inventory.SupplierRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
@@ -22,6 +25,7 @@ import java.util.List;
 public class InventoryRepositoryImpl implements InventoryRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
+	private final SupplierRepository supplierRepository;
 
 	@Override
 	public Response<InventoryEntity> add (InventoryEntity entity) {
@@ -121,7 +125,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 	}
 
 	@Override
-	public Response<SupplierStockRecordEntity> add (SupplierStockRecordEntity supplierStockRecordEntity) {
+	public Response<SupplierStockRecordEntity> add (SupplierStockRecordLiteEntity supplierStockRecordEntity) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -139,27 +143,38 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			final Response<InventoryEntity> newInventoryGetResponse = this.get(generatedInventoryId);
 			final boolean isSupplierInventoryRecordAdded = newInventoryGetResponse.getStatus() == ResponseType.FOUND && (Integer) this.crudUtil.execute(
 				"INSERT INTO supplier_inventory (supplier_id, inventory_id, quantity) VALUES (?, ?, ?)",
-				supplierStockRecordEntity.getSupplier().getId(),
+				supplierStockRecordEntity.getSupplierId(),
 				generatedInventoryId,
 				supplierStockRecordEntity.getInventory().getQuantity() // Because we add new inventory item, supplier_inventory is new too. So quantity from direct 'SupplierInventoryRecordEntity' object can be ignored. Just can use inventory quantity
 			) != 0;
 
-			if (isSupplierInventoryRecordAdded) {
-				connection.commit();
-
-				return new Response<>(
-					new SupplierStockRecordEntity(
-						newInventoryGetResponse.getData(),
-						(long) supplierStockRecordEntity.getInventory().getQuantity(), // Same reason, if inventory is new quantity must be same to inventory quantity. Casting won't be any problem while this is very first time
-						supplierStockRecordEntity.getSupplier()
-					),
-					ResponseType.CREATED
-				);
+			if (!isSupplierInventoryRecordAdded) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_CREATED);
 			}
 
-			connection.rollback();
+			final Response<SupplierEntity> supplierGetResponse = this.supplierRepository.get(supplierStockRecordEntity.getSupplierId());
 
-			return new Response<>(null, ResponseType.NOT_CREATED);
+			if (supplierGetResponse.getStatus() == ResponseType.NOT_FOUND) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_CREATED);
+			}
+
+			if (supplierGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, supplierGetResponse.getStatus());
+			}
+
+			connection.commit();
+
+			return new Response<>(
+				new SupplierStockRecordEntity(
+					newInventoryGetResponse.getData(),
+					(long) supplierStockRecordEntity.getInventory().getQuantity(), // Same reason, if inventory is new quantity must be same to inventory quantity. Casting won't be any problem while this is very first time
+					supplierGetResponse.getData()
+				),
+				ResponseType.CREATED
+			);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 
@@ -180,7 +195,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 	}
 
 	@Override
-	public Response<SupplierStockRecordEntity> updateStock (SupplierStockRecordEntity supplierStockRecordEntity) {
+	public Response<SupplierStockRecordEntity> updateStock (SupplierStockRecordLiteEntity supplierStockRecordEntity) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -190,7 +205,7 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 			final int quantity = supplierStockRecordEntity.getInventory().getQuantity();
 			final long inventoryId = supplierStockRecordEntity.getInventory().getId();
-			final long supplierId = supplierStockRecordEntity.getSupplier().getId();
+			final long supplierId = supplierStockRecordEntity.getSupplierId();
 
 			if ((Integer) this.crudUtil.execute("UPDATE inventory SET quantity = quantity + ? WHERE is_deleted = FALSE AND id = ?", quantity, inventoryId) == 0) {
 				connection.rollback();
@@ -214,16 +229,26 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 				final Response<InventoryEntity> inventoryGetResponse = this.get(inventoryId);
 
-				if (inventoryGetResponse.getStatus() != ResponseType.FOUND) {
+				if (inventoryGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
 					connection.rollback();
-					return new Response<>(null, ResponseType.NOT_UPDATED);
+					return new Response<>(null, inventoryGetResponse.getStatus());
+				}
+
+				final Response<SupplierEntity> supplierGetResponse = this.supplierRepository.get(supplierId);
+
+				if (supplierGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+					connection.rollback();
+					return new Response<>(null, supplierGetResponse.getStatus());
 				}
 
 				connection.commit();
-				supplierStockRecordEntity.setQuantity(supplierInventoryResultSet.getLong(1));
-				supplierStockRecordEntity.setInventory(inventoryGetResponse.getData());
 
-				return new Response<>(supplierStockRecordEntity, ResponseType.UPDATED);
+				final SupplierStockRecordEntity updatedSupplierStockRecordEntity = new SupplierStockRecordEntity();
+				updatedSupplierStockRecordEntity.setQuantity(supplierInventoryResultSet.getLong(1));
+				updatedSupplierStockRecordEntity.setInventory(inventoryGetResponse.getData());
+				updatedSupplierStockRecordEntity.setSupplier(supplierGetResponse.getData());
+
+				return new Response<>(updatedSupplierStockRecordEntity, ResponseType.UPDATED);
 			}
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());

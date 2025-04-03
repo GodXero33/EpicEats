@@ -92,11 +92,11 @@ public class InventoryController {
 
 	@InventoryAddApiDoc
 	@PostMapping("/")
-	public CustomHttpResponse<SupplierStockRecord> add (@Valid @RequestBody SupplierStockRecord supplierStockRecord, BindingResult result) {
+	public CustomHttpResponse<SupplierStockRecord> add (@Valid @RequestBody SupplierStockRecordLite supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-		if (supplierStockRecord.getSupplier().getId() == null || supplierStockRecord.getSupplier().getId() <= 0) this.getInvalidIdResponse();
+		if (supplierStockRecord.getSupplierId() == null || supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplier().getId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -114,7 +114,7 @@ public class InventoryController {
 	@PutMapping("/")
 	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-		if (inventory.getId() <= 0) return this.getInvalidIdResponse();
+		if (inventory.getId() == null || inventory.getId() <= 0) return this.getInvalidIdResponse();
 
 		final Response<Inventory> response = this.inventoryService.update(inventory);
 
@@ -127,15 +127,15 @@ public class InventoryController {
 
 	@InventoryUpdateStockApiDoc
 	@PatchMapping("/stock")
-	public CustomHttpResponse<SupplierStockRecord> updateStock (@Valid @RequestBody SupplierStockRecord supplierStockRecord, BindingResult result) {
+	public CustomHttpResponse<SupplierStockRecord> updateStock (@Valid @RequestBody SupplierStockRecordLite supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		if (supplierStockRecord.getInventory().getId() == null ||
 			supplierStockRecord.getInventory().getId() <= 0 ||
-			supplierStockRecord.getSupplier().getId() == null ||
-			supplierStockRecord.getSupplier().getId() <= 0) this.getInvalidIdResponse();
+			supplierStockRecord.getSupplierId() == null ||
+			supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
 
-		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplier().getId());
+		final Response<Boolean> supplierExistResponse = this.supplierService.isExist(supplierStockRecord.getSupplierId());
 
 		if (supplierExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.getSupplierNotFoundResponse();
 		if (supplierExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
