@@ -2,6 +2,8 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftEntity;
+import edu.icet.ecom.entity.employee.EmployeeShiftLiteEntity;
+import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
@@ -22,21 +24,41 @@ import java.util.List;
 public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
+	private final EmployeeRepository employeeRepository;
 
 	@Override
 	public Response<EmployeeShiftEntity> add (EmployeeShiftEntity entity) {
+		return new Response<>(null, ResponseType.SERVER_ERROR);
+	}
+
+	@Override
+	public Response<EmployeeShiftEntity> update (EmployeeShiftEntity entity) {
+		return new Response<>(null, ResponseType.SERVER_ERROR);
+	}
+
+	@Override
+	public Response<EmployeeShiftEntity> add (EmployeeShiftLiteEntity entity) {
 		try {
+			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getEmployeeId());
+
+			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(null, ResponseType.SERVER_ERROR);
+			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new Response<>(null, ResponseType.NOT_CREATED);
+
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
 				"INSERT INTO employee_shift (employee_id, shift_date, start_time, end_time) VALUES (?, ?, ?, ?)",
-				entity.getEmployee().getId(),
+				entity.getEmployeeId(),
 				entity.getShiftDate(),
 				entity.getStartTime(),
 				entity.getEndTime()
 			);
 
-			entity.setId(generatedId);
-
-			return new Response<>(entity, ResponseType.CREATED);
+			return new Response<>(EmployeeShiftEntity.builder()
+				.id(generatedId)
+				.employee(employeeGetResponse.getData())
+				.shiftDate(entity.getShiftDate())
+				.startTime(entity.getStartTime())
+				.endTime(entity.getEndTime())
+				.build(), ResponseType.CREATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -44,17 +66,28 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	}
 
 	@Override
-	public Response<EmployeeShiftEntity> update (EmployeeShiftEntity entity) {
+	public Response<EmployeeShiftEntity> update (EmployeeShiftLiteEntity entity) {
 		try {
+			final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(entity.getEmployeeId());
+
+			if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(null, ResponseType.SERVER_ERROR);
+			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new Response<>(null, ResponseType.NOT_CREATED);
+
 			return (Integer) this.crudUtil.execute(
 				"UPDATE employee_shift SET employee_id = ?, shift_date = ?, start_time = ?, end_time = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getEmployee().getId(),
+				entity.getEmployeeId(),
 				entity.getShiftDate(),
 				entity.getStartTime(),
 				entity.getEndTime(),
 				entity.getId()) == 0 ?
-					new Response<>(null, ResponseType.NOT_UPDATED) :
-					new Response<>(entity, ResponseType.UPDATED);
+				new Response<>(null, ResponseType.NOT_UPDATED) :
+				new Response<>(EmployeeShiftEntity.builder()
+					.id(entity.getId())
+					.employee(employeeGetResponse.getData())
+					.shiftDate(entity.getShiftDate())
+					.startTime(entity.getStartTime())
+					.endTime(entity.getEndTime())
+					.build(), ResponseType.UPDATED);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);

@@ -3,6 +3,7 @@ package edu.icet.ecom.controller;
 import edu.icet.ecom.config.apidoc.employee.*;
 import edu.icet.ecom.dto.employee.Employee;
 import edu.icet.ecom.dto.employee.EmployeeShift;
+import edu.icet.ecom.dto.employee.EmployeeShiftLite;
 import edu.icet.ecom.dto.employee.PromotionHistory;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.employee.EmployeeShiftService;
@@ -156,8 +157,8 @@ public class EmployeeController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
-	private CustomHttpResponse<EmployeeShift> getResponseAfterEmployeeShiftValidation (EmployeeShift employeeShift) {
-		final long employeeId = employeeShift.getEmployee().getId();
+	private CustomHttpResponse<EmployeeShift> getResponseAfterEmployeeShiftValidation (EmployeeShiftLite employeeShift) {
+		final long employeeId = employeeShift.getEmployeeId();
 
 		if (employeeId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be negative or zero");
 
@@ -171,7 +172,7 @@ public class EmployeeController {
 
 	@EmployeeShiftAddApiDoc
 	@PostMapping("/shift/")
-	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
+	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShiftLite employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
 		final CustomHttpResponse<EmployeeShift> responseAfterEmployeeShiftValidation = this.getResponseAfterEmployeeShiftValidation(employeeShift);
@@ -187,7 +188,7 @@ public class EmployeeController {
 
 	@EmployeeShiftUpdateApiDoc
 	@PutMapping("/shift/")
-	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShift employeeShift, BindingResult result) {
+	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShiftLite employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employeeShift.getId() == null || employeeShift.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Shift id can't be null, zero or negative");
 

@@ -25,7 +25,6 @@ import java.util.List;
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
-	private final EmployeeShiftRepository employeeShiftRepository;
 	private final PromotionHistoryRepository promotionHistoryRepository;
 
 	private Response<Boolean> getExistence (String query, Object ...binds) {
@@ -186,37 +185,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<Object> terminate (Long employeeId) {
-		final Connection connection = this.crudUtil.getDbConnection().getConnection();
-
-		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
-
 		try {
-			connection.setAutoCommit(false);
-
-			final boolean isEmployeeTerminated = (Integer) this.crudUtil.execute("UPDATE employee SET is_terminated = TRUE WHERE is_terminated = FALSE AND id = ?", employeeId) != 0;
-			final boolean isEmployeeShiftsDeleted = isEmployeeTerminated && this.employeeShiftRepository.deletedByEmployeeId(employeeId).getStatus() == ResponseType.DELETED;
-
-			if (isEmployeeShiftsDeleted) connection.commit();
-
-			return isEmployeeShiftsDeleted ?
-				new Response<>(null, ResponseType.SUCCESS) :
-				new Response<>(null, ResponseType.FAILED);
+			return (Integer) this.crudUtil.execute("""
+				UPDATE employee
+				JOIN employee_shift ON employee.id = employee_shift.employee_id
+				SET employee.is_terminated = TRUE, employee_shift.is_deleted = TRUE
+				WHERE employee.is_terminated = FALSE AND employee.id = ?
+				""", employeeId) == 0 ?
+				new Response<>(null, ResponseType.FAILED) :
+				new Response<>(null, ResponseType.SUCCESS);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-
-			try {
-				connection.rollback();
-			} catch (SQLException rollbackException) {
-				this.logger.error(rollbackException.getMessage());
-			}
-
 			return new Response<>(null, ResponseType.SERVER_ERROR);
-		} finally {
-			try {
-				connection.setAutoCommit(true);
-			} catch (SQLException exception) {
-				this.logger.error(exception.getMessage());
-			}
 		}
 	}
 
