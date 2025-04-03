@@ -3,9 +3,10 @@ package edu.icet.ecom.service.custom.impl.inventory;
 import edu.icet.ecom.dto.inventory.Inventory;
 import edu.icet.ecom.dto.inventory.Supplier;
 import edu.icet.ecom.dto.inventory.SupplierStockRecord;
+import edu.icet.ecom.dto.inventory.SupplierStockRecordLite;
 import edu.icet.ecom.entity.inventory.InventoryEntity;
-import edu.icet.ecom.entity.inventory.SupplierEntity;
 import edu.icet.ecom.entity.inventory.SupplierStockRecordEntity;
+import edu.icet.ecom.entity.inventory.SupplierStockRecordLiteEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.inventory.InventoryService;
@@ -65,12 +66,12 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<SupplierStockRecord> add (SupplierStockRecord supplierStockRecord) {
+	public Response<SupplierStockRecord> add (SupplierStockRecordLite supplierStockRecord) {
 		final Response<SupplierStockRecordEntity> response = this.inventoryRepository.add(
-			new SupplierStockRecordEntity(
+			new SupplierStockRecordLiteEntity(
 				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
 				supplierStockRecord.getQuantity(),
-				this.mapper.map(supplierStockRecord.getSupplier(), SupplierEntity.class)
+				supplierStockRecord.getSupplierId()
 			)
 		);
 
@@ -79,7 +80,7 @@ public class InventoryServiceImpl implements InventoryService {
 				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
-					this.mapper.map(supplierStockRecord.getSupplier(), Supplier.class)
+					this.mapper.map(response.getData().getSupplier(), Supplier.class)
 				),
 				response.getStatus()
 			) :
@@ -87,12 +88,12 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public Response<SupplierStockRecord> updateStock (SupplierStockRecord supplierStockRecord) {
+	public Response<SupplierStockRecord> updateStock (SupplierStockRecordLite supplierStockRecord) {
 		final Response<SupplierStockRecordEntity> response = this.inventoryRepository.updateStock(
-			new SupplierStockRecordEntity(
+			new SupplierStockRecordLiteEntity(
 				this.mapper.map(supplierStockRecord.getInventory(), InventoryEntity.class),
 				supplierStockRecord.getQuantity(),
-				this.mapper.map(supplierStockRecord.getSupplier(), SupplierEntity.class)
+				supplierStockRecord.getSupplierId()
 			)
 		);
 
@@ -101,7 +102,7 @@ public class InventoryServiceImpl implements InventoryService {
 				new SupplierStockRecord(
 					this.mapper.map(response.getData().getInventory(), Inventory.class),
 					response.getData().getQuantity(),
-					this.mapper.map(supplierStockRecord.getSupplier(), Supplier.class)
+					this.mapper.map(response.getData().getSupplier(), Supplier.class)
 				),
 				response.getStatus()
 			) :

@@ -43,7 +43,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO employee (name, phone, email, address, salary, role, dob, employee_since) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				"INSERT INTO employee (name, phone, email, address, salary, role, dob, employee_since) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
