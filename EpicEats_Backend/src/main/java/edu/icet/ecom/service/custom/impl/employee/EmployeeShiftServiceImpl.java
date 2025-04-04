@@ -1,7 +1,9 @@
 package edu.icet.ecom.service.custom.impl.employee;
 
+import edu.icet.ecom.dto.employee.AllShifts;
 import edu.icet.ecom.dto.employee.EmployeeShift;
 import edu.icet.ecom.dto.employee.EmployeeShiftLite;
+import edu.icet.ecom.entity.employee.AllShiftsEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftLiteEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
@@ -83,6 +85,16 @@ public class EmployeeShiftServiceImpl implements EmployeeShiftService {
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), EmployeeShift.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<AllShifts> getAllStructured () {
+		final Response<AllShiftsEntity> response = this.employeeShiftRepository.getAllStructured();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllShifts.class) :
 			null
 			, response.getStatus());
 	}

@@ -1,14 +1,18 @@
 package edu.icet.ecom.repository.custom.impl.employee;
 
+import edu.icet.ecom.entity.employee.AllShiftsEntity;
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftLiteEntity;
+import edu.icet.ecom.entity.finance.AllReportsEntity;
+import edu.icet.ecom.entity.finance.ReportLiteEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
 import edu.icet.ecom.util.enumaration.EmployeeRole;
+import edu.icet.ecom.util.enumaration.ReportType;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -17,7 +21,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -88,6 +94,52 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 					.startTime(entity.getStartTime())
 					.endTime(entity.getEndTime())
 					.build(), ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<AllShiftsEntity> getAllStructured () {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT employee_shift.id, employee_shift.shift_date, employee_shift.start_time, employee_shift.end_time,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM employee_shift
+			JOIN employee ON employee.id = employee_shift.employee_id
+			WHERE employee_shift.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""")) {
+			final Map<Long, EmployeeEntity> employeeMap = new HashMap<>();
+			final List<EmployeeShiftLiteEntity> shiftLiteEntities = new ArrayList<>();
+
+			while (resultSet.next()) {
+				final long employeeId = resultSet.getLong(5);
+
+				shiftLiteEntities.add(EmployeeShiftLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.shiftDate(DateTimeUtil.parseDate(resultSet.getString(2)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(3)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+					.employeeId(employeeId)
+					.build());
+
+				employeeMap.putIfAbsent(employeeId, EmployeeEntity.builder()
+					.id(employeeId)
+					.name(resultSet.getString(6))
+					.phone(resultSet.getString(7))
+					.email(resultSet.getString(8))
+					.address(resultSet.getString(9))
+					.salary(resultSet.getDouble(10))
+					.role(EmployeeRole.fromName(resultSet.getString(11)))
+					.dob(DateTimeUtil.parseDate(resultSet.getString(12)))
+					.employeeSince(DateTimeUtil.parseDate(resultSet.getString(13)))
+					.build());
+			}
+
+			return new Response<>(AllShiftsEntity.builder()
+				.employees(employeeMap.values().stream().toList())
+				.shifts(shiftLiteEntities)
+				.build(), ResponseType.FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);

@@ -136,11 +136,11 @@ public class EmployeeController {
 
 	@EmployeeShiftGetAllApiDoc
 	@GetMapping("/shift/all")
-	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
-		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
+	public CustomHttpResponse<AllShifts> getAllShifts () {
+		final Response<AllShifts> response = this.employeeShiftService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All shifts are retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
