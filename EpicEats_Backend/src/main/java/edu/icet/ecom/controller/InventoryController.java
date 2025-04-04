@@ -178,8 +178,8 @@ public class InventoryController {
 
 	@InventoryPurchaseGetAllApiDoc
 	@GetMapping("/purchase/all")
-	public CustomHttpResponse<List<InventoryPurchase>> getALlInventoryPurchase () {
-		final Response<List<InventoryPurchase>> response = this.inventoryPurchaseService.getAll();
+	public CustomHttpResponse<AllInventoryPurchases> getALlInventoryPurchase () {
+		final Response<AllInventoryPurchases> response = this.inventoryPurchaseService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "ALl inventory purchases loaded successfully") :
