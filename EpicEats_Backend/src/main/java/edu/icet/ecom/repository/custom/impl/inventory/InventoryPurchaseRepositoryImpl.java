@@ -1,9 +1,6 @@
 package edu.icet.ecom.repository.custom.impl.inventory;
 
-import edu.icet.ecom.entity.inventory.InventoryEntity;
-import edu.icet.ecom.entity.inventory.InventoryPurchaseEntity;
-import edu.icet.ecom.entity.inventory.InventoryPurchaseLiteEntity;
-import edu.icet.ecom.entity.inventory.SupplierEntity;
+import edu.icet.ecom.entity.inventory.*;
 import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
@@ -22,9 +19,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -176,6 +171,107 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			} catch (SQLException exception) {
 				this.logger.error(exception.getMessage());
 			}
+		}
+	}
+
+	@Override
+	public Response<AllInventoryPurchasesEntity> getAllStructured () {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			    ip.id,
+			    ip.quantity,
+			    ip.cost,
+			    ip.purchased_at,
+			    s.id,
+			    s.name,
+			    s.phone,
+			    s.email,
+			    s.address,
+			    mi.id,
+			    mi.name,
+			    mi.price,
+			    mi.img,
+			    mi.category,
+			    mi.quantity,
+			    inv.id,
+			    inv.name,
+			    inv.description,
+			    inv.quantity,
+			    inv.unit,
+			    inv.updated_at,
+			    CASE
+			        WHEN mi.id IS NOT NULL THEN 'menu_item'
+			        WHEN inv.id IS NOT NULL THEN 'inventory'
+			    END AS type
+			FROM inventory_purchase ip
+			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
+			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
+			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
+			WHERE ip.is_deleted = FALSE
+			""")) {
+			final Map<Long, SupplierEntity> suppliersMap = new HashMap<>();
+			final Map<Long, InventoryEntity> inventoryMap = new HashMap<>();
+			final Map<Long, MenuItemEntity> menuItemMap = new HashMap<>();
+			final List<InventoryPurchaseLiteEntity> inventoryPurchaseLiteEntities = new ArrayList<>();
+
+			while (resultSet.next()) {
+				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(22));
+				final InventoryPurchaseLiteEntity inventoryPurchaseLiteEntity = InventoryPurchaseLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.quantity(resultSet.getInt(2))
+					.cost(resultSet.getDouble(3))
+					.purchasedAt(DateTimeUtil.parseDateTime(resultSet.getString(4)))
+					.build();
+
+				final long supplierId = resultSet.getLong(5);
+
+				inventoryPurchaseLiteEntity.setSupplierId(supplierId);
+				suppliersMap.putIfAbsent(supplierId, SupplierEntity.builder()
+					.id(supplierId)
+					.name(resultSet.getString(6))
+					.phone(resultSet.getString(7))
+					.email(resultSet.getString(8))
+					.address(resultSet.getString(9))
+					.build());
+
+				if (isMenuItem) {
+					final long menuItemId = resultSet.getLong(10);
+
+					inventoryPurchaseLiteEntity.setMenuItemId(menuItemId);
+					menuItemMap.putIfAbsent(menuItemId, MenuItemEntity.builder()
+						.id(menuItemId)
+						.name(resultSet.getString(11))
+						.price(resultSet.getDouble(12))
+						.img(resultSet.getString(13))
+						.category(MenuItemCategory.fromName(resultSet.getString(14)))
+						.quantity(resultSet.getInt(15))
+						.build());
+				} else {
+					final long inventoryId = resultSet.getLong(16);
+
+					inventoryPurchaseLiteEntity.setInventoryId(inventoryId);
+					inventoryMap.putIfAbsent(inventoryId, InventoryEntity.builder()
+						.id(inventoryId)
+						.name(resultSet.getString(17))
+						.description(resultSet.getString(18))
+						.quantity(resultSet.getInt(19))
+						.unit(resultSet.getString(20))
+						.updatedAt(DateTimeUtil.parseDateTime(resultSet.getString(21)))
+						.build());
+				}
+
+				inventoryPurchaseLiteEntities.add(inventoryPurchaseLiteEntity);
+			}
+
+			return new Response<>(AllInventoryPurchasesEntity.builder()
+				.suppliers(suppliersMap.values().stream().toList())
+				.inventories(inventoryMap.values().stream().toList())
+				.menuItems(menuItemMap.values().stream().toList())
+				.purchases(inventoryPurchaseLiteEntities)
+				.build(), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 

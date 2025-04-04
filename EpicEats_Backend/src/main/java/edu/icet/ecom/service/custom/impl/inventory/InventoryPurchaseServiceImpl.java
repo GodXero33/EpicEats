@@ -1,7 +1,9 @@
 package edu.icet.ecom.service.custom.impl.inventory;
 
+import edu.icet.ecom.dto.inventory.AllInventoryPurchases;
 import edu.icet.ecom.dto.inventory.InventoryPurchase;
 import edu.icet.ecom.dto.inventory.InventoryPurchaseLite;
+import edu.icet.ecom.entity.inventory.AllInventoryPurchasesEntity;
 import edu.icet.ecom.entity.inventory.InventoryPurchaseEntity;
 import edu.icet.ecom.entity.inventory.InventoryPurchaseLiteEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
@@ -78,6 +80,16 @@ public class InventoryPurchaseServiceImpl implements InventoryPurchaseService {
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), InventoryPurchase.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<AllInventoryPurchases> getAllStructured () {
+		final Response<AllInventoryPurchasesEntity> response = this.inventoryPurchaseRepository.getAllStructured();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllInventoryPurchases.class) :
 			null
 			, response.getStatus());
 	}
