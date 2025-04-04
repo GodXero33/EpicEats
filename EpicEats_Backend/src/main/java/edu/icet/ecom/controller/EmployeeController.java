@@ -1,15 +1,13 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.employee.*;
-import edu.icet.ecom.dto.employee.Employee;
-import edu.icet.ecom.dto.employee.EmployeeShift;
-import edu.icet.ecom.dto.employee.EmployeeShiftLite;
-import edu.icet.ecom.dto.employee.PromotionHistory;
+import edu.icet.ecom.dto.employee.*;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.employee.EmployeeShiftService;
 import edu.icet.ecom.service.custom.employee.PromotionHistoryService;
 import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
+import edu.icet.ecom.util.CustomHttpResponseMap;
 import edu.icet.ecom.util.Response;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +18,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -123,10 +122,10 @@ public class EmployeeController {
 
 	@EmployeeShiftGetApiDoc
 	@GetMapping("/shift/{id}")
-	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+	public CustomHttpResponse<EmployeeShift> getShift (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<EmployeeShift> response = isFull ? this.employeeShiftService.getFull(id) : this.employeeShiftService.get(id);
+		final Response<EmployeeShift> response = this.employeeShiftService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shift found.");
@@ -137,8 +136,8 @@ public class EmployeeController {
 
 	@EmployeeShiftGetAllApiDoc
 	@GetMapping("/shift/all")
-	public CustomHttpResponse<List<EmployeeShift>> getAllShifts (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
-		final Response<List<EmployeeShift>> response = isFull ? this.employeeShiftService.getAllFull() : this.employeeShiftService.getAll();
+	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
+		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
@@ -147,13 +146,21 @@ public class EmployeeController {
 
 	@EmployeeShiftGetByEmployeeApiDoc
 	@GetMapping("/shift/by-employee/{employeeId}")
-	public CustomHttpResponse<List<EmployeeShift>> getShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
+	public CustomHttpResponse<Map<String, Object>> getShiftsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Employee> employeeGetResponse = this.employeeService.get(employeeId);
+
+		if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No employee found with employeeId");
+		if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
+			new CustomHttpResponse<>(HttpStatus.OK, CustomHttpResponseMap.builder()
+				.keys("shifts", "employee")
+				.values(response.getData(), employeeGetResponse.getData())
+				.build(), "Employee shifts found") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -235,10 +242,10 @@ public class EmployeeController {
 
 	@PromotionHistoryGetApiDoc
 	@GetMapping("/promotion/{id}")
-	public CustomHttpResponse<PromotionHistory> getPromotion (@PathVariable("id") Long id, @RequestParam(name = "full", defaultValue = "true") boolean isFull) {
+	public CustomHttpResponse<PromotionHistory> getPromotion (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<PromotionHistory> response = isFull ? this.promotionHistoryService.getFull(id) : this.promotionHistoryService.get(id);
+		final Response<PromotionHistory> response = this.promotionHistoryService.get(id);
 
 		return switch (response.getStatus()) {
 			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Promotion record found");
@@ -249,8 +256,8 @@ public class EmployeeController {
 
 	@PromotionHistoryGetAllApiDoc
 	@GetMapping("/promotion/all")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions (@RequestParam(name = "full", defaultValue = "true") boolean isFull) {
-		final Response<List<PromotionHistory>> response = isFull ? this.promotionHistoryService.getAllFull() : this.promotionHistoryService.getAll();
+	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions () {
+		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded") :
@@ -270,13 +277,13 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryUpdateApiShift
-	@PostMapping("/promotion/")
-	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistory promotionHistory, BindingResult result) {
+	@PutMapping("/promotion/")
+	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistoryLite promotionHistory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (promotionHistory.getId() == null || promotionHistory.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history id can't be null, zero or negative");
-		if (promotionHistory.getEmployee().getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history employee id can't be null, zero or negative");
+		if (promotionHistory.getEmployeeId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history employee id can't be null, zero or negative");
 
-		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(promotionHistory.getEmployee().getId());
+		final Response<Boolean> employeeExistResponse = this.employeeService.isExist(promotionHistory.getEmployeeId());
 
 		if (employeeExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("No employee found with given employee id");
 		if (employeeExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();

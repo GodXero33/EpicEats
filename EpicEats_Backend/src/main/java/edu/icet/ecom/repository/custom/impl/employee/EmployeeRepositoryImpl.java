@@ -3,15 +3,14 @@ package edu.icet.ecom.repository.custom.impl.employee;
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
-import edu.icet.ecom.repository.custom.employee.EmployeeShiftRepository;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
 import edu.icet.ecom.util.enumaration.EmployeeRole;
 import edu.icet.ecom.util.enumaration.ResponseType;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -21,11 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 	private final Logger logger;
 	private final CrudUtil crudUtil;
 	private final PromotionHistoryRepository promotionHistoryRepository;
+
+	public EmployeeRepositoryImpl (Logger logger, CrudUtil crudUtil, @Lazy PromotionHistoryRepository promotionHistoryRepository) {
+		this.logger = logger;
+		this.crudUtil = crudUtil;
+		this.promotionHistoryRepository = promotionHistoryRepository;
+	}
 
 	private Response<Boolean> getExistence (String query, Object ...binds) {
 		try (final ResultSet resultSet = this.crudUtil.execute(query, binds)) {

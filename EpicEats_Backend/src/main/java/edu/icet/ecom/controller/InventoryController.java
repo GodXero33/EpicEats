@@ -32,7 +32,6 @@ public class InventoryController {
 	private final SupplierService supplierService;
 	private final MenuItemService menuItemService;
 	private final ControllerResponseUtil controllerResponseUtil;
-	private final CustomHttpResponseMap customHttpResponseMap;
 
 	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
 		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero.");
@@ -81,7 +80,7 @@ public class InventoryController {
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(
 				HttpStatus.OK,
-				this.customHttpResponseMap.builder()
+				CustomHttpResponseMap.builder()
 					.keys("supplier", "inventories")
 					.values(supplierGetResponse.getData(), response.getData())
 					.build(),
