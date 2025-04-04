@@ -1,7 +1,9 @@
 package edu.icet.ecom.service.custom.impl.employee;
 
 import edu.icet.ecom.dto.employee.PromotionHistory;
+import edu.icet.ecom.dto.employee.PromotionHistoryLite;
 import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
+import edu.icet.ecom.entity.employee.PromotionHistoryLiteEntity;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.employee.PromotionHistoryService;
@@ -52,25 +54,6 @@ public class PromotionHistoryServiceImpl implements PromotionHistoryService {
 	}
 
 	@Override
-	public Response<PromotionHistory> getFull (Long id) {
-		final Response<PromotionHistoryEntity> response = this.promotionHistoryRepository.getFull(id);
-
-		return new Response<>(response.getStatus() == ResponseType.FOUND ?
-			this.mapper.map(response.getData(), PromotionHistory.class) :
-			null
-			, response.getStatus());
-	}
-
-	@Override
-	public Response<List<PromotionHistory>> getAllFull () {
-		final Response<List<PromotionHistoryEntity>> response = this.promotionHistoryRepository.getAllFull();
-
-		return response.getStatus() == ResponseType.FOUND ?
-			new Response<>(response.getData().stream().map(promotionHistoryEntity -> this.mapper.map(promotionHistoryEntity, PromotionHistory.class)).toList(), response.getStatus()) :
-			new Response<>(null, response.getStatus());
-	}
-
-	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return this.promotionHistoryRepository.deleteByEmployeeId(employeeId);
 	}
@@ -82,5 +65,15 @@ public class PromotionHistoryServiceImpl implements PromotionHistoryService {
 		return response.getStatus() == ResponseType.FOUND ?
 			new Response<>(response.getData().stream().map(promotionHistoryEntity -> this.mapper.map(promotionHistoryEntity, PromotionHistory.class)).toList(), response.getStatus()) :
 			new Response<>(null, response.getStatus());
+	}
+
+	@Override
+	public Response<PromotionHistory> update (PromotionHistoryLite promotionHistory) {
+		final Response<PromotionHistoryEntity> response = this.promotionHistoryRepository.update(this.mapper.map(promotionHistory, PromotionHistoryLiteEntity.class));
+
+		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
+			this.mapper.map(response.getData(), PromotionHistory.class) :
+			null
+			, response.getStatus());
 	}
 }

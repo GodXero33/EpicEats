@@ -9,7 +9,7 @@ import java.util.Map;
 public class CustomHttpResponseMap {
 	private CustomHttpResponseMap() {}
 
-	public CustomHttpResponseMapBuilder builder () {
+	public static CustomHttpResponseMapBuilder builder () {
 		return new CustomHttpResponseMapBuilder();
 	}
 
