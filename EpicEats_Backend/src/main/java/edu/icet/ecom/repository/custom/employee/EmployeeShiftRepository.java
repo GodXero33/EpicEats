@@ -1,5 +1,6 @@
 package edu.icet.ecom.repository.custom.employee;
 
+import edu.icet.ecom.entity.employee.AllShiftsEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftEntity;
 import edu.icet.ecom.entity.employee.EmployeeShiftLiteEntity;
 import edu.icet.ecom.repository.CrudRepository;
@@ -12,4 +13,5 @@ public interface EmployeeShiftRepository extends CrudRepository<EmployeeShiftEnt
 	Response<Object> deletedByEmployeeId (Long employeeId);
 	Response<EmployeeShiftEntity> add (EmployeeShiftLiteEntity entity);
 	Response<EmployeeShiftEntity> update (EmployeeShiftLiteEntity entity);
+	Response<AllShiftsEntity> getAllStructured ();
 }

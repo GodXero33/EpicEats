@@ -136,11 +136,11 @@ public class EmployeeController {
 
 	@EmployeeShiftGetAllApiDoc
 	@GetMapping("/shift/all")
-	public CustomHttpResponse<List<EmployeeShift>> getAllShifts () {
-		final Response<List<EmployeeShift>> response = this.employeeShiftService.getAll();
+	public CustomHttpResponse<AllShifts> getAllShifts () {
+		final Response<AllShifts> response = this.employeeShiftService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Employee shifts found") :
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All shifts are retrieved successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -256,8 +256,8 @@ public class EmployeeController {
 
 	@PromotionHistoryGetAllApiDoc
 	@GetMapping("/promotion/all")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions () {
-		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
+	public CustomHttpResponse<AllPromotions> getAllPromotions () {
+		final Response<AllPromotions> response = this.promotionHistoryService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded") :
@@ -266,13 +266,21 @@ public class EmployeeController {
 
 	@PromotionHistoryGetByEmployeeApiDoc
 	@GetMapping("/promotion/by-employee/{employeeId}")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
+	public CustomHttpResponse<Map<String, Object>> getAllPromotionsByEmployee (@PathVariable("employeeId") Long employeeId) {
 		if (employeeId <= 0) return this.getInvalidIdResponse();
+
+		final Response<Employee> employeeGetResponse = this.employeeService.get(employeeId);
+
+		if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No employee found with employeeId");
+		if (employeeGetResponse.getStatus() == ResponseType.SERVER_ERROR) this.controllerResponseUtil.getServerErrorResponse();
 
 		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAllByEmployeeId(employeeId);
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded for employee") :
+			new CustomHttpResponse<>(HttpStatus.OK, CustomHttpResponseMap.builder()
+				.keys("promotions", "employee")
+				.values(response.getData(), employeeGetResponse.getData())
+				.build(), "All promotion history loaded for employee") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -305,7 +313,7 @@ public class EmployeeController {
 		final Response<Object> response = this.promotionHistoryService.delete(id);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion history deleted");
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion history deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete promotion history");
 		};
@@ -319,7 +327,7 @@ public class EmployeeController {
 		final Response<Object> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion histories deleted related to " +
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion histories deleted related to " +
 				"target employee");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete promotion histories");
