@@ -1,8 +1,6 @@
 package edu.icet.ecom.repository.custom.impl.employee;
 
-import edu.icet.ecom.entity.employee.EmployeeEntity;
-import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
-import edu.icet.ecom.entity.employee.PromotionHistoryLiteEntity;
+import edu.icet.ecom.entity.employee.*;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -18,7 +16,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepository {
@@ -111,6 +111,51 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 			} catch (SQLException exception) {
 				this.logger.error(exception.getMessage());
 			}
+		}
+	}
+
+	@Override
+	public Response<AllPromotionsEntity> getAllStructured () {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT promotion_history.id, promotion_history.old_role, promotion_history.new_role, promotion_history.promotion_date,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM promotion_history JOIN employee ON employee.id = promotion_history.employee_id
+			WHERE promotion_history.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""")) {
+			final Map<Long, EmployeeEntity> employeeMap = new HashMap<>();
+			final List<PromotionHistoryLiteEntity> promotionHistoryLiteEntities = new ArrayList<>();
+
+			while (resultSet.next()) {
+				final long employeeId = resultSet.getLong(5);
+
+				promotionHistoryLiteEntities.add(PromotionHistoryLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.oldRole(EmployeeRole.fromName(resultSet.getString(2)))
+					.newRole(EmployeeRole.fromName(resultSet.getString(3)))
+					.promotionDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+					.employeeId(employeeId)
+					.build());
+
+				employeeMap.putIfAbsent(employeeId, EmployeeEntity.builder()
+					.id(employeeId)
+					.name(resultSet.getString(6))
+					.phone(resultSet.getString(7))
+					.email(resultSet.getString(8))
+					.address(resultSet.getString(9))
+					.salary(resultSet.getDouble(10))
+					.role(EmployeeRole.fromName(resultSet.getString(11)))
+					.dob(DateTimeUtil.parseDate(resultSet.getString(12)))
+					.employeeSince(DateTimeUtil.parseDate(resultSet.getString(13)))
+					.build());
+			}
+
+			return new Response<>(AllPromotionsEntity.builder()
+				.employees(employeeMap.values().stream().toList())
+				.promotions(promotionHistoryLiteEntities)
+				.build(), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 

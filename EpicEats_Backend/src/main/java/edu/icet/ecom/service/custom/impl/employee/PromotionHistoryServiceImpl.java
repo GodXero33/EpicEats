@@ -1,7 +1,9 @@
 package edu.icet.ecom.service.custom.impl.employee;
 
+import edu.icet.ecom.dto.employee.AllPromotions;
 import edu.icet.ecom.dto.employee.PromotionHistory;
 import edu.icet.ecom.dto.employee.PromotionHistoryLite;
+import edu.icet.ecom.entity.employee.AllPromotionsEntity;
 import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
 import edu.icet.ecom.entity.employee.PromotionHistoryLiteEntity;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
@@ -73,6 +75,16 @@ public class PromotionHistoryServiceImpl implements PromotionHistoryService {
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), PromotionHistory.class) :
+			null
+			, response.getStatus());
+	}
+
+	@Override
+	public Response<AllPromotions> getAllStructured () {
+		final Response<AllPromotionsEntity> response = this.promotionHistoryRepository.getAllStructured();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllPromotions.class) :
 			null
 			, response.getStatus());
 	}

@@ -256,8 +256,8 @@ public class EmployeeController {
 
 	@PromotionHistoryGetAllApiDoc
 	@GetMapping("/promotion/all")
-	public CustomHttpResponse<List<PromotionHistory>> getAllPromotions () {
-		final Response<List<PromotionHistory>> response = this.promotionHistoryService.getAll();
+	public CustomHttpResponse<AllPromotions> getAllPromotions () {
+		final Response<AllPromotions> response = this.promotionHistoryService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All promotion history loaded") :
@@ -327,7 +327,7 @@ public class EmployeeController {
 		final Response<Object> response = this.promotionHistoryService.deleteByEmployeeId(employeeId);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion histories deleted related to " +
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Promotion histories deleted related to " +
 				"target employee");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete promotion histories");
