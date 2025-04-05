@@ -2,9 +2,6 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.merchandise.*;
 import edu.icet.ecom.dto.merchandise.MenuItem;
-import edu.icet.ecom.dto.merchandise.SalesPackage;
-import edu.icet.ecom.dto.merchandise.SalesPackageItem;
-import edu.icet.ecom.dto.merchandise.SalesPackageRecord;
 import edu.icet.ecom.service.custom.merchandise.MenuItemService;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -99,25 +96,25 @@ public class MerchandiseController {
 		};
 	}
 
-	@SalesPackageAddApiDoc
-	@PostMapping("/sales-package")
-	public CustomHttpResponse<SalesPackage> addSalesPackage (@Valid @RequestBody SalesPackageRecord salesPackageRecord, BindingResult result) {
-		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-
-		final Response<Boolean> salesPackageNameExistResponse = this.salesPackageService.isNameExist(salesPackageRecord.getName());
-
-		if (salesPackageNameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Sales package name is already exist");
-		if (salesPackageNameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
-
-		final Response<Boolean> allMenuItemsExistResponse = this.menuItemService.isAllMenuItemsExist(salesPackageRecord.getSalesPackageItems().stream().map(SalesPackageItem::getItemId).toList());
-
-		if (allMenuItemsExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("There is one or more invalid menu item id found");
-		if (allMenuItemsExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
-
-		final Response<SalesPackage> response = this.salesPackageService.add(salesPackageRecord);
-
-		return response.getStatus() == ResponseType.CREATED ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Package added") :
-			this.controllerResponseUtil.getServerErrorResponse();
-	}
+//	@SalesPackageAddApiDoc
+//	@PostMapping("/sales-package")
+//	public CustomHttpResponse<SalesPackage> addSalesPackage (@Valid @RequestBody SalesPackageLite salesPackage, BindingResult result) {
+//		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+//
+//		final Response<Boolean> salesPackageNameExistResponse = this.salesPackageService.isNameExist(salesPackage.getName());
+//
+//		if (salesPackageNameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Sales package name is already exist");
+//		if (salesPackageNameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+//
+//		final Response<Boolean> allMenuItemsExistResponse = this.menuItemService.isAllMenuItemsExist(salesPackage.getMenuItemIDs());
+//
+//		if (allMenuItemsExistResponse.getStatus() == ResponseType.NOT_FOUND) return this.controllerResponseUtil.getInvalidDetailsResponse("There is one or more invalid menu item id found");
+//		if (allMenuItemsExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+//
+//		final Response<SalesPackage> response = this.salesPackageService.addSalesPackage(salesPackage);
+//
+//		return response.getStatus() == ResponseType.CREATED ?
+//			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Package added") :
+//			this.controllerResponseUtil.getServerErrorResponse();
+//	}
 }

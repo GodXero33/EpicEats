@@ -1,15 +1,6 @@
 package edu.icet.ecom.service.custom.impl.merchandise;
 
-import edu.icet.ecom.dto.merchandise.SalesPackage;
-import edu.icet.ecom.dto.merchandise.SalesPackageRecord;
-import edu.icet.ecom.entity.merchandise.SalesPackageEntity;
-import edu.icet.ecom.entity.merchandise.SalesPackageRecordEntity;
-import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
-import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
-import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -18,52 +9,4 @@ import java.util.List;
 @Service
 @Primary
 public class SalesPackageServiceImpl implements SalesPackageService {
-	private final SuperServiceHandler<SalesPackage, SalesPackageEntity> serviceHandler;
-	private final SalesPackageRepository salesPackageRepository;
-	private final ModelMapper mapper;
-
-	public SalesPackageServiceImpl (SalesPackageRepository salesPackageRepository, ModelMapper mapper) {
-		this.serviceHandler = new SuperServiceHandler<>(salesPackageRepository, mapper, SalesPackage.class, SalesPackageEntity.class);
-		this.salesPackageRepository = salesPackageRepository;
-		this.mapper = mapper;
-	}
-
-	@Override
-	public Response<SalesPackage> get (Long id) {
-		return this.serviceHandler.get(id);
-	}
-
-	@Override
-	public Response<List<SalesPackage>> getAll () {
-		return this.serviceHandler.getAll();
-	}
-
-	@Override
-	public Response<SalesPackage> add (SalesPackage dto) {
-		return this.serviceHandler.add(dto);
-	}
-
-	@Override
-	public Response<SalesPackage> update (SalesPackage dto) {
-		return this.serviceHandler.update(dto);
-	}
-
-	@Override
-	public Response<Object> delete (Long id) {
-		return this.serviceHandler.delete(id);
-	}
-
-	@Override
-	public Response<SalesPackage> add (SalesPackageRecord salesPackageRecord) {
-		final Response<SalesPackageEntity> response = this.salesPackageRepository.add(this.mapper.map(salesPackageRecord, SalesPackageRecordEntity.class));
-
-		return response.getStatus() == ResponseType.CREATED ?
-			new Response<>(this.mapper.map(response.getData(), SalesPackage.class), response.getStatus()) :
-			new Response<>(null, response.getStatus());
-	}
-
-	@Override
-	public Response<Boolean> isNameExist (String name) {
-		return this.salesPackageRepository.isNameExist(name);
-	}
 }
