@@ -1,6 +1,5 @@
 package edu.icet.ecom.repository.custom.impl.merchandise;
 
-import edu.icet.ecom.entity.merchandise.SalesPackageLiteEntity;
 import edu.icet.ecom.entity.merchandise.SuperSalesPackageEntity;
 import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
