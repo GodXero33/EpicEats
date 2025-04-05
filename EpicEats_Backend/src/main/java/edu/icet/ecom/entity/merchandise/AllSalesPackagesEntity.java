@@ -10,7 +10,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AllSalesPackagesEntity {
+public class AllSalesPackagesEntity implements SuperSalesPackageEntity {
 	private List<MenuItemEntity> menuItems;
 	private List<SalesPackageLiteEntity> salesPackages;
 }

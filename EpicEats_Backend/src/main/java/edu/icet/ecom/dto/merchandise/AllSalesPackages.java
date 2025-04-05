@@ -10,7 +10,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AllSalesPackages {
+public class AllSalesPackages implements SuperSalesPackage {
 	private List<MenuItem> menuItems;
 	private List<SalesPackageLite> salesPackages;
 }

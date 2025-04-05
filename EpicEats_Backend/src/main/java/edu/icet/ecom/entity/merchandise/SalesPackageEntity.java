@@ -10,7 +10,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesPackageEntity {
+public class SalesPackageEntity implements SuperSalesPackageEntity {
 	private Long id;
 	private String name;
 	private String description;
