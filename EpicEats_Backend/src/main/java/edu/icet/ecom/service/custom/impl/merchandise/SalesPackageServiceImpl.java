@@ -33,7 +33,8 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 		return new Response<>(response.getStatus() == ResponseType.FOUND ?
 			this.mapper.map(response.getData(), AllSalesPackages.class) :
-			null, response.getStatus());
+			null
+			, response.getStatus());
 	}
 
 	@Override
@@ -42,7 +43,8 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 		return new Response<>(response.getStatus() == ResponseType.FOUND ?
 			this.mapper.map(response.getData(), SalesPackage.class) :
-			null, response.getStatus());
+			null
+			, response.getStatus());
 	}
 
 	@Override
@@ -56,7 +58,8 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 		return new Response<>(response.getStatus() == ResponseType.CREATED ?
 			this.mapper.map(response.getData(), SuperSalesPackage.class) :
-			null, response.getStatus());
+			null
+			, response.getStatus());
 	}
 
 	@Override
@@ -65,7 +68,8 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
 			this.mapper.map(response.getData(), SuperSalesPackage.class) :
-			null, response.getStatus());
+			null
+			, response.getStatus());
 	}
 
 	@Override
