@@ -16,4 +16,5 @@ public class SalesPackageLiteEntity implements SuperSalesPackageEntity {
 	private String description;
 	private Double discountPercentage;
 	private List<Long> menuItemIDs;
+	private List<Integer> menuItemQuantities;
 }

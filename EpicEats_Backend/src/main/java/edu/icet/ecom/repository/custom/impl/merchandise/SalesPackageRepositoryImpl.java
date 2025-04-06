@@ -1,5 +1,8 @@
 package edu.icet.ecom.repository.custom.impl.merchandise;
 
+import edu.icet.ecom.entity.merchandise.MenuItemEntity;
+import edu.icet.ecom.entity.merchandise.SalesPackageEntity;
+import edu.icet.ecom.entity.merchandise.SalesPackageLiteEntity;
 import edu.icet.ecom.entity.merchandise.SuperSalesPackageEntity;
 import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
@@ -10,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,7 +27,73 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 
 	@Override
 	public Response<SuperSalesPackageEntity> add (SuperSalesPackageEntity entity) {
-		return null;
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			final SalesPackageLiteEntity salesPackageLiteEntity = (SalesPackageLiteEntity) entity;
+
+			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
+				"""
+				INSERT INTO sales_package (name, description, discount_percentage)
+				VALUES (?, ?, ?)
+				""",
+				salesPackageLiteEntity.getName(),
+				salesPackageLiteEntity.getDescription(),
+				salesPackageLiteEntity.getDiscountPercentage()
+			);
+
+			final StringBuilder salesPackageItemsInsertQueryBuilder = new StringBuilder();
+			final int salesPackageItemsSize = salesPackageLiteEntity.getMenuItemIDs().size();
+			final Object[] salesPackageItemsInsertBindsArray = new Object[salesPackageItemsSize * 3];
+			final List<Long> menuItemIDs = salesPackageLiteEntity.getMenuItemIDs();
+			final List<Integer> menuItemQuantities = salesPackageLiteEntity.getMenuItemQuantities();
+
+			salesPackageItemsInsertQueryBuilder.append("INSERT INTO sales_package_item (package_id, item_id, quantity) VALUES").append(" (?, ?, ?),".repeat(salesPackageItemsSize));
+			salesPackageItemsInsertQueryBuilder.setLength(salesPackageItemsInsertQueryBuilder.length() - 1);
+
+			for (int a = 0; a < salesPackageItemsSize; a++) {
+				salesPackageItemsInsertBindsArray[a * 3] = generatedId;
+				salesPackageItemsInsertBindsArray[a * 3 + 1] = menuItemIDs.get(a);
+				salesPackageItemsInsertBindsArray[a * 3 + 2] = menuItemQuantities.get(a);
+			}
+
+			if ((Integer) this.crudUtil.execute(salesPackageItemsInsertQueryBuilder.toString(), salesPackageItemsInsertBindsArray) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_CREATED);
+			}
+
+			final Response<List<MenuItemEntity>> menuItemsGetResponse = this.menuItemRepository.getAllByIDs(menuItemIDs);
+
+			if (menuItemsGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, menuItemsGetResponse.getStatus());
+			}
+
+			connection.commit();
+
+			return new Response<>(SalesPackageEntity.builder()
+				.id(generatedId)
+				.name(salesPackageLiteEntity.getName())
+				.description(salesPackageLiteEntity.getDescription())
+				.discountPercentage(salesPackageLiteEntity.getDiscountPercentage())
+				.menuItems(menuItemsGetResponse.getData())
+				.menuItemQuantities(menuItemQuantities)
+				.build()
+			, ResponseType.CREATED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -34,7 +104,14 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return new Response<>(null, (Integer) this.crudUtil.execute("UPDATE sales_package SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return new Response<>(null, (Integer) this.crudUtil.execute(
+				"""
+				UPDATE sales_package
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""",
+				id
+			) == 0 ?
 				ResponseType.NOT_DELETED :
 				null);
 		} catch (SQLException exception) {
