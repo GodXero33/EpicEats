@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -177,26 +178,98 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 
 	@Override
 	public Response<Object> delete (Long id) {
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
 		try {
-			return new Response<>(null, (Integer) this.crudUtil.execute(
+			connection.setAutoCommit(false);
+
+			if ((Integer) this.crudUtil.execute(
 				"""
 				UPDATE sales_package
 				SET is_deleted = TRUE
 				WHERE is_deleted = FALSE AND id = ?
 				""",
 				id
-			) == 0 ?
-				ResponseType.NOT_DELETED :
-				null);
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			if ((Integer) this.crudUtil.execute(
+				"""
+				UPDATE sales_package_item
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND package_id = ?
+				""",
+				id
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			connection.commit();
+
+			return new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
 		}
 	}
 
 	@Override
 	public Response<SuperSalesPackageEntity> get (Long id) {
-		return null;
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT name, description, discount_percentage
+			FROM sales_package
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
+				if (!resultSet.next()) return new Response<>(null, ResponseType.NOT_FOUND);
+
+				final List<Long> menuItemIds = new ArrayList<>();
+				final List<Integer> menuItemQuantities = new ArrayList<>();
+
+				try (final ResultSet salesPackagesMenuItemsResultSet = this.crudUtil.execute("""
+					SELECT item_id, quantity
+					FROM sales_package_item
+					WHERE is_deleted = FALSE AND package_id = ?
+					""", id)) {
+					while (salesPackagesMenuItemsResultSet.next()) {
+						menuItemIds.add(salesPackagesMenuItemsResultSet.getLong(1));
+						menuItemQuantities.add(salesPackagesMenuItemsResultSet.getInt(2));
+					}
+				}
+
+			final Response<List<MenuItemEntity>> menuItemsGetResponse = this.menuItemRepository.getAllByIDs(menuItemIds);
+
+			if (menuItemsGetResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(null, menuItemsGetResponse.getStatus());
+
+			return new Response<>(SalesPackageEntity.builder()
+				.id(id)
+				.name(resultSet.getString(1))
+				.description(resultSet.getString(2))
+				.discountPercentage(resultSet.getDouble(3))
+				.menuItems(menuItemsGetResponse.getData())
+				.menuItemQuantities(menuItemQuantities)
+				.build()
+				, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override

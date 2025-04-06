@@ -138,4 +138,32 @@ public class MerchandiseController {
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update sales package");
 		};
 	}
+
+	@SalesPackageDeleteApiDoc
+	@DeleteMapping("/sales-package/{id}")
+	public CustomHttpResponse<Object> deleteSalesPackage (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Object> response = this.salesPackageService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Sales package deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete sales package");
+		};
+	}
+
+	@SalesPackageGetApiDoc
+	@GetMapping("/sales-package/{id}")
+	public CustomHttpResponse<SalesPackage> getSalesPackages (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<SuperSalesPackage> response = this.salesPackageService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (SalesPackage) response.getData(), "Menu item found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find menu item");
+		};
+	}
 }
