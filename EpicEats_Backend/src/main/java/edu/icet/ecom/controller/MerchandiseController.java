@@ -118,4 +118,24 @@ public class MerchandiseController {
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add sales package");
 		};
 	}
+
+	@SalesPackageUpdateApiDoc
+	@PutMapping("/sales-package")
+	public CustomHttpResponse<SalesPackage> updateSalesPackage (@Valid @RequestBody SalesPackageLite salesPackageLite, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (salesPackageLite.getMenuItemQuantities().size() != salesPackageLite.getMenuItemIDs().size()) return this.controllerResponseUtil.getInvalidDetailsResponse("Both menuItemIds and getMenuItemQuantities length must be same");
+
+		final Response<Boolean> salesPackageNameExistResponse = this.salesPackageService.isNameExist(salesPackageLite.getName(), salesPackageLite.getId());
+
+		if (salesPackageNameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Sales package name is already exist");
+		if (salesPackageNameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<SuperSalesPackage> response = this.salesPackageService.update(salesPackageLite);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, (SalesPackage) response.getData(), "Sales package updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update sales package");
+		};
+	}
 }

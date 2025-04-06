@@ -29,6 +29,11 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 	}
 
 	@Override
+	public Response<Boolean> isNameExist (String name, Long id) {
+		return this.salesPackageRepository.isNameExist(name, id);
+	}
+
+	@Override
 	public Response<SuperSalesPackage> getAllStructured () {
 		final Response<SuperSalesPackageEntity> response = this.salesPackageRepository.getAllStructured();
 
@@ -65,10 +70,10 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 	@Override
 	public Response<SuperSalesPackage> update (SuperSalesPackage dto) {
-		final Response<SuperSalesPackageEntity> response = this.salesPackageRepository.update(this.mapper.map(dto, SuperSalesPackageEntity.class));
+		final Response<SuperSalesPackageEntity> response = this.salesPackageRepository.update(this.mapper.map(dto, SalesPackageLiteEntity.class));
 
 		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
-			this.mapper.map(response.getData(), SuperSalesPackage.class) :
+			this.mapper.map(response.getData(), SalesPackage.class) :
 			null
 			, response.getStatus());
 	}
