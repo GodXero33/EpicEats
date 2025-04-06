@@ -5,7 +5,5 @@ import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.util.Response;
 
 public interface InventoryPurchaseRepository extends CrudRepository<SuperInventoryPurchaseEntity> {
-	Response<SuperInventoryPurchaseEntity> add (SuperInventoryPurchaseEntity entity);
-	Response<SuperInventoryPurchaseEntity> update (SuperInventoryPurchaseEntity entity);
 	Response<SuperInventoryPurchaseEntity> getAllStructured ();
 }

@@ -6,5 +6,6 @@ import edu.icet.ecom.util.Response;
 
 public interface SalesPackageService extends SuperService<SuperSalesPackage> {
 	Response<Boolean> isNameExist (String name);
+	Response<Boolean> isNameExist (String name, Long id);
 	Response<SuperSalesPackage> getAllStructured ();
 }

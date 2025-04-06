@@ -118,4 +118,52 @@ public class MerchandiseController {
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add sales package");
 		};
 	}
+
+	@SalesPackageUpdateApiDoc
+	@PutMapping("/sales-package")
+	public CustomHttpResponse<SalesPackage> updateSalesPackage (@Valid @RequestBody SalesPackageLite salesPackageLite, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (salesPackageLite.getMenuItemQuantities().size() != salesPackageLite.getMenuItemIDs().size()) return this.controllerResponseUtil.getInvalidDetailsResponse("Both menuItemIds and getMenuItemQuantities length must be same");
+
+		final Response<Boolean> salesPackageNameExistResponse = this.salesPackageService.isNameExist(salesPackageLite.getName(), salesPackageLite.getId());
+
+		if (salesPackageNameExistResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.CONFLICT, null, "Sales package name is already exist");
+		if (salesPackageNameExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+
+		final Response<SuperSalesPackage> response = this.salesPackageService.update(salesPackageLite);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, (SalesPackage) response.getData(), "Sales package updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update sales package");
+		};
+	}
+
+	@SalesPackageDeleteApiDoc
+	@DeleteMapping("/sales-package/{id}")
+	public CustomHttpResponse<Object> deleteSalesPackage (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<Object> response = this.salesPackageService.delete(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Sales package deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete sales package");
+		};
+	}
+
+	@SalesPackageGetApiDoc
+	@GetMapping("/sales-package/{id}")
+	public CustomHttpResponse<SalesPackage> getSalesPackages (@PathVariable("id") Long id) {
+		if (id <= 0) return this.getInvalidIdResponse();
+
+		final Response<SuperSalesPackage> response = this.salesPackageService.get(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (SalesPackage) response.getData(), "Menu item found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find menu item");
+		};
+	}
 }

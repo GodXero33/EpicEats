@@ -6,5 +6,6 @@ import edu.icet.ecom.util.Response;
 
 public interface SalesPackageRepository extends CrudRepository<SuperSalesPackageEntity> {
 	Response<Boolean> isNameExist (String name);
+	Response<Boolean> isNameExist (String name, Long id);
 	Response<SuperSalesPackageEntity> getAllStructured ();
 }

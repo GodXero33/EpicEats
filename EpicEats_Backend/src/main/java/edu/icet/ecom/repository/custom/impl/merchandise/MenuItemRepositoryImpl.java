@@ -170,7 +170,7 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 	@Override
 	public Response<List<MenuItemEntity>> getAllByIDs (List<Long> ids) {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
-			"SELECT id, name, price, img, category, quantity
+			SELECT id, name, price, img, category, quantity
 			FROM menu_item
 			WHERE is_deleted = FALSE AND id IN (%s)
 			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
