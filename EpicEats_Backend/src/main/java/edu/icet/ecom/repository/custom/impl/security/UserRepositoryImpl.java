@@ -21,7 +21,11 @@ public class UserRepositoryImpl implements UserRepository {
 	private final CrudUtil crudUtil;
 
 	private Response<UserEntity> getByFieldName (String fieldName, Object identifier) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT employee_id, username, password, created_at, updated_at, last_login, role FROM `user` WHERE is_deleted = FALSE AND " + fieldName + " = ?", identifier)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT employee_id, username, password, created_at, updated_at, last_login, role
+			FROM `user`
+			WHERE is_deleted = FALSE AND %s = ?
+			""".formatted(fieldName), identifier)) {
 			return resultSet.next() ?
 				new Response<>(UserEntity.builder()
 					.employeeId(resultSet.getLong(1))
@@ -81,7 +85,10 @@ public class UserRepositoryImpl implements UserRepository {
 	public Response<UserEntity> add (UserEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"INSERT INTO `user` (employee_id, username, password, role) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO `user` (employee_id, username, password, role)
+				VALUES (?, ?, ?, ?)
+				""",
 				entity.getEmployeeId(),
 				entity.getUsername(),
 				entity.getPassword(),
@@ -107,12 +114,20 @@ public class UserRepositoryImpl implements UserRepository {
 			final String password = entity.getPassword();
 			final boolean isUpdated = (password == null ?
 				(Integer) this.crudUtil.execute(
-					"UPDATE `user` SET updated_at = ?, role = ? WHERE is_deleted = FALSE AND employee_id = ?",
+					"""
+					UPDATE `user`
+					SET updated_at = ?, role = ?
+					WHERE is_deleted = FALSE AND employee_id = ?
+					""",
 					DateTimeUtil.getCurrentDateTime(),
 					entity.getRole().name(),
 					entity.getEmployeeId()) :
 				(Integer) this.crudUtil.execute(
-					"UPDATE `user` SET password = ?, updated_at = ?, role = ? WHERE is_deleted = FALSE AND employee_id = ?",
+					"""
+					UPDATE `user`
+					SET password = ?, updated_at = ?, role = ?
+					WHERE is_deleted = FALSE AND employee_id = ?
+					""",
 					password,
 					DateTimeUtil.getCurrentDateTime(),
 					entity.getRole().name(),
@@ -124,7 +139,10 @@ public class UserRepositoryImpl implements UserRepository {
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
-			try (final ResultSet userNameResultSet = this.crudUtil.execute("SELECT username FROM `user` WHERE employee_id = ?", entity.getEmployeeId())) {
+			try (final ResultSet userNameResultSet = this.crudUtil.execute("""
+				SELECT username FROM `user`
+				WHERE employee_id = ?
+				""", entity.getEmployeeId())) {
 				if (userNameResultSet.next()) {
 					connection.commit();
 					entity.setUsername(userNameResultSet.getString(1));
@@ -157,7 +175,11 @@ public class UserRepositoryImpl implements UserRepository {
 	public Response<Object> delete (Long id) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE `user` SET deleted_at = ?, is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?",
+				"""
+				UPDATE `user`
+				SET deleted_at = ?, is_deleted = TRUE
+				WHERE is_deleted = FALSE AND employee_id = ?
+				""",
 				DateTimeUtil.getCurrentDateTime(),
 				id
 			) == 0 ?

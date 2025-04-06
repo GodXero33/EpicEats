@@ -27,7 +27,10 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 	public Response<MenuItemEntity> add (MenuItemEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO menu_item (name, price, img, category, quantity) VALUES (?, ?, ?, ?, ?)",
+				"""
+				INSERT INTO menu_item (name, price, img, category, quantity)
+				VALUES (?, ?, ?, ?, ?)
+				""",
 				entity.getName(),
 				entity.getPrice(),
 				entity.getImg(),
@@ -48,7 +51,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 	public Response<MenuItemEntity> update (MenuItemEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE menu_item SET name = ?, price = ?, img = ?, category = ?, quantity = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE menu_item
+				SET name = ?, price = ?, img = ?, category = ?, quantity = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				entity.getName(),
 				entity.getPrice(),
 				entity.getImg(),
@@ -67,7 +74,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE menu_item SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE menu_item
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -78,7 +89,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 	@Override
 	public Response<MenuItemEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT name, price, img, category, quantity
+			FROM menu_item
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(MenuItemEntity.builder()
 					.id(id)
@@ -97,7 +112,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 	@Override
 	public Response<List<MenuItemEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, price, img, category, quantity
+			FROM menu_item
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<MenuItemEntity> menuItemEntities = new ArrayList<>();
 
 			while (resultSet.next()) menuItemEntities.add(MenuItemEntity.builder()
@@ -116,7 +135,6 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 		}
 	}
 
-
 	@Override
 	public Response<Boolean> isExist (Long id) {
 		try (final ResultSet resultSet = this.crudUtil.execute("SELECT 1 FROM menu_item WHERE is_deleted = FALSE AND id = ?", id)) {
@@ -131,7 +149,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 	@Override
 	public Response<Boolean> isAllMenuItemsExist (List<Long> ids) {
-		final String query = "SELECT COUNT(*) FROM menu_item WHERE is_deleted = FALSE AND id IN (" +String.join(", ", Collections.nCopies(ids.size(), "?")) + ")";
+		final String query = """
+			SELECT COUNT(*)
+			FROM menu_item
+			WHERE is_deleted = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?")));
 
 		try (final ResultSet resultSet = this.crudUtil.execute(query, ids.toArray())) {
 			resultSet.next();
@@ -147,12 +169,11 @@ public class MenuItemRepositoryImpl implements MenuItemRepository {
 
 	@Override
 	public Response<List<MenuItemEntity>> getAllByIDs (List<Long> ids) {
-		try (final ResultSet resultSet = this.crudUtil.execute(
-			String.format(
-				"%s (%s)",
-				"SELECT id, name, price, img, category, quantity FROM menu_item WHERE is_deleted = FALSE AND id IN",
-				String.join(", ", Collections.nCopies(ids.size(), "?"))
-			),
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			"SELECT id, name, price, img, category, quantity
+			FROM menu_item
+			WHERE is_deleted = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
 			ids
 		)) {
 			final List<MenuItemEntity> menuItemEntities = new ArrayList<>();

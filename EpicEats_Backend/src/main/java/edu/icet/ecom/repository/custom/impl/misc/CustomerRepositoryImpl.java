@@ -35,7 +35,10 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	public Response<CustomerEntity> add (CustomerEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO customer (name, phone, email, address) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO customer (name, phone, email, address)
+				VALUES (?, ?, ?, ?)
+				""",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
@@ -55,7 +58,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	public Response<CustomerEntity> update (CustomerEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE customer SET name = ?, phone = ?, email = ?, address = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE customer
+				SET name = ?, phone = ?, email = ?, address = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
@@ -73,7 +80,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE customer SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE customer
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -84,7 +95,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
 	@Override
 	public Response<CustomerEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address FROM customer WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT name, phone, email, address
+			FROM customer
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(CustomerEntity.builder()
 					.name(resultSet.getString(1))
@@ -101,7 +116,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
 	@Override
 	public Response<List<CustomerEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address FROM customer WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, phone, email, address
+			FROM customer
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<CustomerEntity> customerEntities = new ArrayList<>();
 
 			while (resultSet.next()) customerEntities.add(CustomerEntity.builder()

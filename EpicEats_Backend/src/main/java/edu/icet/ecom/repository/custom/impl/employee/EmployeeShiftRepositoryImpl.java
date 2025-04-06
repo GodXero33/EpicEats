@@ -48,7 +48,10 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new Response<>(null, ResponseType.NOT_CREATED);
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO employee_shift (employee_id, shift_date, start_time, end_time) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO employee_shift (employee_id, shift_date, start_time, end_time)
+				VALUES (?, ?, ?, ?)
+				""",
 				entity.getEmployeeId(),
 				entity.getShiftDate(),
 				entity.getStartTime(),
@@ -77,7 +80,11 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 			if (employeeGetResponse.getStatus() == ResponseType.NOT_FOUND) return new Response<>(null, ResponseType.NOT_CREATED);
 
 			return (Integer) this.crudUtil.execute(
-				"UPDATE employee_shift SET employee_id = ?, shift_date = ?, start_time = ?, end_time = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+					UPDATE employee_shift
+					SET employee_id = ?, shift_date = ?, start_time = ?, end_time = ?
+					WHERE is_deleted = FALSE AND id = ?
+					""",
 				entity.getEmployeeId(),
 				entity.getShiftDate(),
 				entity.getStartTime(),
@@ -146,7 +153,11 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE employee_shift
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -157,7 +168,14 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<EmployeeShiftEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.shift_date, es.start_time, es.end_time, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.id = ? AND es.is_deleted = FALSE AND e.is_terminated = FALSE", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			employee_shift.shift_date, employee_shift.start_time, employee_shift.end_time,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM employee_shift
+			JOIN employee ON employee.id = employee_shift.employee_id
+			WHERE employee_shift.id = ? AND employee_shift.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeShiftEntity.builder()
 					.id(id)
@@ -185,7 +203,14 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT es.id, es.shift_date, es.start_time, es.end_time, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM employee_shift es JOIN employee e ON e.id = es.employee_id WHERE es.is_deleted = FALSE AND e.is_terminated = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			employee_shift.id, employee_shift.shift_date, employee_shift.start_time, employee_shift.end_time,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM employee_shift
+			JOIN employee ON employee.id = employee_shift.employee_id
+			WHERE employee_shift.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""")) {
 			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
 
 			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
@@ -213,12 +238,13 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 		}
 	}
 
-	/**
-	 * No need to send employee data. If frontend has employee id that means frontend also have employee data.
-	 */
 	@Override
 	public Response<List<EmployeeShiftEntity>> getAllByEmployeeId (Long employeeId) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, employee_id, shift_date, start_time, end_time FROM employee_shift WHERE is_deleted = FALSE AND employee_id = ?", employeeId)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, employee_id, shift_date, start_time, end_time
+			FROM employee_shift
+			WHERE is_deleted = FALSE AND employee_id = ?
+			""", employeeId)) {
 			final List<EmployeeShiftEntity> employeeShiftEntities = new ArrayList<>();
 
 			while (resultSet.next()) employeeShiftEntities.add(EmployeeShiftEntity.builder()
@@ -238,7 +264,11 @@ public class EmployeeShiftRepositoryImpl implements EmployeeShiftRepository {
 	@Override
 	public Response<Object> deletedByEmployeeId (Long employeeId) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE employee_shift SET is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?", employeeId) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE employee_shift
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND employee_id = ?
+				""", employeeId) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {

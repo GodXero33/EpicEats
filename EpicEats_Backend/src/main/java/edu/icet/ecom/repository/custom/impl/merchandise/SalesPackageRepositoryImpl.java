@@ -52,7 +52,10 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 			final List<Long> menuItemIDs = salesPackageLiteEntity.getMenuItemIDs();
 			final List<Integer> menuItemQuantities = salesPackageLiteEntity.getMenuItemQuantities();
 
-			salesPackageItemsInsertQueryBuilder.append("INSERT INTO sales_package_item (package_id, item_id, quantity) VALUES").append(" (?, ?, ?),".repeat(salesPackageItemsSize));
+			salesPackageItemsInsertQueryBuilder.append("""
+				INSERT INTO sales_package_item (package_id, item_id, quantity)
+				VALUES %s
+				""".formatted(" (?, ?, ?),".repeat(salesPackageItemsSize)));
 			salesPackageItemsInsertQueryBuilder.setLength(salesPackageItemsInsertQueryBuilder.length() - 1);
 
 			for (int a = 0; a < salesPackageItemsSize; a++) {

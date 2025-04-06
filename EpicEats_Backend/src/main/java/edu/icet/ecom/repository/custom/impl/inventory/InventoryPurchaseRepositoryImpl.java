@@ -60,7 +60,10 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			connection.setAutoCommit(false);
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost) VALUES (?, ?, ?, ?, ?)",
+				"""
+				INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost)
+				VALUES (?, ?, ?, ?, ?)
+				""",
 				entity.getInventoryId(),
 				entity.getMenuItemId(),
 				entity.getSupplierId(),
@@ -119,7 +122,11 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			connection.setAutoCommit(false);
 
 			final boolean isUpdated = (Integer) this.crudUtil.execute(
-				"UPDATE inventory_purchase SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE inventory_purchase
+				SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				entity.getInventoryId(),
 				entity.getMenuItemId(),
 				entity.getSupplierId(),
@@ -178,36 +185,19 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	public Response<AllInventoryPurchasesEntity> getAllStructured () {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.id,
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE
+			inventory_purchase.id, inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON inventory_purchase.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON inventory_purchase.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE
 			""")) {
 			final Map<Long, SupplierEntity> suppliersMap = new HashMap<>();
 			final Map<Long, InventoryEntity> inventoryMap = new HashMap<>();
@@ -278,7 +268,11 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE inventory_purchase SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE inventory_purchase
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -295,35 +289,19 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	public Response<InventoryPurchaseEntity> get (Long id) {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE AND ip.id = ?
+			inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON ip.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON ip.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE AND inventory_purchase.id = ?
 			""", id)) {
 			if (resultSet.next()) {
 				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(21));
@@ -370,36 +348,19 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	public Response<List<InventoryPurchaseEntity>> getAll () {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.id,
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE
+			inventory_purchase.id, inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON ip.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON ip.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE
 			""")) {
 			final List<InventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
 

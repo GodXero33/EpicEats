@@ -46,7 +46,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	public Response<EmployeeEntity> add (EmployeeEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO employee (name, phone, email, address, salary, role, dob, employee_since) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+				"""
+				INSERT INTO employee (name, phone, email, address, salary, role, dob, employee_since)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				""",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
@@ -100,7 +103,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			}
 
 			if ((Integer) this.crudUtil.execute(
-				"UPDATE employee SET name = ?, phone = ?, email = ?, address = ?, salary = ?, role = ?, dob = ? WHERE is_terminated = FALSE AND id = ?",
+				"""
+				UPDATE employee
+				SET name = ?, phone = ?, email = ?, address = ?, salary = ?, role = ?, dob = ?
+				WHERE is_terminated = FALSE AND id = ?
+				""",
 				entity.getName(),
 				entity.getPhone(),
 				entity.getEmail(),
@@ -143,7 +150,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<EmployeeEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, phone, email, address, salary, role, dob, employee_since FROM employee WHERE is_terminated = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT name, phone, email, address, salary, role, dob, employee_since
+			FROM employee
+			WHERE is_terminated = FALSE AND id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(EmployeeEntity.builder()
 					.id(id)
@@ -165,7 +176,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	@Override
 	public Response<List<EmployeeEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, phone, email, address, salary, role, dob, employee_since FROM employee WHERE is_terminated = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, phone, email, address, salary, role, dob, employee_since
+			FROM employee
+			WHERE is_terminated = FALSE
+			""")) {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
