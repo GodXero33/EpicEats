@@ -26,7 +26,10 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 	public Response<ExpenseEntity> add (ExpenseEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO expense (expense_type, amount, expense_date, description) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO expense (expense_type, amount, expense_date, description)
+				VALUES (?, ?, ?, ?)
+				""",
 				entity.getExpenseType().name(),
 				entity.getAmount(),
 				entity.getExpenseDate(),
@@ -46,7 +49,11 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 	public Response<ExpenseEntity> update (ExpenseEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE expense SET expense_type = ?, amount = ?, expense_date = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE expense
+				SET expense_type = ?, amount = ?, expense_date = ?, description = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				entity.getExpenseType().name(),
 				entity.getAmount(),
 				entity.getExpenseDate(),
@@ -64,7 +71,11 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE expense SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE expense
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -75,7 +86,11 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
 	@Override
 	public Response<ExpenseEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT expense_type, amount, expense_date, description FROM expense WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT expense_type, amount, expense_date, description
+			FROM expense
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(ExpenseEntity.builder()
 					.id(id)
@@ -93,7 +108,11 @@ public class ExpenseRepositoryImpl implements ExpenseRepository {
 
 	@Override
 	public Response<List<ExpenseEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, expense_type, amount, expense_date, description FROM expense WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, expense_type, amount, expense_date, description
+			FROM expense
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<ExpenseEntity> expenseEntities = new ArrayList<>();
 
 			while (resultSet.next()) expenseEntities.add(ExpenseEntity.builder()

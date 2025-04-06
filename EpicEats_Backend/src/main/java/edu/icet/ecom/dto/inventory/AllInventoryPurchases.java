@@ -11,7 +11,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AllInventoryPurchases {
+public class AllInventoryPurchases implements SuperInventoryPurchase {
 	private List<InventoryPurchaseLite> purchases;
 	private List<Inventory> inventories;
 	private List<MenuItem> menuItems;

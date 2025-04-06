@@ -45,7 +45,11 @@ public class ReportRepositoryImpl implements ReportRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE report SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE report
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -56,7 +60,14 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<ReportEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE AND r.id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			report.generated_at, report.report_type, report.start_date, report.end_date, report.title, report.description,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM report
+			JOIN employee ON report.generated_by = employee.id
+			WHERE report.is_deleted = FALSE AND employee.is_terminated = FALSE AND report.id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(ReportEntity.builder()
 					.id(id)
@@ -100,7 +111,10 @@ public class ReportRepositoryImpl implements ReportRepository {
 			connection.setAutoCommit(false);
 
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO report (report_type, start_date, end_date, generated_by, title, description) VALUES (?, ?, ?, ?, ?, ?)",
+				"""
+				INSERT INTO report (report_type, start_date, end_date, generated_by, title, description)
+				VALUES (?, ?, ?, ?, ?, ?)
+				""",
 				report.getType().name(),
 				report.getStartDate(),
 				report.getEndDate(),
@@ -164,7 +178,11 @@ public class ReportRepositoryImpl implements ReportRepository {
 			connection.setAutoCommit(false);
 
 			if ((Integer) this.crudUtil.execute(
-				"UPDATE report SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE report
+				SET report_type = ?, start_date = ?, end_date = ?, generated_by = ?, title = ?, description = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				report.getType().name(),
 				report.getStartDate(),
 				report.getEndDate(),
@@ -224,7 +242,14 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<AllReportsEntity> getAllStructured () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT r.id, r.generated_at, r.report_type, r.start_date, r.end_date, r.title, r.description, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM report r JOIN employee e ON r.generated_by = e.id WHERE r.is_deleted = FALSE AND e.is_terminated = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			report.id, report.generated_at, report.report_type, report.start_date, report.end_date, report.title, report.description,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM report
+			JOIN employee ON report.generated_by = employee.id
+			WHERE report.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""")) {
 			final Map<Long, EmployeeEntity> employeeMap = new HashMap<>();
 			final List<ReportLiteEntity> reportEntities = new ArrayList<>();
 
@@ -268,7 +293,11 @@ public class ReportRepositoryImpl implements ReportRepository {
 	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE report SET is_deleted = TRUE WHERE is_deleted = FALSE AND generated_by = ?", employeeId) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE report
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND generated_by = ?
+				""", employeeId) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -279,7 +308,11 @@ public class ReportRepositoryImpl implements ReportRepository {
 
 	@Override
 	public Response<ReportsByEmployeeEntity> getAllByEmployeeId (Long employeeId) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, generated_at, report_type, start_date, end_date, title, description FROM report WHERE is_deleted = FALSE AND generated_by = ?", employeeId)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, generated_at, report_type, start_date, end_date, title, description
+			FROM report
+			WHERE is_deleted = FALSE AND generated_by = ?
+			""", employeeId)) {
 			final Response<EmployeeEntity> reportGeneratedEmployeeResponse = this.employeeRepository.get(employeeId);
 
 			if (reportGeneratedEmployeeResponse.getStatus() == ResponseType.SERVER_ERROR)

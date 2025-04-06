@@ -36,7 +36,10 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 	public Response<PromotionHistoryEntity> add (PromotionHistoryEntity entity) {
 		try {
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO promotion_history (employee_id, old_role, new_role, promotion_date) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO promotion_history (employee_id, old_role, new_role, promotion_date)
+				VALUES (?, ?, ?, ?)
+				""",
 				entity.getEmployee().getId(),
 				entity.getOldRole().name(),
 				entity.getNewRole().name(),
@@ -67,7 +70,11 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 			connection.setAutoCommit(false);
 
 			final boolean isUpdated = (Integer) this.crudUtil.execute(
-				"UPDATE promotion_history SET employee_id = ?, old_role = ?, new_role = ?, promotion_date = ? WHERE id = ?",
+				"""
+					UPDATE promotion_history
+					SET employee_id = ?, old_role = ?, new_role = ?, promotion_date = ?
+					WHERE id = ?
+					""",
 				entity.getEmployeeId(),
 				entity.getOldRole().name(),
 				entity.getNewRole().name(),
@@ -162,7 +169,11 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE promotion_history SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE promotion_history
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -173,7 +184,14 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 
 	@Override
 	public Response<PromotionHistoryEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT p.old_role, p.new_role, p.promotion_date, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM promotion_history p JOIN employee e ON e.id = p.employee_id WHERE p.is_deleted = FALSE AND e.is_terminated = FALSE AND p.id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			promotion_history.old_role, promotion_history.new_role, promotion_history.promotion_date,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM promotion_history
+			JOIN employee ON employee.id = promotion_history.employee_id
+			WHERE promotion_history.is_deleted = FALSE AND employee.is_terminated = FALSE AND promotion_history.id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(PromotionHistoryEntity.builder()
 					.id(id)
@@ -201,7 +219,14 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 
 	@Override
 	public Response<List<PromotionHistoryEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT p.id, p.old_role, p.new_role, p.promotion_date, e.id, e.name, e.phone, e.email, e.address, e.salary, e.role, e.dob, e.employee_since FROM promotion_history p JOIN employee e ON e.id = p.employee_id WHERE p.is_deleted = FALSE AND e.is_terminated = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			promotion_history.id, promotion_history.old_role, promotion_history.new_role, promotion_history.promotion_date,
+			employee.id, employee.name, employee.phone, employee.email, employee.address, employee.salary, employee.role, employee.dob, employee.employee_since
+			FROM promotion_history
+			JOIN employee ON employee.id = promotion_history.employee_id
+			WHERE promotion_history.is_deleted = FALSE AND employee.is_terminated = FALSE
+			""")) {
 			final List<PromotionHistoryEntity> promotionHistoryEntities = new ArrayList<>();
 
 			while (resultSet.next()) promotionHistoryEntities.add(PromotionHistoryEntity.builder()
@@ -232,7 +257,11 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE promotion_history SET is_deleted = TRUE WHERE is_deleted = FALSE AND employee_id = ?", employeeId) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE promotion_history
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND employee_id = ?
+				""", employeeId) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -241,12 +270,12 @@ public class PromotionHistoryRepositoryImpl implements PromotionHistoryRepositor
 		}
 	}
 
-	/**
-	 * If frontend has employee id that means other employee's data also there. No need to send again.
-	 */
 	@Override
 	public Response<List<PromotionHistoryEntity>> getAllByEmployeeId (Long employeeId) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, old_role, new_role, promotion_date FROM promotion_history WHERE is_deleted = FALSE AND employee_id = ?", employeeId)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, old_role, new_role, promotion_date FROM promotion_history
+			WHERE is_deleted = FALSE AND employee_id = ?
+			""", employeeId)) {
 			final List<PromotionHistoryEntity> promotionHistoryEntities = new ArrayList<>();
 
 			while (resultSet.next()) promotionHistoryEntities.add(PromotionHistoryEntity.builder()

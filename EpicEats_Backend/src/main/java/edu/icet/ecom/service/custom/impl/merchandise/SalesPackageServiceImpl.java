@@ -3,6 +3,7 @@ package edu.icet.ecom.service.custom.impl.merchandise;
 import edu.icet.ecom.dto.merchandise.AllSalesPackages;
 import edu.icet.ecom.dto.merchandise.SalesPackage;
 import edu.icet.ecom.dto.merchandise.SuperSalesPackage;
+import edu.icet.ecom.entity.merchandise.SalesPackageLiteEntity;
 import edu.icet.ecom.entity.merchandise.SuperSalesPackageEntity;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
@@ -54,10 +55,10 @@ public class SalesPackageServiceImpl implements SalesPackageService {
 
 	@Override
 	public Response<SuperSalesPackage> add (SuperSalesPackage dto) {
-		final Response<SuperSalesPackageEntity> response = this.salesPackageRepository.add(this.mapper.map(dto, SuperSalesPackageEntity.class));
+		final Response<SuperSalesPackageEntity> response = this.salesPackageRepository.add(this.mapper.map(dto, SalesPackageLiteEntity.class));
 
 		return new Response<>(response.getStatus() == ResponseType.CREATED ?
-			this.mapper.map(response.getData(), SuperSalesPackage.class) :
+			this.mapper.map(response.getData(), SalesPackage.class) :
 			null
 			, response.getStatus());
 	}

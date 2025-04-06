@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryPurchaseEntity {
+public class InventoryPurchaseEntity implements SuperInventoryPurchaseEntity {
 	private Long id;
 	private InventoryEntity inventory;
 	private MenuItemEntity menuItem;

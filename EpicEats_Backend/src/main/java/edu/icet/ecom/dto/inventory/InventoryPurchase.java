@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryPurchase {
+public class InventoryPurchase implements SuperInventoryPurchase {
 	private Long id;
 	private Inventory inventory;
 	private MenuItem menuItem;

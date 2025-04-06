@@ -167,10 +167,10 @@ public class InventoryController {
 	public CustomHttpResponse<InventoryPurchase> getInventoryPurchase (@PathVariable("id") Long id) {
 		if (id <= 0) return this.getInvalidIdResponse();
 
-		final Response<InventoryPurchase> response = this.inventoryPurchaseService.get(id);
+		final Response<SuperInventoryPurchase> response = this.inventoryPurchaseService.get(id);
 
 		return switch (response.getStatus()) {
-			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase found");
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (InventoryPurchase) response.getData(), "Inventory purchase found");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Inventory purchase failed to find");
 		};
@@ -179,10 +179,10 @@ public class InventoryController {
 	@InventoryPurchaseGetAllApiDoc
 	@GetMapping("/purchase/all")
 	public CustomHttpResponse<AllInventoryPurchases> getALlInventoryPurchase () {
-		final Response<AllInventoryPurchases> response = this.inventoryPurchaseService.getAllStructured();
+		final Response<SuperInventoryPurchase> response = this.inventoryPurchaseService.getAllStructured();
 
 		return response.getStatus() == ResponseType.FOUND ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "ALl inventory purchases loaded successfully") :
+			new CustomHttpResponse<>(HttpStatus.OK, (AllInventoryPurchases) response.getData(), "ALl inventory purchases loaded successfully") :
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
@@ -217,10 +217,10 @@ public class InventoryController {
 
 		if (responseAfterInventoryPurchaseValidation != null) return responseAfterInventoryPurchaseValidation;
 
-		final Response<InventoryPurchase> response = this.inventoryPurchaseService.add(inventoryPurchase);
+		final Response<SuperInventoryPurchase> response = this.inventoryPurchaseService.add(inventoryPurchase);
 
 		return switch (response.getStatus()) {
-			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase added");
+			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, (InventoryPurchase) response.getData(), "Inventory purchase added");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add inventory purchase");
 		};
@@ -235,10 +235,10 @@ public class InventoryController {
 
 		if (responseAfterInventoryPurchaseValidation != null) return responseAfterInventoryPurchaseValidation;
 
-		final Response<InventoryPurchase> response = this.inventoryPurchaseService.update(inventoryPurchase);
+		final Response<SuperInventoryPurchase> response = this.inventoryPurchaseService.update(inventoryPurchase);
 
 		return switch (response.getStatus()) {
-			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Inventory purchase updated");
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, (InventoryPurchase) response.getData(), "Inventory purchase updated");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Inventory purchase not updated");
 		};

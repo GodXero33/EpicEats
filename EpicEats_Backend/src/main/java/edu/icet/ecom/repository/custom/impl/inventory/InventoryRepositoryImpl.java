@@ -36,7 +36,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 	public Response<InventoryEntity> update (InventoryEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
-				"UPDATE inventory SET name = ?, description = ?, quantity = ?, unit = ? WHERE is_deleted = FALSE AND id = ?",
+				"""
+				UPDATE inventory
+				SET name = ?, description = ?, quantity = ?, unit = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
 				entity.getName(),
 				entity.getDescription(),
 				entity.getQuantity(),
@@ -54,7 +58,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE inventory SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE inventory
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -65,7 +73,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 	@Override
 	public Response<InventoryEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT name, description, quantity, unit, updated_at FROM inventory WHERE is_deleted = FALSE AND id = ?", id)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT name, description, quantity, unit, updated_at
+			FROM inventory
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
 			return resultSet.next() ?
 				new Response<>(InventoryEntity.builder()
 					.id(id)
@@ -84,7 +96,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 	@Override
 	public Response<List<InventoryEntity>> getAll () {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT id, name, description, quantity, unit, updated_at FROM inventory WHERE is_deleted = FALSE")) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, description, quantity, unit, updated_at
+			FROM inventory
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<InventoryEntity> inventoryEntities = new ArrayList<>();
 
 			while (resultSet.next()) inventoryEntities.add(InventoryEntity.builder()
@@ -105,7 +121,14 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 
 	@Override
 	public Response<List<InventoryEntity>> getAllBySupplier (Long supplierId) {
-		try (final ResultSet resultSet = this.crudUtil.execute("SELECT i.id, i.name, i.description, i.quantity, i.unit, i.updated_at, si.quantity FROM inventory i JOIN supplier_inventory si ON i.id = si.inventory_id WHERE si.supplier_id = ?", supplierId)) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			supplier_inventory.quantity
+			FROM inventory
+			JOIN supplier_inventory ON inventory.id = supplier_inventory.inventory_id
+			WHERE supplier_inventory.supplier_id = ?
+			""", supplierId)) {
 			final List<InventoryEntity> inventoryEntities = new ArrayList<>();
 
 			while (resultSet.next()) inventoryEntities.add(InventoryEntity.builder()
@@ -134,7 +157,10 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			connection.setAutoCommit(false);
 
 			final long generatedInventoryId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO inventory (name, description, quantity, unit) VALUES (?, ?, ?, ?)",
+				"""
+				INSERT INTO inventory (name, description, quantity, unit)
+				VALUES (?, ?, ?, ?)
+				""",
 				supplierStockRecordEntity.getInventory().getName(),
 				supplierStockRecordEntity.getInventory().getDescription(),
 				supplierStockRecordEntity.getInventory().getQuantity(),
@@ -142,7 +168,10 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			);
 			final Response<InventoryEntity> newInventoryGetResponse = this.get(generatedInventoryId);
 			final boolean isSupplierInventoryRecordAdded = newInventoryGetResponse.getStatus() == ResponseType.FOUND && (Integer) this.crudUtil.execute(
-				"INSERT INTO supplier_inventory (supplier_id, inventory_id, quantity) VALUES (?, ?, ?)",
+				"""
+				INSERT INTO supplier_inventory (supplier_id, inventory_id, quantity)
+				VALUES (?, ?, ?)
+				""",
 				supplierStockRecordEntity.getSupplierId(),
 				generatedInventoryId,
 				supplierStockRecordEntity.getInventory().getQuantity() // Because we add new inventory item, supplier_inventory is new too. So quantity from direct 'SupplierInventoryRecordEntity' object can be ignored. Just can use inventory quantity
@@ -207,18 +236,30 @@ public class InventoryRepositoryImpl implements InventoryRepository {
 			final long inventoryId = supplierStockRecordEntity.getInventory().getId();
 			final long supplierId = supplierStockRecordEntity.getSupplierId();
 
-			if ((Integer) this.crudUtil.execute("UPDATE inventory SET quantity = quantity + ? WHERE is_deleted = FALSE AND id = ?", quantity, inventoryId) == 0) {
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE inventory
+				SET quantity = quantity + ?
+				WHERE is_deleted = FALSE AND id = ?
+				""", quantity, inventoryId) == 0) {
 				connection.rollback();
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
-			if ((Integer) this.crudUtil.execute("UPDATE supplier_inventory SET quantity = quantity + ? WHERE supplier_id = ? AND inventory_id = ?", quantity, supplierId, inventoryId) == 0) {
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE supplier_inventory
+				SET quantity = quantity + ?
+				WHERE supplier_id = ? AND inventory_id = ?
+				""", quantity, supplierId, inventoryId) == 0) {
 				connection.rollback();
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
 			try (final ResultSet supplierInventoryResultSet = this.crudUtil.execute(
-				"SELECT quantity FROM supplier_inventory WHERE supplier_id = ? AND inventory_id = ?",
+				"""
+				SELECT quantity
+				FROM supplier_inventory
+				WHERE supplier_id = ? AND inventory_id = ?
+				""",
 				supplierId,
 				inventoryId
 			)) {

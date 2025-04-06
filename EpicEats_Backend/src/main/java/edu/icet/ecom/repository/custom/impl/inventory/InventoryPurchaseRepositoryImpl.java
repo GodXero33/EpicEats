@@ -30,16 +30,6 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	private final MenuItemRepository menuItemRepository;
 	private final SupplierRepository supplierRepository;
 
-	@Override
-	public Response<InventoryPurchaseEntity> add (InventoryPurchaseEntity entity) {
-		return new Response<>(null, ResponseType.SERVER_ERROR);
-	}
-
-	@Override
-	public Response<InventoryPurchaseEntity> update (InventoryPurchaseEntity entity) {
-		return new Response<>(null, ResponseType.SERVER_ERROR);
-	}
-
 	private <T> T getItemFromRepository (CrudRepository<T> repository, Long id) throws SQLException {
 		if (id == null) return null;
 
@@ -51,7 +41,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<InventoryPurchaseEntity> add (InventoryPurchaseLiteEntity entity) {
+	public Response<SuperInventoryPurchaseEntity> add (SuperInventoryPurchaseEntity entity) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -59,18 +49,22 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 		try {
 			connection.setAutoCommit(false);
 
+			final InventoryPurchaseLiteEntity liteEntity = (InventoryPurchaseLiteEntity) entity;
 			final long generatedId = this.crudUtil.executeWithGeneratedKeys(
-				"INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost) VALUES (?, ?, ?, ?, ?)",
-				entity.getInventoryId(),
-				entity.getMenuItemId(),
-				entity.getSupplierId(),
-				entity.getQuantity(),
-				entity.getCost()
+				"""
+				INSERT INTO inventory_purchase (inventory_id, menu_item_id, supplier_id, quantity, cost)
+				VALUES (?, ?, ?, ?, ?)
+				""",
+				liteEntity.getInventoryId(),
+				liteEntity.getMenuItemId(),
+				liteEntity.getSupplierId(),
+				liteEntity.getQuantity(),
+				liteEntity.getCost()
 			);
 
-			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, entity.getInventoryId());
-			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, entity.getMenuItemId());
-			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, entity.getSupplierId());
+			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, liteEntity.getInventoryId());
+			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, liteEntity.getMenuItemId());
+			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, liteEntity.getSupplierId());
 
 			if ((inventory == null && menuItem == null) || supplier == null) {
 				connection.rollback();
@@ -84,8 +78,8 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 				.inventory(inventory)
 				.menuItem(menuItem)
 				.supplier(supplier)
-				.quantity(entity.getQuantity())
-				.cost(entity.getCost())
+				.quantity(liteEntity.getQuantity())
+				.cost(liteEntity.getCost())
 				.purchasedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
 				.build();
 
@@ -110,7 +104,7 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<InventoryPurchaseEntity> update (InventoryPurchaseLiteEntity entity) {
+	public Response<SuperInventoryPurchaseEntity> update (SuperInventoryPurchaseEntity entity) {
 		final Connection connection = this.crudUtil.getDbConnection().getConnection();
 
 		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
@@ -118,14 +112,19 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 		try {
 			connection.setAutoCommit(false);
 
+			final InventoryPurchaseLiteEntity liteEntity = (InventoryPurchaseLiteEntity) entity;
 			final boolean isUpdated = (Integer) this.crudUtil.execute(
-				"UPDATE inventory_purchase SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ? WHERE is_deleted = FALSE AND id = ?",
-				entity.getInventoryId(),
-				entity.getMenuItemId(),
-				entity.getSupplierId(),
-				entity.getQuantity(),
-				entity.getCost(),
-				entity.getId()
+				"""
+				UPDATE inventory_purchase
+				SET inventory_id = ?, menu_item_id = ?, supplier_id = ?, quantity = ?, cost = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
+				liteEntity.getInventoryId(),
+				liteEntity.getMenuItemId(),
+				liteEntity.getSupplierId(),
+				liteEntity.getQuantity(),
+				liteEntity.getCost(),
+				liteEntity.getId()
 			) != 0;
 
 			if (!isUpdated) {
@@ -133,9 +132,9 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 				return new Response<>(null, ResponseType.NOT_UPDATED);
 			}
 
-			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, entity.getInventoryId());
-			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, entity.getMenuItemId());
-			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, entity.getSupplierId());
+			final InventoryEntity inventory = this.getItemFromRepository(this.inventoryRepository, liteEntity.getInventoryId());
+			final MenuItemEntity menuItem = this.getItemFromRepository(this.menuItemRepository, liteEntity.getMenuItemId());
+			final SupplierEntity supplier = this.getItemFromRepository(this.supplierRepository, liteEntity.getSupplierId());
 
 			if ((inventory == null && menuItem == null) || supplier == null) {
 				connection.rollback();
@@ -145,12 +144,12 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 			connection.commit();
 
 			final InventoryPurchaseEntity inventoryPurchaseEntity = InventoryPurchaseEntity.builder()
-				.id(entity.getId())
+				.id(liteEntity.getId())
 				.inventory(inventory)
 				.menuItem(menuItem)
 				.supplier(supplier)
-				.quantity(entity.getQuantity())
-				.cost(entity.getCost())
+				.quantity(liteEntity.getQuantity())
+				.cost(liteEntity.getCost())
 				.purchasedAt(DateTimeUtil.parseDateTime(DateTimeUtil.getCurrentDateTime()))
 				.build();
 
@@ -175,39 +174,22 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<AllInventoryPurchasesEntity> getAllStructured () {
+	public Response<SuperInventoryPurchaseEntity> getAllStructured () {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.id,
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE
+			inventory_purchase.id, inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON inventory_purchase.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON inventory_purchase.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE
 			""")) {
 			final Map<Long, SupplierEntity> suppliersMap = new HashMap<>();
 			final Map<Long, InventoryEntity> inventoryMap = new HashMap<>();
@@ -278,7 +260,11 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	@Override
 	public Response<Object> delete (Long id) {
 		try {
-			return (Integer) this.crudUtil.execute("UPDATE inventory_purchase SET is_deleted = TRUE WHERE is_deleted = FALSE AND id = ?", id) == 0 ?
+			return (Integer) this.crudUtil.execute("""
+				UPDATE inventory_purchase
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
 				new Response<>(null, ResponseType.NOT_DELETED) :
 				new Response<>(null, ResponseType.DELETED);
 		} catch (SQLException exception) {
@@ -292,38 +278,22 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<InventoryPurchaseEntity> get (Long id) {
+	public Response<SuperInventoryPurchaseEntity> get (Long id) {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE AND ip.id = ?
+			inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON ip.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON ip.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE AND inventory_purchase.id = ?
 			""", id)) {
 			if (resultSet.next()) {
 				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(21));
@@ -367,41 +337,24 @@ public class InventoryPurchaseRepositoryImpl implements InventoryPurchaseReposit
 	}
 
 	@Override
-	public Response<List<InventoryPurchaseEntity>> getAll () {
+	public Response<List<SuperInventoryPurchaseEntity>> getAll () {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT
-			    ip.id,
-			    ip.quantity,
-			    ip.cost,
-			    ip.purchased_at,
-			    s.id,
-			    s.name,
-			    s.phone,
-			    s.email,
-			    s.address,
-			    mi.id,
-			    mi.name,
-			    mi.price,
-			    mi.img,
-			    mi.category,
-			    mi.quantity,
-			    inv.id,
-			    inv.name,
-			    inv.description,
-			    inv.quantity,
-			    inv.unit,
-			    inv.updated_at,
-			    CASE
-			        WHEN mi.id IS NOT NULL THEN 'menu_item'
-			        WHEN inv.id IS NOT NULL THEN 'inventory'
-			    END AS type
-			FROM inventory_purchase ip
-			JOIN supplier s ON ip.supplier_id = s.id AND s.is_deleted = FALSE
-			LEFT JOIN menu_item mi ON ip.menu_item_id = mi.id AND mi.is_deleted = FALSE
-			LEFT JOIN inventory inv ON ip.inventory_id = inv.id AND inv.is_deleted = FALSE
-			WHERE ip.is_deleted = FALSE
+			inventory_purchase.id, inventory_purchase.quantity, inventory_purchase.cost, inventory_purchase.purchased_at,
+			supplier.id, supplier.name, supplier.phone, supplier.email, supplier.address,
+			menu_item.id, menu_item.name, menu_item.price, menu_item.img, menu_item.category, menu_item.quantity,
+			inventory.id, inventory.name, inventory.description, inventory.quantity, inventory.unit, inventory.updated_at,
+			CASE
+			    WHEN menu_item.id IS NOT NULL THEN 'menu_item'
+			    WHEN inventory.id IS NOT NULL THEN 'inventory'
+			END AS type
+			FROM inventory_purchase
+			JOIN supplier ON inventory_purchase.supplier_id = supplier.id AND supplier.is_deleted = FALSE
+			LEFT JOIN menu_item ON ip.menu_item_id = menu_item.id AND menu_item.is_deleted = FALSE
+			LEFT JOIN inventory ON ip.inventory_id = inventory.id AND inventory.is_deleted = FALSE
+			WHERE inventory_purchase.is_deleted = FALSE
 			""")) {
-			final List<InventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
+			final List<SuperInventoryPurchaseEntity> inventoryPurchaseEntities = new ArrayList<>();
 
 			while (resultSet.next()) {
 				final boolean isMenuItem = this.isResultSetIsMenuItem(resultSet.getString(22));
