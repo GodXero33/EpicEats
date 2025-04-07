@@ -1,9 +1,6 @@
 package edu.icet.ecom.repository.custom.impl.merchandise;
 
-import edu.icet.ecom.entity.merchandise.MenuItemEntity;
-import edu.icet.ecom.entity.merchandise.SalesPackageEntity;
-import edu.icet.ecom.entity.merchandise.SalesPackageLiteEntity;
-import edu.icet.ecom.entity.merchandise.SuperSalesPackageEntity;
+import edu.icet.ecom.entity.merchandise.*;
 import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -18,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -232,24 +230,24 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 
 	@Override
 	public Response<SuperSalesPackageEntity> get (Long id) {
-		try (final ResultSet resultSet = this.crudUtil.execute("""
+		try (final ResultSet salesPackageResultSet = this.crudUtil.execute("""
 			SELECT name, description, discount_percentage
 			FROM sales_package
 			WHERE is_deleted = FALSE AND id = ?
 			""", id)) {
-				if (!resultSet.next()) return new Response<>(null, ResponseType.NOT_FOUND);
+				if (!salesPackageResultSet.next()) return new Response<>(null, ResponseType.NOT_FOUND);
 
 				final List<Long> menuItemIds = new ArrayList<>();
 				final List<Integer> menuItemQuantities = new ArrayList<>();
 
-				try (final ResultSet salesPackagesMenuItemsResultSet = this.crudUtil.execute("""
+				try (final ResultSet salesPackageItemsResultSet = this.crudUtil.execute("""
 					SELECT item_id, quantity
 					FROM sales_package_item
 					WHERE is_deleted = FALSE AND package_id = ?
 					""", id)) {
-					while (salesPackagesMenuItemsResultSet.next()) {
-						menuItemIds.add(salesPackagesMenuItemsResultSet.getLong(1));
-						menuItemQuantities.add(salesPackagesMenuItemsResultSet.getInt(2));
+					while (salesPackageItemsResultSet.next()) {
+						menuItemIds.add(salesPackageItemsResultSet.getLong(1));
+						menuItemQuantities.add(salesPackageItemsResultSet.getInt(2));
 					}
 				}
 
@@ -259,9 +257,9 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 
 			return new Response<>(SalesPackageEntity.builder()
 				.id(id)
-				.name(resultSet.getString(1))
-				.description(resultSet.getString(2))
-				.discountPercentage(resultSet.getDouble(3))
+				.name(salesPackageResultSet.getString(1))
+				.description(salesPackageResultSet.getString(2))
+				.discountPercentage(salesPackageResultSet.getDouble(3))
 				.menuItems(menuItemsGetResponse.getData())
 				.menuItemQuantities(menuItemQuantities)
 				.build()
@@ -274,7 +272,7 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 
 	@Override
 	public Response<List<SuperSalesPackageEntity>> getAll () {
-		return new Response<>(null, ResponseType.SERVER_ERROR);
+		return null;
 	}
 
 	@Override
@@ -301,8 +299,61 @@ public class SalesPackageRepositoryImpl implements SalesPackageRepository {
 		}
 	}
 
+	private Map.Entry<List<Long>, List<Integer>> getSalesPackageDetailsByPackageId (Long packageId) throws SQLException {
+		final List<Long> menuItemIds = new ArrayList<>();
+		final List<Integer> menuItemQuantities = new ArrayList<>();
+
+		try (final ResultSet salesPackageDetailsResultSet = this.crudUtil.execute("""
+			SELECT item_id, quantity
+			FROM sales_package_item
+			WHERE is_deleted = FALSE AND package_id = ?
+			""", packageId)) {
+			while (salesPackageDetailsResultSet.next()) {
+				menuItemIds.add(salesPackageDetailsResultSet.getLong(1));
+				menuItemQuantities.add(salesPackageDetailsResultSet.getInt(2));
+			}
+		}
+
+		return Map.entry(menuItemIds, menuItemQuantities);
+	}
+
 	@Override
 	public Response<SuperSalesPackageEntity> getAllStructured () {
-		return null;
+		try (final ResultSet salesPackageResultSet = this.crudUtil.execute("""
+			SELECT id, name, description, discount_percentage
+			FROM sales_package
+			WHERE is_deleted = FALSE
+			""")) {
+			final List<SalesPackageLiteEntity> salesPackages = new ArrayList<>();
+			final List<Long> allMenuItemIds = new ArrayList<>();
+
+			while (salesPackageResultSet.next()) {
+				final SalesPackageLiteEntity salesPackageLiteEntity = SalesPackageLiteEntity.builder()
+					.id(salesPackageResultSet.getLong(1))
+					.name(salesPackageResultSet.getString(2))
+					.description(salesPackageResultSet.getString(3))
+					.discountPercentage(salesPackageResultSet.getDouble(4))
+					.build();
+
+				final Map.Entry<List<Long>, List<Integer>> salesPackageDetails = this.getSalesPackageDetailsByPackageId(salesPackageResultSet.getLong(1));
+
+				salesPackageLiteEntity.setMenuItemIDs(salesPackageDetails.getKey());
+				salesPackageLiteEntity.setMenuItemQuantities(salesPackageDetails.getValue());
+				salesPackages.add(salesPackageLiteEntity);
+				allMenuItemIds.addAll(salesPackageDetails.getKey());
+			}
+
+			final Response<List<MenuItemEntity>> menuItemsGetResponse = this.menuItemRepository.getAllByIDs(allMenuItemIds);
+
+			if (menuItemsGetResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(null, menuItemsGetResponse.getStatus());
+
+			return new Response<>(new AllSalesPackagesEntity(
+				menuItemsGetResponse.getData(),
+				salesPackages
+			), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }

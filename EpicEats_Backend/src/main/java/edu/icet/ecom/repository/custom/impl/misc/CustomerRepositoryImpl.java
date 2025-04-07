@@ -139,6 +139,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	}
 
 	@Override
+	public Response<Boolean> isExist (Long id) {
+		return this.getExistence("SELECT 1 FROM customer WHERE is_deleted = FALSE AND id = ?", id);
+	}
+
+	@Override
 	public Response<Boolean> isPhoneExist (String phone) {
 		return this.getExistence("SELECT 1 FROM customer WHERE phone = ?", phone);
 	}

@@ -49,6 +49,11 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
+	public Response<Boolean> isExist (Long id) {
+		return this.customerRepository.isExist(id);
+	}
+
+	@Override
 	public Response<Boolean> isPhoneExist (String phone) {
 		return this.customerRepository.isPhoneExist(phone);
 	}

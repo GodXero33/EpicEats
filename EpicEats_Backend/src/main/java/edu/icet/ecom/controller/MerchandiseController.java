@@ -1,10 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.merchandise.*;
-import edu.icet.ecom.dto.merchandise.MenuItem;
-import edu.icet.ecom.dto.merchandise.SalesPackage;
-import edu.icet.ecom.dto.merchandise.SalesPackageLite;
-import edu.icet.ecom.dto.merchandise.SuperSalesPackage;
+import edu.icet.ecom.dto.merchandise.*;
 import edu.icet.ecom.service.custom.merchandise.MenuItemService;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -165,5 +162,15 @@ public class MerchandiseController {
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Failed to find menu item");
 		};
+	}
+
+	@SalesPackageGetAllApiDoc
+	@GetMapping("sales-package/all")
+	public CustomHttpResponse<AllSalesPackages> getAllSalesPackages () {
+		final Response<SuperSalesPackage> response = this.salesPackageService.getAllStructured();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, (AllSalesPackages) response.getData(), "All sales packages are retrieved successfully") :
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 }
