@@ -5,6 +5,7 @@ import edu.icet.ecom.service.SuperService;
 import edu.icet.ecom.util.Response;
 
 public interface CustomerService extends SuperService<Customer> {
+	Response<Boolean> isExist (Long id);
 	Response<Boolean> isPhoneExist (String phone);
 	Response<Boolean> isPhoneExist (String phone, Long customerId);
 	Response<Boolean> isEmailExist (String email);

@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class OrderItemEntity {
 	private Long itemId;
-	private Long orderId;
 	private Integer quantity;
 	private Double discountPerUnit;
 }

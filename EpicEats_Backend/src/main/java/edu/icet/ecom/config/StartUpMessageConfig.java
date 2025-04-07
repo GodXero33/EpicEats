@@ -1,10 +1,11 @@
 package edu.icet.ecom.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +14,7 @@ public class StartUpMessageConfig {
 	private final ApplicationContext applicationContext;
 	private final Logger logger;
 
-	@PostConstruct
+	@EventListener(ApplicationReadyEvent.class)
 	public void onStartup () {
 		this.logger.info("""
 			
