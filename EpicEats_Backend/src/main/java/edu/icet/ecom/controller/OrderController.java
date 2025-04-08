@@ -83,6 +83,19 @@ public class OrderController {
 		};
 	}
 
+	@OrderGetApiDoc
+	@GetMapping("/all")
+	@SuppressWarnings("unchecked")
+	public CustomHttpResponse<List<Order>> getAll () {
+		final Response<List<SuperOrder>> response = this.orderService.getAll();
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (List<Order>) (List<?>) response.getData(), "All order has found");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Orders not found");
+		};
+	}
+
 	@DeleteMapping("/{id}")
 	public CustomHttpResponse<Object> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
