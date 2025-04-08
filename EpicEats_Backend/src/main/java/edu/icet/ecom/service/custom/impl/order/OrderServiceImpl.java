@@ -54,6 +54,6 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public Response<Object> delete (Long id) {
-		return null;
+		return this.orderRepository.delete(id);
 	}
 }

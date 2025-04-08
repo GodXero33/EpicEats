@@ -108,7 +108,49 @@ public class OrderRepositoryImpl implements OrderRepository {
 
 	@Override
 	public Response<Object> delete (Long id) {
-		return null;
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE `order`
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE order_item
+				SET is_deleted = TRUE
+				WHERE order_id = ?
+				""", id) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			connection.commit();
+			return new Response<>(null, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 
 	@Override
