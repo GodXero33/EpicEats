@@ -34,7 +34,12 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public Response<List<SuperOrder>> getAll () {
-		return null;
+		final Response<List<SuperOrderEntity>> response = this.orderRepository.getAll();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			response.getData().stream().map(orderEntity -> (SuperOrder) this.mapper.map(orderEntity, Order.class)).toList() :
+			null
+		, response.getStatus());
 	}
 
 	@Override
@@ -54,6 +59,6 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public Response<Object> delete (Long id) {
-		return null;
+		return this.orderRepository.delete(id);
 	}
 }

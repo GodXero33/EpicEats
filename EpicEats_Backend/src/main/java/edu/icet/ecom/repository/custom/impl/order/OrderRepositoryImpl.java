@@ -108,7 +108,49 @@ public class OrderRepositoryImpl implements OrderRepository {
 
 	@Override
 	public Response<Object> delete (Long id) {
-		return null;
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE `order`
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			if ((Integer) this.crudUtil.execute("""
+				UPDATE order_item
+				SET is_deleted = TRUE
+				WHERE order_id = ?
+				""", id) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_DELETED);
+			}
+
+			connection.commit();
+			return new Response<>(null, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -172,7 +214,67 @@ public class OrderRepositoryImpl implements OrderRepository {
 
 	@Override
 	public Response<List<SuperOrderEntity>> getAll () {
-		return null;
+		try (final ResultSet orderResultSet = this.crudUtil.execute("""
+			SELECT id, placed_at, discount, customer_id, employee_id
+			FROM `order`
+			WHERE is_deleted = FALSE
+			""")) {
+			final List<SuperOrderEntity> orders = new ArrayList<>();
+
+			while (orderResultSet.next()) {
+				final long orderId = orderResultSet.getLong(1);
+
+				final OrderEntity order = OrderEntity.builder()
+					.id(orderId)
+					.placedAt(DateTimeUtil.parseDateTime(orderResultSet.getString(2)))
+					.discount(orderResultSet.getDouble(3))
+					.build();
+
+				final Response<CustomerEntity> customerGetResponse = this.customerRepository.get(orderResultSet.getLong(4));
+
+				if (customerGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customerGetResponse.getStatus());
+
+				final Response<EmployeeEntity> employeeGetResponse = this.employeeRepository.get(orderResultSet.getLong(5));
+
+				if (employeeGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customerGetResponse.getStatus());
+
+				order.setCustomer(customerGetResponse.getData());
+				order.setEmployee(employeeGetResponse.getData());
+
+				final List<Long> menuItemIDs = new ArrayList<>();
+				final List<OrderItemEntity> orderItems = new ArrayList<>();
+
+				try (final ResultSet orderItemResultSet = this.crudUtil.execute("""
+				SELECT item_id, quantity, discount_per_unit
+				FROM order_item
+				WHERE is_deleted = FALSE AND order_id = ?
+				""", orderId)) {
+					while (orderItemResultSet.next()) {
+						orderItems.add(OrderItemEntity.builder()
+							.itemId(orderItemResultSet.getLong(1))
+							.quantity(orderItemResultSet.getInt(2))
+							.discountPerUnit(orderItemResultSet.getDouble(3))
+							.build());
+
+						menuItemIDs.add(orderItemResultSet.getLong(1));
+					}
+				}
+
+				final Response<List<MenuItemEntity>> menuItemsGetResponse = this.menuItemRepository.getAllByIDs(menuItemIDs);
+
+				if (menuItemsGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, menuItemsGetResponse.getStatus());
+
+				order.setOrderItems(orderItems);
+				order.setMenuItems(menuItemsGetResponse.getData());
+
+				orders.add(order);
+			}
+
+			return new Response<>(orders, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
