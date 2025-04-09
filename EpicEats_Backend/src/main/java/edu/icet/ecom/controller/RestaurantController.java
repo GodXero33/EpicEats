@@ -1,5 +1,6 @@
 package edu.icet.ecom.controller;
 
+import edu.icet.ecom.config.apidoc.restaurant.*;
 import edu.icet.ecom.dto.restaurant.RestaurantTable;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -25,6 +26,7 @@ public class RestaurantController {
 	private final ControllerResponseUtil controllerResponseUtil;
 
 	@PostMapping("/table")
+	@RestaurantTableAddApiDoc
 	public CustomHttpResponse<RestaurantTable> addTable (@Valid @RequestBody RestaurantTable restaurantTable, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -41,6 +43,7 @@ public class RestaurantController {
 	}
 
 	@PutMapping("/table")
+	@RestaurantTableUpdateApiDoc
 	public CustomHttpResponse<RestaurantTable> updateTable (@Valid @RequestBody RestaurantTable restaurantTable, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (restaurantTable.getId() == null || restaurantTable.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Table id can't be null or negative or zero");
@@ -59,6 +62,7 @@ public class RestaurantController {
 		};
 	}
 
+	@RestaurantTableGetApiDoc
 	@GetMapping("/table/{id}")
 	public CustomHttpResponse<RestaurantTable> getTable (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero");
@@ -73,6 +77,7 @@ public class RestaurantController {
 	}
 
 	@GetMapping("/table/all")
+	@RestaurantTableGetAllApiDoc
 	public CustomHttpResponse<List<RestaurantTable>> getALlTables () {
 		final Response<List<RestaurantTable>> response = this.restaurantTableService.getAll();
 
@@ -83,6 +88,7 @@ public class RestaurantController {
 		};
 	}
 
+	@RestaurantTableDeleteApiDoc
 	@DeleteMapping("/table/{id}")
 	public CustomHttpResponse<Object> deleteTable (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
