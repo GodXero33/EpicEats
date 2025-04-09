@@ -83,7 +83,12 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
 	@Override
 	public Response<RestaurantTableBooking> updateBooking (RestaurantTableBookingLite restaurantTableBookingLite) {
-		return null;
+		final Response<RestaurantTableBookingEntity> response = this.restaurantTableRepository.updateBooking(this.mapper.map(restaurantTableBookingLite, RestaurantTableBookingLiteEntity.class));
+
+		return new Response<>(response.getStatus() == ResponseType.UPDATED ?
+			this.mapper.map(response.getData(), RestaurantTableBooking.class) :
+			null
+			, response.getStatus());
 	}
 
 	@Override
@@ -122,8 +127,8 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 	}
 
 	@Override
-	public Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite) {
-		final Response<List<TimeRange>> targetTimeSlotsForTableResponse = this.restaurantTableRepository.getTimeSlotsForTargetTableInTargetDate(restaurantTableBookingLite.getTableId(), restaurantTableBookingLite.getBookingDate());
+	public Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite, boolean isUpdate) {
+		final Response<List<TimeRange>> targetTimeSlotsForTableResponse = this.restaurantTableRepository.getTimeSlotsForTargetTableInTargetDate(restaurantTableBookingLite.getTableId(), restaurantTableBookingLite.getBookingDate(), isUpdate ? restaurantTableBookingLite.getId() : null);
 
 		if (targetTimeSlotsForTableResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(false, ResponseType.SERVER_ERROR);
 
