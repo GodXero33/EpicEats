@@ -2,6 +2,9 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.restaurant.*;
 import edu.icet.ecom.dto.restaurant.RestaurantTable;
+import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
+import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
+import edu.icet.ecom.service.custom.misc.CustomerService;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
 import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
@@ -23,6 +26,7 @@ import java.util.List;
 @Tag(name = "Restaurant Management", description = "APIs for managing restaurant")
 public class RestaurantController {
 	private final RestaurantTableService restaurantTableService;
+	private final CustomerService customerService;
 	private final ControllerResponseUtil controllerResponseUtil;
 
 	@PostMapping("/table")
@@ -99,6 +103,34 @@ public class RestaurantController {
 			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, null, "Restaurant table deleted");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to delete restaurant table");
+		};
+	}
+
+	@PostMapping("/table/booking")
+	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite restaurantTableBookingLite, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final Response<Boolean> customerExistResponse = this.customerService.isExist(restaurantTableBookingLite.getCustomerId());
+
+		if (customerExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (customerExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No customer found with given customer id");
+
+		final Response<Boolean> tableExistResponse = this.restaurantTableService.isTableExist(restaurantTableBookingLite.getTableId());
+
+		if (tableExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (tableExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No table found with given table id");
+
+		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(restaurantTableBookingLite);
+
+		if (timeSlotOverlapsResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (timeSlotOverlapsResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "The given booking slot is overlap with another booking for same table");
+
+		final Response<RestaurantTableBooking> response = this.restaurantTableService.addBooking(restaurantTableBookingLite);
+
+		return switch (response.getStatus()) {
+			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Booking added");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add booking");
 		};
 	}
 }

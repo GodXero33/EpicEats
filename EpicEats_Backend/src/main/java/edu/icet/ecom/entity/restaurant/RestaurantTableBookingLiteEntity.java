@@ -1,6 +1,5 @@
-package edu.icet.ecom.dto.restaurant;
+package edu.icet.ecom.entity.restaurant;
 
-import edu.icet.ecom.dto.misc.Customer;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,9 +11,9 @@ import java.time.LocalTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestaurantTableBooking {
-	private RestaurantTable table;
-	private Customer customer;
+public class RestaurantTableBookingLiteEntity {
+	private Long tableId;
+	private Long customerId;
 	private LocalDate bookingDate;
 	private LocalTime startTime;
 	private LocalTime endTime;
