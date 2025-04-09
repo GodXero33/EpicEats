@@ -2,6 +2,7 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
+import edu.icet.ecom.entity.misc.CustomerEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -17,6 +18,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -242,5 +244,35 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	@Override
 	public Response<Boolean> isEmailExist (String email, Long employeeId) {
 		return this.getExistence("SELECT 1 FROM employee WHERE id != ? AND email = ?", employeeId, email);
+	}
+
+	@Override
+	public Response<List<EmployeeEntity>> getAllByIDs (List<Long> ids) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, phone, email, address, salary, role, dob, employee_since
+			FROM employee
+			WHERE is_terminated = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+			ids
+		)) {
+			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
+
+			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.phone(resultSet.getString(3))
+				.email(resultSet.getString(4))
+				.address(resultSet.getString(5))
+				.salary(resultSet.getDouble(6))
+				.role(EmployeeRole.fromName(resultSet.getString(7)))
+				.dob(DateTimeUtil.parseDate(resultSet.getString(8)))
+				.employeeSince(DateTimeUtil.parseDate(resultSet.getString(9)))
+				.build());
+
+			return new Response<>(employeeEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }

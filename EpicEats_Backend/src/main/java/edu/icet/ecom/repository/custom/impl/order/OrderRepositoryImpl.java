@@ -3,10 +3,7 @@ package edu.icet.ecom.repository.custom.impl.order;
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.entity.misc.CustomerEntity;
-import edu.icet.ecom.entity.order.OrderEntity;
-import edu.icet.ecom.entity.order.OrderItemEntity;
-import edu.icet.ecom.entity.order.OrderLiteEntity;
-import edu.icet.ecom.entity.order.SuperOrderEntity;
+import edu.icet.ecom.entity.order.*;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.repository.custom.misc.CustomerRepository;
@@ -23,11 +20,19 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
 public class OrderRepositoryImpl implements OrderRepository {
+	private static final String ORDER_ITEMS_GET_QUERY = """
+		SELECT item_id, quantity, discount_per_unit
+		FROM order_item
+		WHERE is_deleted = FALSE AND order_id = ?
+		""";
+
 	private final CrudUtil crudUtil;
 	private final Logger logger;
 	private final CustomerRepository customerRepository;
@@ -182,11 +187,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 			final List<Long> menuItemIDs = new ArrayList<>();
 			final List<OrderItemEntity> orderItems = new ArrayList<>();
 
-			try (final ResultSet orderItemResultSet = this.crudUtil.execute("""
-				SELECT item_id, quantity, discount_per_unit
-				FROM order_item
-				WHERE is_deleted = FALSE AND order_id = ?
-				""", id)) {
+			try (final ResultSet orderItemResultSet = this.crudUtil.execute(OrderRepositoryImpl.ORDER_ITEMS_GET_QUERY, id)) {
 				while (orderItemResultSet.next()) {
 					orderItems.add(OrderItemEntity.builder()
 						.itemId(orderItemResultSet.getLong(1))
@@ -244,11 +245,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 				final List<Long> menuItemIDs = new ArrayList<>();
 				final List<OrderItemEntity> orderItems = new ArrayList<>();
 
-				try (final ResultSet orderItemResultSet = this.crudUtil.execute("""
-				SELECT item_id, quantity, discount_per_unit
-				FROM order_item
-				WHERE is_deleted = FALSE AND order_id = ?
-				""", orderId)) {
+				try (final ResultSet orderItemResultSet = this.crudUtil.execute(OrderRepositoryImpl.ORDER_ITEMS_GET_QUERY, orderId)) {
 					while (orderItemResultSet.next()) {
 						orderItems.add(OrderItemEntity.builder()
 							.itemId(orderItemResultSet.getLong(1))
@@ -280,5 +277,78 @@ public class OrderRepositoryImpl implements OrderRepository {
 	@Override
 	public Response<Object> deleteByEmployeeId (Long employeeId) {
 		return null;
+	}
+
+	@Override
+	public Response<SuperOrderEntity> getAllStructured () {
+		try (final ResultSet orderResultSet = this.crudUtil.execute("""
+			SELECT id, placed_at, discount, customer_id, employee_id
+			FROM `order`
+			WHERE is_deleted = FALSE
+			""")) {
+			final List<OrderLiteEntity> orders = new ArrayList<>();
+			final Set<Long> menuItemIDsSet = new HashSet<>();
+			final Set<Long> customerIDsSet = new HashSet<>();
+			final Set<Long> employeeIDsSet = new HashSet<>();
+
+			while (orderResultSet.next()) {
+				final long orderId = orderResultSet.getLong(1);
+				final long customerId = orderResultSet.getLong(4);
+				final long employeeId = orderResultSet.getLong(5);
+
+				final OrderLiteEntity order = OrderLiteEntity.builder()
+					.id(orderId)
+					.placedAt(DateTimeUtil.parseDateTime(orderResultSet.getString(2)))
+					.discount(orderResultSet.getDouble(3))
+					.customerId(customerId)
+					.employeeId(employeeId)
+					.build();
+
+				customerIDsSet.add(customerId);
+				employeeIDsSet.add(employeeId);
+
+				final List<OrderItemEntity> orderItems = new ArrayList<>();
+
+				try (final ResultSet orderItemResultSet = this.crudUtil.execute(OrderRepositoryImpl.ORDER_ITEMS_GET_QUERY, orderId)) {
+					while (orderItemResultSet.next()) {
+						orderItems.add(OrderItemEntity.builder()
+							.itemId(orderItemResultSet.getLong(1))
+							.quantity(orderItemResultSet.getInt(2))
+							.discountPerUnit(orderItemResultSet.getDouble(3))
+							.build());
+
+						menuItemIDsSet.add(orderItemResultSet.getLong(1));
+					}
+				}
+
+				order.setOrderItems(orderItems);
+				orders.add(order);
+			}
+
+			final AllOrdersEntity allOrders = AllOrdersEntity.builder()
+				.orders(orders)
+				.build();
+
+			final Response<List<MenuItemEntity>> menuItemsGetResponse = this.menuItemRepository.getAllByIDs(menuItemIDsSet.stream().toList());
+
+			if (menuItemsGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, menuItemsGetResponse.getStatus());
+
+			final Response<List<CustomerEntity>> customersGetResponse = this.customerRepository.getAllByIDs(customerIDsSet.stream().toList());
+
+			if (customersGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customersGetResponse.getStatus());
+
+			final Response<List<EmployeeEntity>> employeesGetResponse = this.employeeRepository.getAllByIDs(employeeIDsSet.stream().toList());
+
+			if (employeesGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, employeesGetResponse.getStatus());
+
+			allOrders.setMenuItems(menuItemsGetResponse.getData());
+			allOrders.setCustomers(customersGetResponse.getData());
+			allOrders.setEmployees(employeesGetResponse.getData());
+
+			return new Response<>(allOrders, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }

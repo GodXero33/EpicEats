@@ -1,9 +1,11 @@
 package edu.icet.ecom.repository.custom.impl.misc;
 
+import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.entity.misc.CustomerEntity;
 import edu.icet.ecom.repository.custom.misc.CustomerRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enumaration.MenuItemCategory;
 import edu.icet.ecom.util.enumaration.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -161,5 +164,31 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 	@Override
 	public Response<Boolean> isEmailExist (String email, Long customerId) {
 		return this.getExistence("SELECT 1 FROM customer WHERE id != ? AND email = ?", customerId, email);
+	}
+
+	@Override
+	public Response<List<CustomerEntity>> getAllByIDs (List<Long> ids) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, phone, email, address
+			FROM customer
+			WHERE is_deleted = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+			ids
+		)) {
+			final List<CustomerEntity> customerEntities = new ArrayList<>();
+
+			while (resultSet.next()) customerEntities.add(CustomerEntity.builder()
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.phone(resultSet.getString(3))
+				.email(resultSet.getString(4))
+				.address(resultSet.getString(5))
+				.build());
+
+			return new Response<>(customerEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 }

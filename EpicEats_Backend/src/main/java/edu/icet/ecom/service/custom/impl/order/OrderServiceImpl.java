@@ -1,5 +1,6 @@
 package edu.icet.ecom.service.custom.impl.order;
 
+import edu.icet.ecom.dto.order.AllOrders;
 import edu.icet.ecom.dto.order.Order;
 import edu.icet.ecom.dto.order.SuperOrder;
 import edu.icet.ecom.entity.order.OrderLiteEntity;
@@ -60,5 +61,15 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public Response<Object> delete (Long id) {
 		return this.orderRepository.delete(id);
+	}
+
+	@Override
+	public Response<SuperOrder> getAllStructured () {
+		final Response<SuperOrderEntity> response = this.orderRepository.getAllStructured();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllOrders.class) :
+			null
+		, response.getStatus());
 	}
 }
