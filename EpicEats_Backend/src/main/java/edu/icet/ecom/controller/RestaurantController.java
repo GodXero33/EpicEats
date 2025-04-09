@@ -6,6 +6,7 @@ import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
 import edu.icet.ecom.service.custom.misc.CustomerService;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
+import edu.icet.ecom.util.Constants;
 import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
 import edu.icet.ecom.util.Response;
@@ -107,6 +108,7 @@ public class RestaurantController {
 	}
 
 	@PostMapping("/table/booking")
+	@RestaurantTableBookingAddApiDoc
 	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite restaurantTableBookingLite, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -119,6 +121,10 @@ public class RestaurantController {
 
 		if (tableExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (tableExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No table found with given table id");
+
+		if (restaurantTableBookingLite.getStartTime().isAfter(restaurantTableBookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Booking start time must be before time than end time");
+
+		if (restaurantTableBookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(restaurantTableBookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
 
 		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(restaurantTableBookingLite);
 

@@ -1,10 +1,14 @@
 package edu.icet.ecom.repository.custom.restaurant;
 
+import edu.icet.ecom.dto.restaurant.TimeRange;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
 import edu.icet.ecom.repository.CrudRepository;
 import edu.icet.ecom.util.Response;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public interface RestaurantTableRepository extends CrudRepository<RestaurantTableEntity> {
 	Response<Boolean> isTableExist (Long tableId);
@@ -17,5 +21,5 @@ public interface RestaurantTableRepository extends CrudRepository<RestaurantTabl
 	Response<RestaurantTableBookingEntity> getAllBookingsByTableId (Long tableId);
 	Response<Object> deleteBooking (Long id);
 	Response<Object> deleteAllBookingsByTableId (Long tableId);
-	Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);
+	Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date);
 }

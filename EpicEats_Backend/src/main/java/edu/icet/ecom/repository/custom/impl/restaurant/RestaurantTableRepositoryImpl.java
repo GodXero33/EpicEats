@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -268,40 +269,28 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 		return null;
 	}
 
-	private boolean checkTimeSlotOverlapping (TimeRange target, List<TimeRange> slots) {
-		return true;
-	}
-
 	@Override
-	public Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity) {
+	public Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date) {
 		try (final ResultSet resultSet = this.crudUtil.execute(
 			"""
 			SELECT start_time, end_time
 			FROM restaurant_table_booking
 			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?
 			""",
-			restaurantTableBookingLiteEntity.getTableId(),
-			restaurantTableBookingLiteEntity.getBookingDate()
+			tableId,
+			date
 		)) {
-			final List<TimeRange> targetDateBookingTimeSlotsForTargetTable = new ArrayList<>();
+			final List<TimeRange> targetTimeSlotsForTableResponse = new ArrayList<>();
 
-			while (resultSet.next()) targetDateBookingTimeSlotsForTargetTable.add(new TimeRange(
+			while (resultSet.next()) targetTimeSlotsForTableResponse.add(new TimeRange(
 				DateTimeUtil.parseTime(resultSet.getString(1)),
 				DateTimeUtil.parseTime(resultSet.getString(2))
 			));
 
-			final boolean isOverlapping = this.checkTimeSlotOverlapping(
-				new TimeRange(
-					restaurantTableBookingLiteEntity.getStartTime(),
-					restaurantTableBookingLiteEntity.getEndTime()
-				),
-				targetDateBookingTimeSlotsForTargetTable
-			);
-
-			return new Response<>(isOverlapping, isOverlapping ? ResponseType.FOUND : ResponseType.NOT_FOUND);
+			return new Response<>(targetTimeSlotsForTableResponse, ResponseType.FOUND);
 		} catch (SQLException exception) {
 			this.logger.error(exception.getMessage());
-			return new Response<>(false, ResponseType.SERVER_ERROR);
+			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
 	}
 }

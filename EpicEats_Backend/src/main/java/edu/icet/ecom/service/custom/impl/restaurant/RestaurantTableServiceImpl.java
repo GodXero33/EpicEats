@@ -3,6 +3,7 @@ package edu.icet.ecom.service.custom.impl.restaurant;
 import edu.icet.ecom.dto.restaurant.RestaurantTable;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
+import edu.icet.ecom.dto.restaurant.TimeRange;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
@@ -110,8 +111,27 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 		return null;
 	}
 
+	private boolean checkTimeSlotOverlapping (TimeRange target, List<TimeRange> slots) {
+		return slots.stream().anyMatch(slot ->
+			(slot.start().isBefore(target.start()) && slot.end().isAfter(target.start())) ||
+			(slot.start().isBefore(target.end()) && slot.end().isAfter(target.end())) ||
+			(slot.start().isBefore(target.start()) && slot.end().isAfter(target.end())) ||
+			(slot.start().isAfter(target.start()) && slot.end().isBefore(target.end())) ||
+			(slot.start().equals(target.start()) && slot.end().equals(target.end()))
+		);
+	}
+
 	@Override
 	public Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite) {
-		return this.restaurantTableRepository.isTableBookingOverlaps(this.mapper.map(restaurantTableBookingLite, RestaurantTableBookingLiteEntity.class));
+		final Response<List<TimeRange>> targetTimeSlotsForTableResponse = this.restaurantTableRepository.getTimeSlotsForTargetTableInTargetDate(restaurantTableBookingLite.getTableId(), restaurantTableBookingLite.getBookingDate());
+
+		if (targetTimeSlotsForTableResponse.getStatus() == ResponseType.SERVER_ERROR) return new Response<>(false, ResponseType.SERVER_ERROR);
+
+		final boolean isOverlapping = this.checkTimeSlotOverlapping(
+			new TimeRange(restaurantTableBookingLite.getStartTime(), restaurantTableBookingLite.getEndTime()),
+			targetTimeSlotsForTableResponse.getData()
+		);
+
+		return new Response<>(isOverlapping, isOverlapping ? ResponseType.FOUND : ResponseType.NOT_FOUND);
 	}
 }
