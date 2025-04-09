@@ -17,5 +17,5 @@ public interface RestaurantTableService extends SuperService<RestaurantTable> {
 	Response<RestaurantTableBooking> getAllBookingsByTableId (Long tableId);
 	Response<Object> deleteBooking (Long id);
 	Response<Object> deleteAllBookingsByTableId (Long tableId);
-	Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite);
+	Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite, boolean isUpdate);
 }

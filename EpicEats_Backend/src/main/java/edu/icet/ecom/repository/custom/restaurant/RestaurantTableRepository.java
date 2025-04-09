@@ -21,5 +21,5 @@ public interface RestaurantTableRepository extends CrudRepository<RestaurantTabl
 	Response<RestaurantTableBookingEntity> getAllBookingsByTableId (Long tableId);
 	Response<Object> deleteBooking (Long id);
 	Response<Object> deleteAllBookingsByTableId (Long tableId);
-	Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date);
+	Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date, Long bookingId);
 }

@@ -13,6 +13,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestaurantTableBookingEntity {
+	private Long id;
 	private RestaurantTableEntity table;
 	private CustomerEntity customer;
 	private LocalDate bookingDate;

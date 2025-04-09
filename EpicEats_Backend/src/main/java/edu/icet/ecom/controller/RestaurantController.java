@@ -109,34 +109,68 @@ public class RestaurantController {
 
 	@PostMapping("/table/booking")
 	@RestaurantTableBookingAddApiDoc
-	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite restaurantTableBookingLite, BindingResult result) {
+	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite bookingLite, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
-		final Response<Boolean> customerExistResponse = this.customerService.isExist(restaurantTableBookingLite.getCustomerId());
+		final Response<Boolean> customerExistResponse = this.customerService.isExist(bookingLite.getCustomerId());
 
 		if (customerExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (customerExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No customer found with given customer id");
 
-		final Response<Boolean> tableExistResponse = this.restaurantTableService.isTableExist(restaurantTableBookingLite.getTableId());
+		final Response<Boolean> tableExistResponse = this.restaurantTableService.isTableExist(bookingLite.getTableId());
 
 		if (tableExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (tableExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No table found with given table id");
 
-		if (restaurantTableBookingLite.getStartTime().isAfter(restaurantTableBookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Booking start time must be before time than end time");
+		if (bookingLite.getStartTime().isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Booking start time must be before time than end time");
 
-		if (restaurantTableBookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(restaurantTableBookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
+		if (bookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
 
-		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(restaurantTableBookingLite);
+		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(bookingLite, false);
 
 		if (timeSlotOverlapsResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (timeSlotOverlapsResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "The given booking slot is overlap with another booking for same table");
 
-		final Response<RestaurantTableBooking> response = this.restaurantTableService.addBooking(restaurantTableBookingLite);
+		final Response<RestaurantTableBooking> response = this.restaurantTableService.addBooking(bookingLite);
 
 		return switch (response.getStatus()) {
 			case CREATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Booking added");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to add booking");
+		};
+	}
+
+	@PutMapping("/table/booking")
+	@RestaurantTableBookingUpdateApiDoc
+	public CustomHttpResponse<RestaurantTableBooking> updateBooking (@Valid @RequestBody RestaurantTableBookingLite bookingLite, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+		if (bookingLite.getId() == null || bookingLite.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("bookingId can't be null or negative or zero");
+
+		final Response<Boolean> customerExistResponse = this.customerService.isExist(bookingLite.getCustomerId());
+
+		if (customerExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (customerExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No customer found with given customer id");
+
+		final Response<Boolean> tableExistResponse = this.restaurantTableService.isTableExist(bookingLite.getTableId());
+
+		if (tableExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (tableExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No table found with given table id");
+
+		if (bookingLite.getStartTime().isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Booking start time must be before time than end time");
+
+		if (bookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
+
+		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(bookingLite, true);
+
+		if (timeSlotOverlapsResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+		if (timeSlotOverlapsResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "The given booking slot is overlap with another booking for same table");
+
+		final Response<RestaurantTableBooking> response = this.restaurantTableService.updateBooking(bookingLite);
+
+		return switch (response.getStatus()) {
+			case UPDATED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Booking updated");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update booking");
 		};
 	}
 }

@@ -12,6 +12,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RestaurantTableBookingLite {
+	private Long id;
 	private Long tableId;
 	private Long customerId;
 	private LocalDate bookingDate;

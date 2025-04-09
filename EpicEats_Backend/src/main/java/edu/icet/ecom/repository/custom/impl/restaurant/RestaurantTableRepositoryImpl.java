@@ -170,7 +170,7 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 		try {
 			connection.setAutoCommit(false);
 
-			if ((Integer) this.crudUtil.execute(
+			final long generatedBookingId = this.crudUtil.executeWithGeneratedKeys(
 				"""
 				INSERT INTO restaurant_table_booking (table_id, customer_id, booking_date, start_time, end_time)
 				VALUES (?, ?, ?, ?, ?)
@@ -180,10 +180,7 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 				restaurantTableBookingLiteEntity.getBookingDate(),
 				restaurantTableBookingLiteEntity.getStartTime(),
 				restaurantTableBookingLiteEntity.getEndTime()
-			) == 0) {
-				connection.rollback();
-				return new Response<>(null, ResponseType.NOT_CREATED);
-			}
+			);
 
 			if ((Integer) this.crudUtil.execute(
 				"""
@@ -215,6 +212,7 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 			}
 
 			return new Response<>(RestaurantTableBookingEntity.builder()
+				.id(generatedBookingId)
 				.table(tableGetResponse.getData())
 				.customer(customerGetResponse.getData())
 				.bookingDate(restaurantTableBookingLiteEntity.getBookingDate())
@@ -241,7 +239,83 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<RestaurantTableBookingEntity> updateBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity) {
-		return null;
+		final Connection connection = this.crudUtil.getDbConnection().getConnection();
+
+		if (connection == null) return new Response<>(null, ResponseType.SERVER_ERROR);
+
+		try {
+			connection.setAutoCommit(false);
+
+			if ((Integer) this.crudUtil.execute(
+				"""
+				UPDATE restaurant_table_booking
+				SET table_id = ?, customer_id = ?, booking_date = ?, start_time = ?, end_time = ?
+				WHERE is_deleted = FALSE AND id = ?
+				""",
+				restaurantTableBookingLiteEntity.getTableId(),
+				restaurantTableBookingLiteEntity.getCustomerId(),
+				restaurantTableBookingLiteEntity.getBookingDate(),
+				restaurantTableBookingLiteEntity.getStartTime(),
+				restaurantTableBookingLiteEntity.getEndTime(),
+				restaurantTableBookingLiteEntity.getId()
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			if ((Integer) this.crudUtil.execute(
+				"""
+				UPDATE restaurant_table
+				SET last_booked = ?
+				WHERE id = ?
+				""",
+				DateTimeUtil.getCurrentDateTime(),
+				restaurantTableBookingLiteEntity.getTableId()
+			) == 0) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.NOT_UPDATED);
+			}
+
+			connection.commit();
+
+			final Response<RestaurantTableEntity> tableGetResponse = this.get(restaurantTableBookingLiteEntity.getTableId());
+
+			if (tableGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.SERVER_ERROR);
+			}
+
+			final Response<CustomerEntity> customerGetResponse = this.customerRepository.get(restaurantTableBookingLiteEntity.getCustomerId());
+
+			if (customerGetResponse.getStatus() == ResponseType.SERVER_ERROR) {
+				connection.rollback();
+				return new Response<>(null, ResponseType.SERVER_ERROR);
+			}
+
+			return new Response<>(RestaurantTableBookingEntity.builder()
+				.id(restaurantTableBookingLiteEntity.getId())
+				.table(tableGetResponse.getData())
+				.customer(customerGetResponse.getData())
+				.bookingDate(restaurantTableBookingLiteEntity.getBookingDate())
+				.startTime(restaurantTableBookingLiteEntity.getStartTime())
+				.endTime(restaurantTableBookingLiteEntity.getEndTime())
+				.build(), ResponseType.UPDATED);
+		} catch (SQLException exception) {
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				this.logger.error(rollbackException.getMessage());
+			}
+
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		} finally {
+			try {
+				connection.setAutoCommit(true);
+			} catch (SQLException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		}
 	}
 
 	@Override
@@ -270,15 +344,16 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
-	public Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date) {
+	public Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date, Long bookingId) {
 		try (final ResultSet resultSet = this.crudUtil.execute(
 			"""
 			SELECT start_time, end_time
 			FROM restaurant_table_booking
-			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?
-			""",
+			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?%s
+			""".formatted(bookingId == null ? "" : " AND id != ?"),
 			tableId,
-			date
+			date,
+			bookingId
 		)) {
 			final List<TimeRange> targetTimeSlotsForTableResponse = new ArrayList<>();
 
