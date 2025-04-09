@@ -1,6 +1,8 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.order.OrderAddApiDoc;
+import edu.icet.ecom.config.apidoc.order.OrderDeleteApiDoc;
+import edu.icet.ecom.config.apidoc.order.OrderGetAllApiDoc;
 import edu.icet.ecom.config.apidoc.order.OrderGetApiDoc;
 import edu.icet.ecom.dto.order.*;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
@@ -80,7 +82,7 @@ public class OrderController {
 		};
 	}
 
-	@OrderGetApiDoc
+	@OrderGetAllApiDoc
 	@GetMapping("/all")
 	public CustomHttpResponse<AllOrders> getAll () {
 		final Response<SuperOrder> response = this.orderService.getAllStructured();
@@ -92,6 +94,7 @@ public class OrderController {
 		};
 	}
 
+	@OrderDeleteApiDoc
 	@DeleteMapping("/{id}")
 	public CustomHttpResponse<Object> delete (@PathVariable("id") Long id) {
 		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
