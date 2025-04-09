@@ -6,4 +6,5 @@ import edu.icet.ecom.util.Response;
 
 public interface OrderRepository extends CrudRepository<SuperOrderEntity> {
 	Response<Object> deleteByEmployeeId (Long employeeId);
+	Response<SuperOrderEntity> getAllStructured ();
 }

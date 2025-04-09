@@ -2,10 +2,7 @@ package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.order.OrderAddApiDoc;
 import edu.icet.ecom.config.apidoc.order.OrderGetApiDoc;
-import edu.icet.ecom.dto.order.Order;
-import edu.icet.ecom.dto.order.OrderItem;
-import edu.icet.ecom.dto.order.OrderLite;
-import edu.icet.ecom.dto.order.SuperOrder;
+import edu.icet.ecom.dto.order.*;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.service.custom.merchandise.MenuItemService;
 import edu.icet.ecom.service.custom.misc.CustomerService;
@@ -85,12 +82,11 @@ public class OrderController {
 
 	@OrderGetApiDoc
 	@GetMapping("/all")
-	@SuppressWarnings("unchecked")
-	public CustomHttpResponse<List<Order>> getAll () {
-		final Response<List<SuperOrder>> response = this.orderService.getAll();
+	public CustomHttpResponse<AllOrders> getAll () {
+		final Response<SuperOrder> response = this.orderService.getAllStructured();
 
 		return switch (response.getStatus()) {
-			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (List<Order>) (List<?>) response.getData(), "All order has found");
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, (AllOrders) response.getData(), "All order has found");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Orders not found");
 		};
