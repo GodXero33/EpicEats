@@ -93,7 +93,12 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
 	@Override
 	public Response<RestaurantTableBooking> getBooking (Long id) {
-		return null;
+		final Response<RestaurantTableBookingEntity> response = this.restaurantTableRepository.getBooking(id);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), RestaurantTableBooking.class) :
+			null
+		, response.getStatus());
 	}
 
 	@Override
@@ -108,12 +113,12 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
 	@Override
 	public Response<Object> deleteBooking (Long id) {
-		return null;
+		return this.restaurantTableRepository.deleteBooking(id);
 	}
 
 	@Override
 	public Response<Object> deleteAllBookingsByTableId (Long tableId) {
-		return null;
+		return this.restaurantTableRepository.deleteAllBookingsByTableId(tableId);
 	}
 
 	private boolean checkTimeSlotOverlapping (TimeRange target, List<TimeRange> slots) {
