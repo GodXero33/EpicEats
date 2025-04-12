@@ -8,6 +8,7 @@ import edu.icet.ecom.util.Response;
 
 public interface RestaurantTableService extends SuperService<RestaurantTable> {
 	Response<Boolean> isTableExist (Long tableId);
+	Response<Boolean> isTableAvailable (Long tableId);
 	Response<Boolean> isTableNumberExist (Integer tableNumber);
 	Response<Boolean> isTableNumberExist (Integer tableNumber, Long tableId);
 	Response<RestaurantTableBooking> addBooking (RestaurantTableBookingLite restaurantTableBookingLite);

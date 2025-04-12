@@ -152,6 +152,11 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
+	public Response<Boolean> isTableAvailable (Long tableId) {
+		return this.getExistence("WHERE id = ? AND is_available = TRUE", tableId);
+	}
+
+	@Override
 	public Response<Boolean> isTableNumberExist (Integer tableNumber) {
 		return this.getExistence("WHERE table_number = ?", tableNumber);
 	}

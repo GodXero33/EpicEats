@@ -62,6 +62,11 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 	}
 
 	@Override
+	public Response<Boolean> isTableAvailable (Long tableId) {
+		return this.restaurantTableRepository.isTableAvailable(tableId);
+	}
+
+	@Override
 	public Response<Boolean> isTableNumberExist (Integer tableNumber) {
 		return this.restaurantTableRepository.isTableNumberExist(tableNumber);
 	}
