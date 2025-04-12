@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface RestaurantTableRepository extends CrudRepository<RestaurantTableEntity> {
 	Response<Boolean> isTableExist (Long tableId);
+	Response<Boolean> isTableAvailable (Long tableId);
 	Response<Boolean> isTableNumberExist (Integer tableNumber);
 	Response<Boolean> isTableNumberExist (Integer tableNumber, Long tableId);
 	Response<RestaurantTableBookingEntity> addBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);

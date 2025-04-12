@@ -152,6 +152,11 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
+	public Response<Boolean> isTableAvailable (Long tableId) {
+		return this.getExistence("WHERE id = ? AND is_available = TRUE", tableId);
+	}
+
+	@Override
 	public Response<Boolean> isTableNumberExist (Integer tableNumber) {
 		return this.getExistence("WHERE table_number = ?", tableNumber);
 	}
@@ -320,7 +325,33 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<RestaurantTableBookingEntity> getBooking (Long id) {
-		return null;
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT table_id, customer_id, booking_date, start_time, end_time
+			FROM restaurant_table_booking
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
+			if (!resultSet.next()) return new Response<>(null, ResponseType.NOT_FOUND);
+
+			final Response<RestaurantTableEntity> tableGetResponse = this.get(resultSet.getLong(1));
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			final Response<CustomerEntity> customerGetResponse = this.customerRepository.get(resultSet.getLong(2));
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			return new Response<>(RestaurantTableBookingEntity.builder()
+				.id(id)
+				.table(tableGetResponse.getData())
+				.customer(customerGetResponse.getData())
+				.bookingDate(DateTimeUtil.parseDate(resultSet.getString(3)))
+				.startTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.endTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+				.build(), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
@@ -335,26 +366,48 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<Object> deleteBooking (Long id) {
-		return null;
+		try {
+			return new Response<>(null, (Integer) this.crudUtil.execute(
+				"""
+				UPDATE restaurant_table_booking
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND id = ?
+				""", id) == 0 ?
+				ResponseType.NOT_DELETED : ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<Object> deleteAllBookingsByTableId (Long tableId) {
-		return null;
+		try {
+			this.crudUtil.execute("""
+				UPDATE restaurant_table_booking
+				SET is_deleted = TRUE
+				WHERE is_deleted = FALSE AND table_id = ?
+				""", tableId);
+
+			return new Response<>(null, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date, Long bookingId) {
-		try (final ResultSet resultSet = this.crudUtil.execute(
-			"""
+		final String retrieveQuery = """
 			SELECT start_time, end_time
 			FROM restaurant_table_booking
-			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?%s
-			""".formatted(bookingId == null ? "" : " AND id != ?"),
-			tableId,
-			date,
-			bookingId
-		)) {
+			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?
+			""";
+
+		try (final ResultSet resultSet = bookingId == null ?
+			this.crudUtil.execute(retrieveQuery, tableId, date) :
+			this.crudUtil.execute(retrieveQuery + " AND id != ?", tableId, date, bookingId)
+		) {
 			final List<TimeRange> targetTimeSlotsForTableResponse = new ArrayList<>();
 
 			while (resultSet.next()) targetTimeSlotsForTableResponse.add(new TimeRange(
