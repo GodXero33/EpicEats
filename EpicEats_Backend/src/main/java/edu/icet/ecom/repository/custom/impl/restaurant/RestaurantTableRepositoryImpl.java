@@ -335,12 +335,34 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<Object> deleteBooking (Long id) {
-		return null;
+		try {
+			return new Response<>(null, (Integer) this.crudUtil.execute(
+				"""
+				UPDATE restaurant_table_booking
+				SET is_delete = TRUE
+				WHERE is_delete = FALSE AND id = ?
+				""", id) == 0 ?
+				ResponseType.NOT_DELETED : ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
 	public Response<Object> deleteAllBookingsByTableId (Long tableId) {
-		return null;
+		try {
+			this.crudUtil.execute("""
+				UPDATE restaurant_table_booking
+				SET is_delete = TRUE
+				WHERE is_delete = FALSE AND table_id = ?
+				""", tableId);
+
+			return new Response<>(null, ResponseType.DELETED);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
