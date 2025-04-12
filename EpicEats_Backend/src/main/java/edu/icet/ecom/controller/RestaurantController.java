@@ -166,4 +166,30 @@ public class RestaurantController {
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Failed to update booking");
 		};
 	}
+
+	@RestaurantTableBookingDeleteApiDoc
+	@DeleteMapping("/table/booking/{id}")
+	public CustomHttpResponse<Object> deleteBooking (@PathVariable("id") Long id) {
+		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id must non zero positive big-int for delete booking");
+
+		final Response<Object> response = this.restaurantTableService.deleteBooking(id);
+
+		return switch (response.getStatus()) {
+			case DELETED -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Booking deleted");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_MODIFIED, null, "Booking not deleted");
+		};
+	}
+
+	@RestaurantTableBookingDeleteAllByTableApiDoc
+	@DeleteMapping("/table/booking/by-table/{tableId}")
+	public CustomHttpResponse<Object> deleteBookingByTable (@PathVariable("tableId") Long tableId) {
+		if (tableId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Table Id must non zero positive big-int for delete booking");
+
+		final Response<Object> response = this.restaurantTableService.deleteAllBookingsByTableId(tableId);
+
+		return response.getStatus() == ResponseType.DELETED ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All booking deleted related table") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
 }
