@@ -1,6 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.restaurant.*;
+import edu.icet.ecom.dto.restaurant.AllRestaurantTableBookings;
 import edu.icet.ecom.dto.restaurant.RestaurantTable;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
@@ -184,6 +185,28 @@ public class RestaurantController {
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
 			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Booking not found");
 		};
+	}
+
+	@GetMapping("/table/booking/all")
+	@RestaurantTableBookingGetAllApiDoc
+	public CustomHttpResponse<AllRestaurantTableBookings> getAllBookings () {
+		final Response<AllRestaurantTableBookings> response = this.restaurantTableService.getAllBookings();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All bookings are loaded") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@RestaurantTableBookingGetByTableApiDoc
+	@GetMapping("/table/booking/by-table/{tableId}")
+	public CustomHttpResponse<AllRestaurantTableBookings> getAllBookingByTable (@PathVariable("tableId") Long tableId) {
+		if (tableId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+
+		final Response<AllRestaurantTableBookings> response = this.restaurantTableService.getAllBookingsByTableId(tableId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All bookings are loaded") :
+			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
 	@RestaurantTableBookingDeleteApiDoc
