@@ -118,11 +118,8 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
 	private boolean checkTimeSlotOverlapping (TimeRange target, List<TimeRange> slots) {
 		return slots.stream().anyMatch(slot ->
-			(slot.start().isBefore(target.start()) && slot.end().isAfter(target.start())) ||
-			(slot.start().isBefore(target.end()) && slot.end().isAfter(target.end())) ||
-			(slot.start().isBefore(target.start()) && slot.end().isAfter(target.end())) ||
-			(slot.start().isAfter(target.start()) && slot.end().isBefore(target.end())) ||
-			(slot.start().equals(target.start()) && slot.end().equals(target.end()))
+			target.end().isAfter(slot.start()) &&
+			target.start().isBefore(slot.end())
 		);
 	}
 
