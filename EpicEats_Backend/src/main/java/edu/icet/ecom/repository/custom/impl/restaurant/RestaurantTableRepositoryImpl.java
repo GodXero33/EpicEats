@@ -320,7 +320,33 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<RestaurantTableBookingEntity> getBooking (Long id) {
-		return null;
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT table_id, customer_id, booking_date, start_time, end_time
+			FROM restaurant_table_booking
+			WHERE is_deleted = FALSE AND id = ?
+			""", id)) {
+			if (!resultSet.next()) return new Response<>(null, ResponseType.NOT_FOUND);
+
+			final Response<RestaurantTableEntity> tableGetResponse = this.get(resultSet.getLong(1));
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			final Response<CustomerEntity> customerGetResponse = this.customerRepository.get(resultSet.getLong(2));
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			return new Response<>(RestaurantTableBookingEntity.builder()
+				.id(id)
+				.table(tableGetResponse.getData())
+				.customer(customerGetResponse.getData())
+				.bookingDate(DateTimeUtil.parseDate(resultSet.getString(3)))
+				.startTime(DateTimeUtil.parseTime(resultSet.getString(4)))
+				.endTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+				.build(), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
