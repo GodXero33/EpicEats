@@ -107,11 +107,7 @@ public class RestaurantController {
 		};
 	}
 
-	@PostMapping("/table/booking")
-	@RestaurantTableBookingAddApiDoc
-	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite bookingLite, BindingResult result) {
-		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
-
+	private CustomHttpResponse<RestaurantTableBooking> getTableBookingInvalidResponse (RestaurantTableBookingLite bookingLite, boolean isUpdate) {
 		final Response<Boolean> customerExistResponse = this.customerService.isExist(bookingLite.getCustomerId());
 
 		if (customerExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
@@ -126,10 +122,22 @@ public class RestaurantController {
 
 		if (bookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
 
-		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(bookingLite, false);
+		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(bookingLite, isUpdate);
 
 		if (timeSlotOverlapsResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
 		if (timeSlotOverlapsResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "The given booking slot is overlap with another booking for same table");
+
+		return null;
+	}
+
+	@PostMapping("/table/booking")
+	@RestaurantTableBookingAddApiDoc
+	public CustomHttpResponse<RestaurantTableBooking> addBooking (@Valid @RequestBody RestaurantTableBookingLite bookingLite, BindingResult result) {
+		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
+
+		final CustomHttpResponse<RestaurantTableBooking> invalidInvalidTableBookingTimeResponse = this.getTableBookingInvalidResponse(bookingLite, false);
+
+		if (invalidInvalidTableBookingTimeResponse != null) return invalidInvalidTableBookingTimeResponse;
 
 		final Response<RestaurantTableBooking> response = this.restaurantTableService.addBooking(bookingLite);
 
@@ -146,24 +154,9 @@ public class RestaurantController {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (bookingLite.getId() == null || bookingLite.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("bookingId can't be null or negative or zero");
 
-		final Response<Boolean> customerExistResponse = this.customerService.isExist(bookingLite.getCustomerId());
+		final CustomHttpResponse<RestaurantTableBooking> invalidInvalidTableBookingTimeResponse = this.getTableBookingInvalidResponse(bookingLite, true);
 
-		if (customerExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
-		if (customerExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No customer found with given customer id");
-
-		final Response<Boolean> tableExistResponse = this.restaurantTableService.isTableExist(bookingLite.getTableId());
-
-		if (tableExistResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
-		if (tableExistResponse.getStatus() == ResponseType.NOT_FOUND) return new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "No table found with given table id");
-
-		if (bookingLite.getStartTime().isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "Booking start time must be before time than end time");
-
-		if (bookingLite.getStartTime().plusMinutes(Constants.MINIMUM_BOOKING_DURATION_MINUTES).isAfter(bookingLite.getEndTime())) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "A booking must be at least %d minutes long.".formatted(Constants.MINIMUM_BOOKING_DURATION_MINUTES));
-
-		final Response<Boolean> timeSlotOverlapsResponse = this.restaurantTableService.isTableBookingOverlaps(bookingLite, true);
-
-		if (timeSlotOverlapsResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
-		if (timeSlotOverlapsResponse.getStatus() == ResponseType.FOUND) return new CustomHttpResponse<>(HttpStatus.BAD_REQUEST, null, "The given booking slot is overlap with another booking for same table");
+		if (invalidInvalidTableBookingTimeResponse != null) return invalidInvalidTableBookingTimeResponse;
 
 		final Response<RestaurantTableBooking> response = this.restaurantTableService.updateBooking(bookingLite);
 

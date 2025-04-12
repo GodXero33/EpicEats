@@ -345,16 +345,16 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date, Long bookingId) {
-		try (final ResultSet resultSet = this.crudUtil.execute(
-			"""
+		final String retrieveQuery = """
 			SELECT start_time, end_time
 			FROM restaurant_table_booking
-			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?%s
-			""".formatted(bookingId == null ? "" : " AND id != ?"),
-			tableId,
-			date,
-			bookingId
-		)) {
+			WHERE is_deleted = FALSE AND table_id = ? AND booking_date = ?
+			""";
+
+		try (final ResultSet resultSet = bookingId == null ?
+			this.crudUtil.execute(retrieveQuery, tableId, date) :
+			this.crudUtil.execute(retrieveQuery + " AND id != ?", tableId, date, bookingId)
+		) {
 			final List<TimeRange> targetTimeSlotsForTableResponse = new ArrayList<>();
 
 			while (resultSet.next()) targetTimeSlotsForTableResponse.add(new TimeRange(
