@@ -1,6 +1,7 @@
 package edu.icet.ecom.repository.custom.restaurant;
 
 import edu.icet.ecom.dto.restaurant.TimeRange;
+import edu.icet.ecom.entity.restaurant.AllRestaurantTableBookingsEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
@@ -18,8 +19,8 @@ public interface RestaurantTableRepository extends CrudRepository<RestaurantTabl
 	Response<RestaurantTableBookingEntity> addBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);
 	Response<RestaurantTableBookingEntity> updateBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);
 	Response<RestaurantTableBookingEntity> getBooking (Long id);
-	Response<RestaurantTableBookingEntity> getAllBookings ();
-	Response<RestaurantTableBookingEntity> getAllBookingsByTableId (Long tableId);
+	Response<AllRestaurantTableBookingsEntity> getAllBookings ();
+	Response<AllRestaurantTableBookingsEntity> getAllBookingsByTableId (Long tableId);
 	Response<Object> deleteBooking (Long id);
 	Response<Object> deleteAllBookingsByTableId (Long tableId);
 	Response<List<TimeRange>> getTimeSlotsForTargetTableInTargetDate (Long tableId, LocalDate date, Long bookingId);

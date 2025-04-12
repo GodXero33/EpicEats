@@ -2,6 +2,7 @@ package edu.icet.ecom.repository.custom.impl.restaurant;
 
 import edu.icet.ecom.dto.restaurant.TimeRange;
 import edu.icet.ecom.entity.misc.CustomerEntity;
+import edu.icet.ecom.entity.restaurant.AllRestaurantTableBookingsEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
 import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
@@ -355,12 +356,12 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
-	public Response<RestaurantTableBookingEntity> getAllBookings () {
+	public Response<AllRestaurantTableBookingsEntity> getAllBookings () {
 		return null;
 	}
 
 	@Override
-	public Response<RestaurantTableBookingEntity> getAllBookingsByTableId (Long tableId) {
+	public Response<AllRestaurantTableBookingsEntity> getAllBookingsByTableId (Long tableId) {
 		return null;
 	}
 

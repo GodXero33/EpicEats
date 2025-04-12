@@ -1,5 +1,6 @@
 package edu.icet.ecom.service.custom.restaurant;
 
+import edu.icet.ecom.dto.restaurant.AllRestaurantTableBookings;
 import edu.icet.ecom.dto.restaurant.RestaurantTable;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
 import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
@@ -14,8 +15,8 @@ public interface RestaurantTableService extends SuperService<RestaurantTable> {
 	Response<RestaurantTableBooking> addBooking (RestaurantTableBookingLite restaurantTableBookingLite);
 	Response<RestaurantTableBooking> updateBooking (RestaurantTableBookingLite restaurantTableBookingLite);
 	Response<RestaurantTableBooking> getBooking (Long id);
-	Response<RestaurantTableBooking> getAllBookings ();
-	Response<RestaurantTableBooking> getAllBookingsByTableId (Long tableId);
+	Response<AllRestaurantTableBookings> getAllBookings ();
+	Response<AllRestaurantTableBookings> getAllBookingsByTableId (Long tableId);
 	Response<Object> deleteBooking (Long id);
 	Response<Object> deleteAllBookingsByTableId (Long tableId);
 	Response<Boolean> isTableBookingOverlaps (RestaurantTableBookingLite restaurantTableBookingLite, boolean isUpdate);
