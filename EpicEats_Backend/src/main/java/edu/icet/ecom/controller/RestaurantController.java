@@ -167,6 +167,20 @@ public class RestaurantController {
 		};
 	}
 
+	@RestaurantTableBookingGetApiDoc
+	@GetMapping("/table/booking/{id}")
+	public CustomHttpResponse<RestaurantTableBooking> getBooking (@PathVariable("id") Long id) {
+		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+
+		final Response<RestaurantTableBooking> response = this.restaurantTableService.getBooking(id);
+
+		return switch (response.getStatus()) {
+			case FOUND -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Booking retrieved successfully");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.NOT_FOUND, null, "Booking not found");
+		};
+	}
+
 	@RestaurantTableBookingDeleteApiDoc
 	@DeleteMapping("/table/booking/{id}")
 	public CustomHttpResponse<Object> deleteBooking (@PathVariable("id") Long id) {
