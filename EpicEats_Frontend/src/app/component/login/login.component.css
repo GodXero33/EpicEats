@@ -1,6 +1,7 @@
 #login-holder {
 	position: relative;
 	padding: 1rem;
+	padding-top: var(--navbar-height);
 	top: 0;
 	left: 0;
 	width: 100%;

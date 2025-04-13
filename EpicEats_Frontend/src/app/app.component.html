@@ -1,5 +1,8 @@
-<nav *ngIf = "showNavbar">
-	My Nav
+<nav>
+	<div *ngIf = "showNavbar" id="navbar-button-container"></div>
+	<div id="navbar-theme-input-container">
+		<input type="checkbox" id="theme-toggle" title="theme">
+	</div>
 </nav>
 
 <router-outlet />
