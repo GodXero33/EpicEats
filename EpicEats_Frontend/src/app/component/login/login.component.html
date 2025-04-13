@@ -2,5 +2,22 @@
 	<div id="login-container">
 		<div class="header">Epic Eats</div>
 		<div class="header">Login</div>
+		<div class="form">
+			<div class="input">
+				<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="username" #usernameInput  (keydown)="onKeydown($event)">
+				<div class="label">Username</div>
+			</div>
+			<div class="input">
+				<input type="password" placeholder="" [(ngModel)]="password" #passwordInput (keydown)="onKeydown($event)">
+				<div class="label">Password</div>
+			</div>
+			<button class="action" tabindex="0" (click)="login()">Login</button>
+			<hr>
+		</div>
+		<div class="form">
+			<div class="title">Need to create an account?</div>
+			<p class="notice">This system only allows admin-level access. Before you click the button below, please contact your system administrator or have an authorized admin assist you in person.</p>
+			<button class="action" tabindex="1">Signup</button>
+		</div>
 	</div>
 </div>

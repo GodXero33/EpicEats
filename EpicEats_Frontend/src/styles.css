@@ -3,19 +3,30 @@
 	src: url(../public/font/Ketchup\ Manis\ Demo.ttf);
 }
 
+@font-face {
+	font-family: verdana;
+	src: url(../public/font/verdana.ttf);
+}
+
 :root {
 	--font-size: 16px;
 	--navbar-height: 2rem;
 }
 
-:root {
+:root { /* dark */
 	--background-color: #161825;
 	--header-1: #ffffff;
+	--text-1: #ffffff;
+	--scrollbar-color: #ffffff;
+	--action-button: #ff7733;
 }
 
-:root:has( #navbar-theme-input-container input:checked) {
+:root:has( #navbar-theme-input-container input:checked) { /* light */
 	--background-color: #cdd3ff;
 	--header-1: #000000;
+	--text-1: #000000;
+	--scrollbar-color: #000000;
+	--action-button: #ff7733;
 }
 
 * {
@@ -55,7 +66,6 @@ nav {
 }
 
 #navbar-button-container {
-	background-color: gray;
 	flex-grow: 1;
 }
 
