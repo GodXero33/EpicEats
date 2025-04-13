@@ -4,14 +4,14 @@
 		<div class="header">Login</div>
 		<div class="form">
 			<div class="input">
-				<input type="text" spellcheck="false" autocomplete="off" placeholder="">
+				<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="username" #usernameInput  (keydown)="onKeydown($event)">
 				<div class="label">Username</div>
 			</div>
 			<div class="input">
-				<input type="password" placeholder="">
+				<input type="password" placeholder="" [(ngModel)]="password" #passwordInput (keydown)="onKeydown($event)">
 				<div class="label">Password</div>
 			</div>
-			<button class="action" tabindex="0">Login</button>
+			<button class="action" tabindex="0" (click)="login()">Login</button>
 			<hr>
 		</div>
 		<div class="form">
