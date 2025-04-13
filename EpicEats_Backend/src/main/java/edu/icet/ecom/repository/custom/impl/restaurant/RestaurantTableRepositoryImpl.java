@@ -2,9 +2,7 @@ package edu.icet.ecom.repository.custom.impl.restaurant;
 
 import edu.icet.ecom.dto.restaurant.TimeRange;
 import edu.icet.ecom.entity.misc.CustomerEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
+import edu.icet.ecom.entity.restaurant.*;
 import edu.icet.ecom.repository.custom.misc.CustomerRepository;
 import edu.icet.ecom.repository.custom.restaurant.RestaurantTableRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -19,8 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -164,6 +161,31 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	@Override
 	public Response<Boolean> isTableNumberExist (Integer tableNumber, Long tableId) {
 		return this.getExistence("WHERE id != ? AND table_number = ?", tableId, tableNumber);
+	}
+
+	@Override
+	public Response<List<RestaurantTableEntity>> getAllByIDs (List<Long> ids) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, table_number, capacity, last_booked, is_available
+			FROM restaurant_table
+			WHERE is_deleted = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+			ids)) {
+			final List<RestaurantTableEntity> tableEntities = new ArrayList<>();
+
+			while (resultSet.next()) tableEntities.add(RestaurantTableEntity.builder()
+				.id(resultSet.getLong(1))
+				.tableNumber(resultSet.getInt(2))
+				.capacity(resultSet.getInt(3))
+				.lastBooked(DateTimeUtil.parseDateTime(resultSet.getString(4)))
+				.isAvailable(resultSet.getBoolean(5))
+				.build());
+
+			return new Response<>(tableEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
@@ -355,13 +377,97 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
-	public Response<RestaurantTableBookingEntity> getAllBookings () {
-		return null;
+	public Response<AllRestaurantTableBookingsEntity> getAllBookings () {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, table_id, customer_id, booking_date, start_time, end_time
+			FROM restaurant_table_booking
+			WHERE is_deleted = FALSE
+			""")) {
+			final List<RestaurantTableBookingLiteEntity> bookings = new ArrayList<>();
+			final Set<Long> tableIDs = new HashSet<>();
+			final Set<Long> customerIDs = new HashSet<>();
+
+			while (resultSet.next()) {
+				final long tableId = resultSet.getLong(2);
+				final long customerId = resultSet.getLong(3);
+
+				bookings.add(RestaurantTableBookingLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.tableId(tableId)
+					.customerId(customerId)
+					.bookingDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(6)))
+					.build());
+
+				tableIDs.add(tableId);
+				customerIDs.add(customerId);
+			}
+
+			final Response<List<CustomerEntity>> customersGetResponse = this.customerRepository.getAllByIDs(customerIDs.stream().toList());
+
+			if (customersGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customersGetResponse.getStatus());
+
+			final Response<List<RestaurantTableEntity>> tablesGetResponse = this.getAllByIDs(tableIDs.stream().toList());
+
+			if (tablesGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tablesGetResponse.getStatus());
+
+			return new Response<>(new AllRestaurantTableBookingsEntity(
+				bookings,
+				customersGetResponse.getData(),
+				tablesGetResponse.getData()
+			), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
-	public Response<RestaurantTableBookingEntity> getAllBookingsByTableId (Long tableId) {
-		return null;
+	public Response<RestaurantBookingsByTableEntity> getAllBookingsByTableId (Long tableId) {
+		try (final ResultSet resultSet = this.crudUtil.execute(
+			"""
+			SELECT id, table_id, customer_id, booking_date, start_time, end_time
+			FROM restaurant_table_booking
+			WHERE is_deleted = FALSE AND table_id = ?
+			""",
+			tableId
+		)) {
+			final List<RestaurantTableBookingLiteEntity> bookings = new ArrayList<>();
+			final Set<Long> customerIDs = new HashSet<>();
+
+			while (resultSet.next()) {
+				final long customerId = resultSet.getLong(3);
+
+				bookings.add(RestaurantTableBookingLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.tableId(tableId)
+					.customerId(customerId)
+					.bookingDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(6)))
+					.build());
+
+				customerIDs.add(customerId);
+			}
+
+			final Response<List<CustomerEntity>> customersGetResponse = this.customerRepository.getAllByIDs(customerIDs.stream().toList());
+
+			if (customersGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customersGetResponse.getStatus());
+
+			final Response<RestaurantTableEntity> tableGetResponse = this.get(tableId);
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			return new Response<>(new RestaurantBookingsByTableEntity(
+				bookings,
+				customersGetResponse.getData(),
+				tableGetResponse.getData()
+			), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override

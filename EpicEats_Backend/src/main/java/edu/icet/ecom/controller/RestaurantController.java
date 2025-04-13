@@ -1,9 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.restaurant.*;
-import edu.icet.ecom.dto.restaurant.RestaurantTable;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
+import edu.icet.ecom.dto.restaurant.*;
 import edu.icet.ecom.service.custom.misc.CustomerService;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
 import edu.icet.ecom.util.Constants;
@@ -29,6 +27,10 @@ public class RestaurantController {
 	private final RestaurantTableService restaurantTableService;
 	private final CustomerService customerService;
 	private final ControllerResponseUtil controllerResponseUtil;
+
+	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero");
+	}
 
 	@PostMapping("/table")
 	@RestaurantTableAddApiDoc
@@ -70,7 +72,7 @@ public class RestaurantController {
 	@RestaurantTableGetApiDoc
 	@GetMapping("/table/{id}")
 	public CustomHttpResponse<RestaurantTable> getTable (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<RestaurantTable> response = this.restaurantTableService.get(id);
 
@@ -96,7 +98,7 @@ public class RestaurantController {
 	@RestaurantTableDeleteApiDoc
 	@DeleteMapping("/table/{id}")
 	public CustomHttpResponse<Object> deleteTable (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Object> response = this.restaurantTableService.delete(id);
 
@@ -175,7 +177,7 @@ public class RestaurantController {
 	@RestaurantTableBookingGetApiDoc
 	@GetMapping("/table/booking/{id}")
 	public CustomHttpResponse<RestaurantTableBooking> getBooking (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<RestaurantTableBooking> response = this.restaurantTableService.getBooking(id);
 
@@ -186,10 +188,32 @@ public class RestaurantController {
 		};
 	}
 
+	@GetMapping("/table/booking/all")
+	@RestaurantTableBookingGetAllApiDoc
+	public CustomHttpResponse<AllRestaurantTableBookings> getAllBookings () {
+		final Response<AllRestaurantTableBookings> response = this.restaurantTableService.getAllBookings();
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All bookings are loaded") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@RestaurantTableBookingGetByTableApiDoc
+	@GetMapping("/table/booking/by-table/{tableId}")
+	public CustomHttpResponse<RestaurantBookingsByTable> getAllBookingByTable (@PathVariable("tableId") Long tableId) {
+		if (tableId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+
+		final Response<RestaurantBookingsByTable> response = this.restaurantTableService.getAllBookingsByTableId(tableId);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All bookings are loaded") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
 	@RestaurantTableBookingDeleteApiDoc
 	@DeleteMapping("/table/booking/{id}")
 	public CustomHttpResponse<Object> deleteBooking (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id must non zero positive big-int for delete booking");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Object> response = this.restaurantTableService.deleteBooking(id);
 

@@ -1,12 +1,7 @@
 package edu.icet.ecom.service.custom.impl.restaurant;
 
-import edu.icet.ecom.dto.restaurant.RestaurantTable;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
-import edu.icet.ecom.dto.restaurant.TimeRange;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
+import edu.icet.ecom.dto.restaurant.*;
+import edu.icet.ecom.entity.restaurant.*;
 import edu.icet.ecom.repository.custom.restaurant.RestaurantTableRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
@@ -107,13 +102,23 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 	}
 
 	@Override
-	public Response<RestaurantTableBooking> getAllBookings () {
-		return null;
+	public Response<AllRestaurantTableBookings> getAllBookings () {
+		final Response<AllRestaurantTableBookingsEntity> response = this.restaurantTableRepository.getAllBookings();
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), AllRestaurantTableBookings.class) :
+			null
+		, response.getStatus());
 	}
 
 	@Override
-	public Response<RestaurantTableBooking> getAllBookingsByTableId (Long tableId) {
-		return null;
+	public Response<RestaurantBookingsByTable> getAllBookingsByTableId (Long tableId) {
+		final Response<RestaurantBookingsByTableEntity> response = this.restaurantTableRepository.getAllBookingsByTableId(tableId);
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			this.mapper.map(response.getData(), RestaurantBookingsByTable.class) :
+			null
+			, response.getStatus());
 	}
 
 	@Override
