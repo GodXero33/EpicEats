@@ -16,6 +16,7 @@ public interface RestaurantTableRepository extends CrudRepository<RestaurantTabl
 	Response<Boolean> isTableAvailable (Long tableId);
 	Response<Boolean> isTableNumberExist (Integer tableNumber);
 	Response<Boolean> isTableNumberExist (Integer tableNumber, Long tableId);
+	Response<List<RestaurantTableEntity>> getAllByIDs (List<Long> ids);
 	Response<RestaurantTableBookingEntity> addBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);
 	Response<RestaurantTableBookingEntity> updateBooking (RestaurantTableBookingLiteEntity restaurantTableBookingLiteEntity);
 	Response<RestaurantTableBookingEntity> getBooking (Long id);

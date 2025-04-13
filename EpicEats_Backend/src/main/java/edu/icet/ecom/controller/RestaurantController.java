@@ -31,6 +31,10 @@ public class RestaurantController {
 	private final CustomerService customerService;
 	private final ControllerResponseUtil controllerResponseUtil;
 
+	private <T> CustomHttpResponse<T> getInvalidIdResponse () {
+		return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero");
+	}
+
 	@PostMapping("/table")
 	@RestaurantTableAddApiDoc
 	public CustomHttpResponse<RestaurantTable> addTable (@Valid @RequestBody RestaurantTable restaurantTable, BindingResult result) {
@@ -71,7 +75,7 @@ public class RestaurantController {
 	@RestaurantTableGetApiDoc
 	@GetMapping("/table/{id}")
 	public CustomHttpResponse<RestaurantTable> getTable (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be negative or zero");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<RestaurantTable> response = this.restaurantTableService.get(id);
 
@@ -97,7 +101,7 @@ public class RestaurantController {
 	@RestaurantTableDeleteApiDoc
 	@DeleteMapping("/table/{id}")
 	public CustomHttpResponse<Object> deleteTable (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Object> response = this.restaurantTableService.delete(id);
 
@@ -176,7 +180,7 @@ public class RestaurantController {
 	@RestaurantTableBookingGetApiDoc
 	@GetMapping("/table/booking/{id}")
 	public CustomHttpResponse<RestaurantTableBooking> getBooking (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<RestaurantTableBooking> response = this.restaurantTableService.getBooking(id);
 
@@ -212,7 +216,7 @@ public class RestaurantController {
 	@RestaurantTableBookingDeleteApiDoc
 	@DeleteMapping("/table/booking/{id}")
 	public CustomHttpResponse<Object> deleteBooking (@PathVariable("id") Long id) {
-		if (id <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id must non zero positive big-int for delete booking");
+		if (id <= 0) return this.getInvalidIdResponse();
 
 		final Response<Object> response = this.restaurantTableService.deleteBooking(id);
 
