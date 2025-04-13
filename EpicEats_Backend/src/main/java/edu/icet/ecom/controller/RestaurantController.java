@@ -1,10 +1,7 @@
 package edu.icet.ecom.controller;
 
 import edu.icet.ecom.config.apidoc.restaurant.*;
-import edu.icet.ecom.dto.restaurant.AllRestaurantTableBookings;
-import edu.icet.ecom.dto.restaurant.RestaurantTable;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBooking;
-import edu.icet.ecom.dto.restaurant.RestaurantTableBookingLite;
+import edu.icet.ecom.dto.restaurant.*;
 import edu.icet.ecom.service.custom.misc.CustomerService;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
 import edu.icet.ecom.util.Constants;
@@ -203,10 +200,10 @@ public class RestaurantController {
 
 	@RestaurantTableBookingGetByTableApiDoc
 	@GetMapping("/table/booking/by-table/{tableId}")
-	public CustomHttpResponse<AllRestaurantTableBookings> getAllBookingByTable (@PathVariable("tableId") Long tableId) {
+	public CustomHttpResponse<RestaurantBookingsByTable> getAllBookingByTable (@PathVariable("tableId") Long tableId) {
 		if (tableId <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Id can't be zero or negative");
 
-		final Response<AllRestaurantTableBookings> response = this.restaurantTableService.getAllBookingsByTableId(tableId);
+		final Response<RestaurantBookingsByTable> response = this.restaurantTableService.getAllBookingsByTableId(tableId);
 
 		return response.getStatus() == ResponseType.FOUND ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All bookings are loaded") :

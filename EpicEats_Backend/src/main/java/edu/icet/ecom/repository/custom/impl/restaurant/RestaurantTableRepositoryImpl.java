@@ -2,10 +2,7 @@ package edu.icet.ecom.repository.custom.impl.restaurant;
 
 import edu.icet.ecom.dto.restaurant.TimeRange;
 import edu.icet.ecom.entity.misc.CustomerEntity;
-import edu.icet.ecom.entity.restaurant.AllRestaurantTableBookingsEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
+import edu.icet.ecom.entity.restaurant.*;
 import edu.icet.ecom.repository.custom.misc.CustomerRepository;
 import edu.icet.ecom.repository.custom.restaurant.RestaurantTableRepository;
 import edu.icet.ecom.util.CrudUtil;
@@ -113,12 +110,13 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 		}
 	}
 
-	private Response<List<RestaurantTableEntity>> getTablesList (String condition, Object ...binds) {
+	@Override
+	public Response<List<RestaurantTableEntity>> getAll () {
 		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT id, table_number, capacity, last_booked, is_available
 			FROM restaurant_table
-			WHERE is_deleted = FALSE%s
-			""".formatted(condition), binds)) {
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<RestaurantTableEntity> tableEntities = new ArrayList<>();
 
 			while (resultSet.next()) tableEntities.add(RestaurantTableEntity.builder()
@@ -134,11 +132,6 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 			this.logger.error(exception.getMessage());
 			return new Response<>(null, ResponseType.SERVER_ERROR);
 		}
-	}
-
-	@Override
-	public Response<List<RestaurantTableEntity>> getAll () {
-		return this.getTablesList("");
 	}
 
 	private Response<Boolean> getExistence (String condition, Object ...binds) {
@@ -172,7 +165,27 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 
 	@Override
 	public Response<List<RestaurantTableEntity>> getAllByIDs (List<Long> ids) {
-		return this.getTablesList(" AND id IN (%s)".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))), ids);
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, table_number, capacity, last_booked, is_available
+			FROM restaurant_table
+			WHERE is_deleted = FALSE AND id IN (%s)
+			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
+			ids)) {
+			final List<RestaurantTableEntity> tableEntities = new ArrayList<>();
+
+			while (resultSet.next()) tableEntities.add(RestaurantTableEntity.builder()
+				.id(resultSet.getLong(1))
+				.tableNumber(resultSet.getInt(2))
+				.capacity(resultSet.getInt(3))
+				.lastBooked(DateTimeUtil.parseDateTime(resultSet.getString(4)))
+				.isAvailable(resultSet.getBoolean(5))
+				.build());
+
+			return new Response<>(tableEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override
@@ -363,14 +376,13 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 		}
 	}
 
-	private Response<AllRestaurantTableBookingsEntity> getBookingList (String condition, Object ...binds) {
-		try (final ResultSet resultSet = this.crudUtil.execute(
-			"""
+	@Override
+	public Response<AllRestaurantTableBookingsEntity> getAllBookings () {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
 			SELECT id, table_id, customer_id, booking_date, start_time, end_time
 			FROM restaurant_table_booking
-			WHERE is_deleted = FALSE%s
-			""".formatted(condition), binds
-		)) {
+			WHERE is_deleted = FALSE
+			""")) {
 			final List<RestaurantTableBookingLiteEntity> bookings = new ArrayList<>();
 			final Set<Long> tableIDs = new HashSet<>();
 			final Set<Long> customerIDs = new HashSet<>();
@@ -412,13 +424,50 @@ public class RestaurantTableRepositoryImpl implements RestaurantTableRepository 
 	}
 
 	@Override
-	public Response<AllRestaurantTableBookingsEntity> getAllBookings () {
-		return this.getBookingList("");
-	}
+	public Response<RestaurantBookingsByTableEntity> getAllBookingsByTableId (Long tableId) {
+		try (final ResultSet resultSet = this.crudUtil.execute(
+			"""
+			SELECT id, table_id, customer_id, booking_date, start_time, end_time
+			FROM restaurant_table_booking
+			WHERE is_deleted = FALSE AND table_id = ?
+			""",
+			tableId
+		)) {
+			final List<RestaurantTableBookingLiteEntity> bookings = new ArrayList<>();
+			final Set<Long> customerIDs = new HashSet<>();
 
-	@Override
-	public Response<AllRestaurantTableBookingsEntity> getAllBookingsByTableId (Long tableId) {
-		return this.getBookingList(" AND table_id = ?", tableId);
+			while (resultSet.next()) {
+				final long customerId = resultSet.getLong(3);
+
+				bookings.add(RestaurantTableBookingLiteEntity.builder()
+					.id(resultSet.getLong(1))
+					.tableId(tableId)
+					.customerId(customerId)
+					.bookingDate(DateTimeUtil.parseDate(resultSet.getString(4)))
+					.startTime(DateTimeUtil.parseTime(resultSet.getString(5)))
+					.endTime(DateTimeUtil.parseTime(resultSet.getString(6)))
+					.build());
+
+				customerIDs.add(customerId);
+			}
+
+			final Response<List<CustomerEntity>> customersGetResponse = this.customerRepository.getAllByIDs(customerIDs.stream().toList());
+
+			if (customersGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, customersGetResponse.getStatus());
+
+			final Response<RestaurantTableEntity> tableGetResponse = this.get(tableId);
+
+			if (tableGetResponse.getStatus() != ResponseType.FOUND) return new Response<>(null, tableGetResponse.getStatus());
+
+			return new Response<>(new RestaurantBookingsByTableEntity(
+				bookings,
+				customersGetResponse.getData(),
+				tableGetResponse.getData()
+			), ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
 	}
 
 	@Override

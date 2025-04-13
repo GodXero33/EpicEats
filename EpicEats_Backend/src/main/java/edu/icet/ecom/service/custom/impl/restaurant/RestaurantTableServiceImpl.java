@@ -1,10 +1,7 @@
 package edu.icet.ecom.service.custom.impl.restaurant;
 
 import edu.icet.ecom.dto.restaurant.*;
-import edu.icet.ecom.entity.restaurant.AllRestaurantTableBookingsEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableBookingLiteEntity;
-import edu.icet.ecom.entity.restaurant.RestaurantTableEntity;
+import edu.icet.ecom.entity.restaurant.*;
 import edu.icet.ecom.repository.custom.restaurant.RestaurantTableRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
@@ -115,11 +112,11 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 	}
 
 	@Override
-	public Response<AllRestaurantTableBookings> getAllBookingsByTableId (Long tableId) {
-		final Response<AllRestaurantTableBookingsEntity> response = this.restaurantTableRepository.getAllBookingsByTableId(tableId);
+	public Response<RestaurantBookingsByTable> getAllBookingsByTableId (Long tableId) {
+		final Response<RestaurantBookingsByTableEntity> response = this.restaurantTableRepository.getAllBookingsByTableId(tableId);
 
 		return new Response<>(response.getStatus() == ResponseType.FOUND ?
-			this.mapper.map(response.getData(), AllRestaurantTableBookings.class) :
+			this.mapper.map(response.getData(), RestaurantBookingsByTable.class) :
 			null
 			, response.getStatus());
 	}
