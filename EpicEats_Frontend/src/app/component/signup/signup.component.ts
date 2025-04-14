@@ -3,8 +3,10 @@ import { AlertComponent } from '../alert/alert.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoginUser } from '../../model/login-user.model';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Employee } from '../../model/employee.model';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -16,11 +18,15 @@ export class SignupComponent {
   public adminUsername: string = '';
   public adminPassword: string = '';
   public errorMessage: string = '';
+  public employeeId!: number;
+  public loadedEmployee: Employee | null = null;
   @ViewChild('adminUsernameInput') adminUsernameField!: ElementRef;
   @ViewChild('adminPasswordInput') adminPasswordField!: ElementRef;
+  @ViewChild('employeeIdInput') employeeIdInput!: ElementRef;
+  
   private token: string = '';
 
-  constructor (private http: HttpClient, private router: Router) {}
+  constructor (private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   private validateAdminLoginInputs (): boolean {
     const usernameField = this.adminUsernameField.nativeElement;
@@ -63,6 +69,24 @@ export class SignupComponent {
     this.adminLogin();
   }
 
+  private handleResponseOkData (data: any): void {
+    console.log(data);
+    if (!data.user) {
+      this.showErrorAlert('Invalid server response');
+      return;
+    }
+
+    if (data.user.role.toLowerCase() != 'admin') {
+      this.adminUsernameField.nativeElement.focus();
+      this.adminUsernameField.nativeElement.setCustomValidity('User found. But target user is not an admin');
+      this.adminUsernameField.nativeElement.reportValidity();
+      return;
+    }
+
+    // next menu
+    console.log('next menu');
+  }
+
   public adminLogin (): void {
     if (!this.validateAdminLoginInputs()) return;
 
@@ -76,9 +100,9 @@ export class SignupComponent {
     });
 
     this.http.post<any>('http://localhost:8080/user/login', loginAdmin, { headers, observe: 'response' }).subscribe({
-      next: (response) => {
+      next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
-          console.log(response);
+          this.handleResponseOkData(response.body.data);
         } else {
           this.showErrorAlert('An unexpected error occurred');
         }
@@ -112,6 +136,60 @@ export class SignupComponent {
             passwordField.setCustomValidity('');
           }, 1000);
         }
+      }
+    });
+  }
+
+  public onEmployeeSelectKeydown (event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+
+    this.employeeSearch();
+  }
+
+  public employeeSearch (): void {
+    if (!this.employeeId) {
+      this.employeeIdInput.nativeElement.setCustomValidity('Employee id is reqiured');
+      this.employeeIdInput.nativeElement.reportValidity();
+      return;
+    }
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+
+    this.http.get<any>(`http://localhost:8080/employee/${this.employeeId}`, { headers, observe: 'response' }).subscribe({
+      next: (response: HttpResponse<any>) => {
+        if (response.status === 200) {
+          if (!response.body.data) {
+            this.showErrorAlert('Invalid server response');
+            return;
+          }
+
+          const employeeData: any = response.body.data;
+
+          this.loadedEmployee = Employee.builder()
+            .name(employeeData.name)
+            .address(employeeData.address)
+            .phone(employeeData.phone)
+            .email(employeeData.email)
+            .build();
+        } else {
+          this.loadedEmployee = null;
+
+          this.showErrorAlert('An unexpected error occurred');
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loadedEmployee = null;
+
+        const errorMessage: string = error.status === 0 ?
+          'Failed to connect server' :
+          error.status === 401 ?  
+            'Failed to connect server. Try login again.' :
+            'An unexpected error occurred';
+
+        this.showErrorAlert(errorMessage);
       }
     });
   }

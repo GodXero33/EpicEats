@@ -2,6 +2,9 @@
 	<div id="signup-container">
 		<div class="header">Epic Eats</div>
 		<div class="header">Signup</div>
+		<div id="signup-navigation-control">
+			<div class="singup-navigate-step-btn">Back</div>
+		</div>
 
 		<div class="section-container">
 			<div class="signup-step first-note hide">
@@ -18,7 +21,8 @@
 					<button class="action" tabindex="1">Proceed</button>
 				</div>
 			</div>
-			<div class="signup-step">
+
+			<div class="signup-step hide">
 				<h1>Admin login</h1>
 				<br>
 				<p>Add admin username and password below and click login to continue.</p>
@@ -33,6 +37,33 @@
 					</div>
 					<button class="action" tabindex="0" (click)="adminLogin()">Login</button>
 				</div>
+			</div>
+
+			<div class="signup-step">
+				<h1>Employee select</h1>
+				<br>
+				<p>Select employee that needs to create user account by typing employee id in below text field and click search.</p>
+				<div class="form">
+					<div class="input">
+						<input type="number" placeholder="" min="1" [(ngModel)]="employeeId" #employeeIdInput (keydown)="onEmployeeSelectKeydown($event)">
+						<div class="label">Employee ID</div>
+					</div>
+					<button class="action" tabindex="0" (click)="employeeSearch()">Search</button>
+					<hr>
+				</div>
+				<div id="employee-details" *ngIf="loadedEmployee">
+					<div class="label"><span>Username</span><span>{{ loadedEmployee.name }}</span></div>
+					<div class="label"><span>Address</span><span>{{ loadedEmployee.address }}</span></div>
+					<div class="label"><span>Phone</span><span>{{ loadedEmployee.phone }}</span></div>
+					<div class="label"><span>Email</span><span>{{ loadedEmployee.email }}</span></div>
+
+					<div class="form">
+						<button class="action" tabindex="0" (click)="employeeSearch()">Confirm</button>
+					</div>
+				</div>
+				<br>
+				<p>If you are not able to enter employee id here somehow, first login as admin and there in employee section you can search employee by more specific details.</p>
+				<br>
 			</div>
 		</div>
 	</div>

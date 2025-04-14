@@ -59,8 +59,6 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("user/register", "user/login").permitAll()
 				.anyRequest().authenticated())
-			.exceptionHandling(exception -> exception
-				.authenticationEntryPoint(this.unauthorizedEntryPoint()))
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(Customizer.withDefaults())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
@@ -81,17 +79,5 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager getAuthenticationManager (AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();
-	}
-
-	private AuthenticationEntryPoint unauthorizedEntryPoint() {
-		return (request, response, authException) -> {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.setContentType("application/json");
-			try {
-				response.getWriter().write("{\"error\": \"Unauthorized: Invalid credentials or login required\"}");
-			} catch (IOException exception) {
-				this.logger.error(exception.getMessage());
-			}
-		};
 	}
 }
