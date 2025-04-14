@@ -21,8 +21,8 @@ class LoginUserBuilder {
 }
 
 export class LoginUser {
-	public username: string | null = null;
-	public password: string | null = null;
+	public username!: string;
+	public password!: string;
 
 	public static builder (): LoginUserBuilder {
 		return new LoginUserBuilder(new LoginUser());

@@ -48,13 +48,13 @@ class UserBuilder {
 }
 
 export class User {
-	public employeeId: number | null = null;
-	public username: string | null = null;
-	public password: string | null = null;
-	public createdAt: string | null = null;
-	public updatedAt: string | null = null;
-	public lastLogin: string | null = null;
-	public role: UserRole | null = null;
+	public employeeId!: number;
+	public username!: string;
+	public password!: string;
+	public createdAt!: string;
+	public updatedAt!: string;
+	public lastLogin!: string;
+	public role!: UserRole;
 
 	public static builder (): UserBuilder {
 		return new UserBuilder(new User());

@@ -8,9 +8,42 @@
 	height: 100%;
 }
 
+#signup-navigation-control {
+	position: absolute;
+	bottom: 0.5rem;
+	left: 0.5rem;
+	height: 2rem;
+	display: flex;
+	justify-content: center;
+
+	.singup-navigate-step-btn {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		padding: 0.4rem;
+		padding-inline: 1rem;
+		background-color: var(--action-button);
+		outline: none;
+		border: 2px solid hsl(from var(--action-button) h s calc(l * 1.1));
+		border-radius: 0.3rem;
+		cursor: pointer;
+		font-size: 0.8rem;
+		font-family: verdana;
+		color: var(--text-1);
+		transition: background-color 0.2s linear;
+	}
+
+	.singup-navigate-step-btn:hover {
+		background-color: hsla(from var(--action-button) h s calc(l * 1.1) / 0.2);
+	}
+}
+
 #signup-container {
 	position: relative;
 	padding: 1rem;
+	padding-bottom: 3rem;
 	top: 50%;
 	left: 50%;
 	width: clamp(200px, 100%, 500px);
@@ -35,6 +68,8 @@
 	.signup-step {
 		position: absolute;
 		padding-top: 2rem;
+		padding-inline: 0.5rem;
+		padding-bottom: 3rem;
 		top: 0;
 		left: 0;
 		width: 100%;
@@ -54,6 +89,7 @@
 			font-size: 0.9rem;
 			color: var(--text-1);
 			font-family: verdana;
+			text-indent: 1rem;
 		}
 	}
 
@@ -200,6 +236,30 @@
 			padding-inline: 2rem;
 			text-indent: 1rem;
 			font-size: 0.9rem;
+		}
+	}
+}
+
+#employee-details {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: fit-content;
+	font-family: verdana;
+
+	.label {
+		margin-block: 1rem;
+
+		span {
+			display: block;
+			color: var(--text-1);
+			font-size: 1rem;
+		}
+	
+		span:first-child {
+			color: var(--action-button);
+			font-size: 0.8rem;
 		}
 	}
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LoginUser } from '../../model/login-user.model';
@@ -59,7 +59,7 @@ export class LoginComponent implements OnInit {
     return true;
   }
 
-  public login () {
+  public login (): void {
     if (!this.validateInputs()) return;
 
     const loginUser: LoginUser = LoginUser.builder()
@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit {
     });
 
     this.http.post<any>('http://localhost:8080/user/login', loginUser, { headers, observe: 'response' }).subscribe({
-      next: (response) => {
+      next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
           this.authService.setToken(response.body.data.token, response.body.data.user.role);
           this.router.navigate(['/home']);

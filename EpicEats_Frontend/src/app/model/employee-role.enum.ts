@@ -1,0 +1,7 @@
+export enum EmployeeRole {
+	CASHIER = 'CASHIER',
+	MANAGER = 'MANAGER',
+	CHEF = 'CHEF',
+	WAITER = 'WAITER',
+	SUPERVISOR = 'SUPERVISOR'
+}

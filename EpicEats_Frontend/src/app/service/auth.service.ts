@@ -12,7 +12,7 @@ export class AuthService {
 		sessionStorage.setItem('userRole', role);
 	}
 
-	private getToken (): string | null {
+	public getToken (): string | null {
 		return sessionStorage.getItem('authToken');
 	}
 
