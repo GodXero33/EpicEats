@@ -7,6 +7,10 @@ import { Router } from "@angular/router";
 export class AuthService {
 	constructor (private router: Router) {}
 
+	public setToken (token: string): void {
+		sessionStorage.setItem('authToken', token);
+	}
+
 	private getToken (): string | null {
 		return sessionStorage.getItem('authToken');
 	}
