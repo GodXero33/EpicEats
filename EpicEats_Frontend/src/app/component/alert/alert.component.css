@@ -1,0 +1,41 @@
+@keyframes alert {
+	0% {
+		transform: translateY(100%);
+	}
+
+	5% {
+		transform: translateY(0);
+	}
+
+	95% {
+		transform: translateY(0);
+	}
+
+	100% {
+		transform: translateY(100%);
+	}
+}
+
+.alert {
+	position: fixed;
+	padding: 0.4rem;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: fit-content;
+	color: white;
+	animation: alert 4.5s linear 1;
+	animation-fill-mode: forwards;
+}
+
+.success {
+	background-color: green;
+}
+
+.error {
+	background-color: red;
+}
+
+.info {
+	background-color: dodgerblue;
+}

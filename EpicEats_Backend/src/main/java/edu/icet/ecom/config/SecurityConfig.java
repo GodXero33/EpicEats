@@ -1,7 +1,9 @@
 package edu.icet.ecom.config;
 
 import edu.icet.ecom.filter.JwtFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,12 +17,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -30,6 +34,7 @@ public class SecurityConfig {
 	private final UserDetailsService userDetailsService;
 	private final BCryptPasswordEncoder passwordEncoder;
 	private final JwtFilter jwtFilter;
+	private final Logger logger;
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource () {
@@ -54,7 +59,9 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("user/register", "user/login").permitAll()
 				.anyRequest().authenticated())
-			.formLogin(Customizer.withDefaults())
+			.exceptionHandling(exception -> exception
+				.authenticationEntryPoint(this.unauthorizedEntryPoint()))
+			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(Customizer.withDefaults())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
 			.addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -74,5 +81,17 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager getAuthenticationManager (AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();
+	}
+
+	private AuthenticationEntryPoint unauthorizedEntryPoint() {
+		return (request, response, authException) -> {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json");
+			try {
+				response.getWriter().write("{\"error\": \"Unauthorized: Invalid credentials or login required\"}");
+			} catch (IOException exception) {
+				this.logger.error(exception.getMessage());
+			}
+		};
 	}
 }

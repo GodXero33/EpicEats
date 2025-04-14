@@ -1,1 +1,40 @@
-<p>signup works!</p>
+<div id="signup-holder">
+	<div id="signup-container">
+		<div class="header">Epic Eats</div>
+		<div class="header">Signup</div>
+
+		<div class="section-container">
+			<div class="signup-step first-note hide">
+				<h1>Signup Access Notice</h1>
+				<ul>
+					<li>New accounts require admin approval.</li>
+					<li>You'll need an admin to log in first.</li>
+					<li>After that, we'll verify your employee record.</li>
+					<li>Then you can fill in your details to create your account.</li>
+				</ul>
+				<br>
+				<p>Click <b>Proceed</b> to continue the signup process.</p>
+				<div class="form">
+					<button class="action" tabindex="1">Proceed</button>
+				</div>
+			</div>
+			<div class="signup-step">
+				<h1>Admin login</h1>
+				<br>
+				<p>Add admin username and password below and click login to continue.</p>
+				<div class="form">
+					<div class="input">
+						<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="adminUsername" #adminUsernameInput (keydown)="onAdminLoginKeydown($event)">
+						<div class="label">Admin Username</div>
+					</div>
+					<div class="input">
+						<input type="password" placeholder="" [(ngModel)]="adminPassword" #adminPasswordInput (keydown)="onAdminLoginKeydown($event)">
+						<div class="label">Admin Password</div>
+					</div>
+					<button class="action" tabindex="0" (click)="adminLogin()">Login</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" />

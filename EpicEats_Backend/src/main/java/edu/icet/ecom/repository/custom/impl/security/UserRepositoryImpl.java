@@ -60,6 +60,25 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
+	public Response<UserEntity> getByUserNameForAuth (String name) {
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT username, role
+			FROM `user`
+			WHERE is_deleted = FALSE AND username = ?
+			""", name)) {
+			return resultSet.next() ?
+				new Response<>(UserEntity.builder()
+					.username(resultSet.getString(1))
+					.role(UserRole.fromName(resultSet.getString(2)))
+					.build(), ResponseType.FOUND) :
+				new Response<>(null, ResponseType.NOT_FOUND);
+		} catch (Exception exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
 	public Response<Boolean> isUsernameExist (String username) {
 		return this.isExistsByFieldName("username", username);
 	}
