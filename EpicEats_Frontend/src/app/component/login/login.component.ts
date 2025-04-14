@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LoginUser } from '../../model/login-user.type';
+import { LoginUser } from '../../model/login-user.model';
 import { Router } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../service/auth.service';
@@ -62,10 +62,11 @@ export class LoginComponent implements OnInit {
   public login () {
     if (!this.validateInputs()) return;
 
-    const loginUser: LoginUser = {
-      username: this.username,
-      password: this.password
-    };
+    const loginUser: LoginUser = LoginUser.builder()
+      .username(this.username)
+      .password(this.password)
+      .build();
+
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -120,12 +121,6 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    if (event.target === this.passwordField.nativeElement) {
-      if (this.authService.isAuthenticated()) {
-        this.router.navigate(['/home']);
-      } else {
-        this.login();
-      }
-    }
+    this.login();
   }
 }

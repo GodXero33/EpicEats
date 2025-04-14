@@ -43,6 +43,18 @@
 		overflow-y: auto;
 		scrollbar-width: thin;
 		scrollbar-color: var(--scrollbar-color) transparent;
+
+		h1 {
+			font-size: 1.3rem;
+			color: var(--header-1);
+			font-family: verdana;
+		}
+
+		p {
+			font-size: 0.9rem;
+			color: var(--text-1);
+			font-family: verdana;
+		}
 	}
 
 	.signup-step.hide {
@@ -52,12 +64,6 @@
 	}
 
 	.first-note {
-		h1 {
-			font-size: 1.3rem;
-			color: var(--header-1);
-			font-family: verdana;
-		}
-
 		ul {
 			margin-top: 1.5rem;
 			padding-left: 1.5rem;
@@ -69,12 +75,6 @@
 				margin-block: 0.8rem;
 				color: hsl(from var(--text-1) h s calc(l * 0.8));
 			}
-		}
-
-		p {
-			font-size: 0.7rem;
-			color: var(--text-1);
-			font-family: verdana;
 		}
 	}
 

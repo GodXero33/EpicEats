@@ -1,25 +1,5 @@
 <div id="signup-holder">
 	<div id="signup-container">
-		<!-- <div class="header">Epic Eats</div>
-		<div class="header">Signup</div>
-		<div class="form">
-			<div class="input">
-				<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="username" #usernameInput  (keydown)="onKeydown($event)">
-				<div class="label">Username</div>
-			</div>
-			<div class="input">
-				<input type="password" placeholder="" [(ngModel)]="password" #passwordInput (keydown)="onKeydown($event)">
-				<div class="label">Password</div>
-			</div>
-			<button class="action" tabindex="0" (click)="login()">Login</button>
-			<hr>
-		</div>
-		<div class="form">
-			<div class="title">Need to create an account?</div>
-			<p class="notice">This system only allows admin-level access. Before you click the button below, please contact your system administrator or have an authorized admin assist you in person.</p>
-			<button class="action" tabindex="1">Signup</button>
-		</div> -->
-		
 		<div class="header">Epic Eats</div>
 		<div class="header">Signup</div>
 
@@ -28,8 +8,8 @@
 				<h1>Signup Access Notice</h1>
 				<ul>
 					<li>New accounts require admin approval.</li>
-					<li>You’ll need an admin to log in first.</li>
-					<li>After that, we’ll verify your employee record.</li>
+					<li>You'll need an admin to log in first.</li>
+					<li>After that, we'll verify your employee record.</li>
 					<li>Then you can fill in your details to create your account.</li>
 				</ul>
 				<br>
@@ -38,8 +18,21 @@
 					<button class="action" tabindex="1">Proceed</button>
 				</div>
 			</div>
-			<div class="signup-step=">
-				
+			<div class="signup-step">
+				<h1>Admin login</h1>
+				<br>
+				<p>Add admin username and password below and click login to continue.</p>
+				<div class="form">
+					<div class="input">
+						<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="adminUsername" #adminUsernameInput (keydown)="onAdminLoginKeydown($event)">
+						<div class="label">Admin Username</div>
+					</div>
+					<div class="input">
+						<input type="password" placeholder="" [(ngModel)]="adminPassword" #adminPasswordInput (keydown)="onAdminLoginKeydown($event)">
+						<div class="label">Admin Password</div>
+					</div>
+					<button class="action" tabindex="0" (click)="adminLogin()">Login</button>
+				</div>
 			</div>
 		</div>
 	</div>
