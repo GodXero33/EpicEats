@@ -1,5 +1,6 @@
 package edu.icet.ecom.controller;
 
+import edu.icet.ecom.dto.security.TokenAndUser;
 import edu.icet.ecom.dto.security.User;
 import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
@@ -30,12 +31,14 @@ public class UserController {
 
 	@UserLoginApiDoc
 	@PostMapping("/login")
-	public CustomHttpResponse<String> login (@RequestBody User user) {
-		final Response<String> response = this.userService.verify(user);
+	public CustomHttpResponse<TokenAndUser> login (@RequestBody User user) {
+		final Response<TokenAndUser> response = this.userService.verify(user);
 
-		return response.getStatus() == ResponseType.SUCCESS ?
-			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Authorized") :
-			new CustomHttpResponse<>(HttpStatus.UNAUTHORIZED, null, "Unauthorized");
+		return switch (response.getStatus()) {
+			case SUCCESS -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Authorized");
+			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();
+			default -> new CustomHttpResponse<>(HttpStatus.UNAUTHORIZED, null, "Unauthorized");
+		};
 	}
 
 	@PostMapping("/register")
