@@ -123,4 +123,8 @@ export class LoginComponent implements OnInit {
 
     this.login();
   }
+
+  public signUpAction () {
+    this.router.navigate(['/signup']);
+  }
 }
