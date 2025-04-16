@@ -13,6 +13,12 @@ export class AuthService {
 		sessionStorage.setItem('username', username);
 	}
 
+	public isAdmin () {
+		const token: string | null = this.getToken();
+
+		return !token ? false : this.decodeToken(token).role.toLowerCase() === 'admin';
+	}
+
 	public getToken (): string | null {
 		return sessionStorage.getItem('authToken');
 	}
