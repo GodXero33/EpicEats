@@ -2,6 +2,7 @@ package edu.icet.ecom.filter;
 
 import edu.icet.ecom.service.custom.security.JWTService;
 import edu.icet.ecom.service.custom.security.CustomUserDetailsService;
+import edu.icet.ecom.util.enumaration.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -30,18 +33,20 @@ public class JwtFilter extends OncePerRequestFilter {
 		final String authHeader = request.getHeader("Authorization");
 		String token = null;
 		String username = null;
+		UserRole role = null;
 
 		if (authHeader != null && authHeader.startsWith("Bearer ")) {
 			token = authHeader.substring(7);
 
 			try {
 				username = this.jwtService.extractUsername(token);
+				role = this.jwtService.extractRole(token);
 			} catch (Exception exception) {
 				this.consoleLogger.warn("Invalid JWT token provided: {}", exception.getMessage());
 			}
 		}
 
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+		if (username != null && role != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 			final UserDetails userDetails = this.context.getBean(CustomUserDetailsService.class).loadUserByUsername(username);
 
 			if (userDetails == null) return;
@@ -50,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
 				final UsernamePasswordAuthenticationToken userToken = new UsernamePasswordAuthenticationToken(
 					userDetails,
 					null,
-					userDetails.getAuthorities()
+					List.of(new SimpleGrantedAuthority(role.name()))
 				);
 
 				userToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

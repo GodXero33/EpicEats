@@ -1,6 +1,7 @@
 package edu.icet.ecom.service.custom.impl.security;
 
 import edu.icet.ecom.service.custom.security.JWTService;
+import edu.icet.ecom.util.enumaration.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -23,23 +24,20 @@ import java.util.function.Function;
 public class JWTServiceImpl implements JWTService {
 	private final String secretKey;
 
-	public JWTServiceImpl () {
-		try {
-			final KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-			final SecretKey generatedSecretKey = keyGenerator.generateKey();
-			this.secretKey = Base64.getUrlEncoder().encodeToString(generatedSecretKey.getEncoded());
-		} catch (NoSuchAlgorithmException exception) {
-			throw new RuntimeException(exception);
-		}
+	public JWTServiceImpl () throws NoSuchAlgorithmException {
+		final KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+		final SecretKey generatedSecretKey = keyGenerator.generateKey();
+		this.secretKey = Base64.getUrlEncoder().encodeToString(generatedSecretKey.getEncoded());
 	}
 
 	@Override
-	public String generateToken (String adminName) {
+	public String generateToken (String adminName, UserRole role) {
 		final Map<String, Object> claims = new HashMap<>();
 
+		claims.put("role", role);
+
 		return Jwts.builder()
-			.claims()
-			.add(claims)
+			.claims().add(claims)
 			.subject(adminName)
 			.issuedAt(new Date(System.currentTimeMillis()))
 			.expiration(new Date(System.currentTimeMillis() + 3 * 60 * 60 * 1000))
@@ -49,8 +47,13 @@ public class JWTServiceImpl implements JWTService {
 	}
 
 	@Override
-	public String extractUsername(String token) {
+	public String extractUsername (String token) {
 		return this.extractClaim(token, Claims::getSubject);
+	}
+
+	@Override
+	public UserRole extractRole (String token) {
+		return this.extractClaim(token, claims -> UserRole.fromName(claims.get("role", String.class)));
 	}
 
 	private <T> T extractClaim (String token, Function<Claims, T> claimResolver) {
