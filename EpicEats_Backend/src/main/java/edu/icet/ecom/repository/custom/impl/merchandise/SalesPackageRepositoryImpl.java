@@ -5,7 +5,7 @@ import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;

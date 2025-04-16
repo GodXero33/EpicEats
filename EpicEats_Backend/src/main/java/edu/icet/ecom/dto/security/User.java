@@ -1,6 +1,6 @@
 package edu.icet.ecom.dto.security;
 
-import edu.icet.ecom.util.enumaration.UserRole;
+import edu.icet.ecom.util.enums.UserRole;
 import jakarta.validation.constraints.*;
 import lombok.*;
 

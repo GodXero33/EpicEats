@@ -8,7 +8,7 @@ import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.security.UserService;
 import edu.icet.ecom.service.custom.security.JWTService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LoginUser } from '../../model/login-user.model';
+import { LoginUser } from '../../model/security/login-user.model';
 import { Router } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../service/auth.service';

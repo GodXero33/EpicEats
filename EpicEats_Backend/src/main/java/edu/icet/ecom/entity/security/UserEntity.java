@@ -1,6 +1,6 @@
 package edu.icet.ecom.entity.security;
 
-import edu.icet.ecom.util.enumaration.UserRole;
+import edu.icet.ecom.util.enums.UserRole;
 import lombok.*;
 
 import java.time.LocalDateTime;

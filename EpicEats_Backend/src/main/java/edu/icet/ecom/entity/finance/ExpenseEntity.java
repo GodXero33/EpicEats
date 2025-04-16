@@ -1,6 +1,6 @@
 package edu.icet.ecom.entity.finance;
 
-import edu.icet.ecom.util.enumaration.ExpenseType;
+import edu.icet.ecom.util.enums.ExpenseType;
 import lombok.*;
 
 import java.time.LocalDate;

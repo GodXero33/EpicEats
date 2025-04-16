@@ -1,4 +1,4 @@
-import { EmployeeRole } from "./employee-role.enum";
+import { EmployeeRole } from "../../enum/employee-role.enum";
 
 class EmployeeBuilder {
 	private employee: Employee;

@@ -8,7 +8,7 @@ import edu.icet.ecom.entity.inventory.SuperInventoryPurchaseEntity;
 import edu.icet.ecom.repository.custom.inventory.InventoryPurchaseRepository;
 import edu.icet.ecom.service.custom.inventory.InventoryPurchaseService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;

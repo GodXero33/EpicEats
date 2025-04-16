@@ -1,1 +1,36 @@
-<p>employee works!</p>
+<div id="employee-cont">
+	<div class="side-navbar">
+		<div class="nav-section">
+			<div class="nav-title">
+				<div>Employee</div>
+				<input type="checkbox">
+			</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'add'" (click)="sideNavBarNavigateTo('add')">Add Employee</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'update'" (click)="sideNavBarNavigateTo('update')">Update Employee</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'terminate'" (click)="sideNavBarNavigateTo('terminate')">Terminate Employee</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'search'" (click)="sideNavBarNavigateTo('search')">Search Employee</div>
+		</div>
+		<div class="nav-section">
+			<div class="nav-title">
+				<div>Employee Shift</div>
+				<input type="checkbox" checked>
+			</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'shift-add'" (click)="sideNavBarNavigateTo('shift-add')">Add Employee Shift</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'shift-update'" (click)="sideNavBarNavigateTo('shift-update')">Update Employee Shift</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'shift-delete'" (click)="sideNavBarNavigateTo('shift-delete')">Delete Employee Shift</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'shift-search'" (click)="sideNavBarNavigateTo('shift-search')">Search Employee Shift</div>
+		</div>
+		<div class="nav-section">
+			<div class="nav-title">
+				<div>Employee Promotion</div>
+				<input type="checkbox" checked>
+			</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'promotion-update'" (click)="sideNavBarNavigateTo('promotion-update')">Update Employee Promotion</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'promotion-delete'" (click)="sideNavBarNavigateTo('promotion-delete')">Delete Employee Promotion</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'promotion-search'" (click)="sideNavBarNavigateTo('promotion-search')">Search Employee Promotion</div>
+		</div>
+	</div>
+	<div class="content-cont">
+		<router-outlet />
+	</div>
+</div>

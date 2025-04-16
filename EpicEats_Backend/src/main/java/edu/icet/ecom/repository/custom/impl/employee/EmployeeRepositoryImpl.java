@@ -2,14 +2,13 @@ package edu.icet.ecom.repository.custom.impl.employee;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
 import edu.icet.ecom.entity.employee.PromotionHistoryEntity;
-import edu.icet.ecom.entity.misc.CustomerEntity;
 import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.EmployeeRole;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.EmployeeRole;
+import edu.icet.ecom.util.enums.ResponseType;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;

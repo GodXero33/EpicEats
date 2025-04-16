@@ -1,4 +1,4 @@
-package edu.icet.ecom.util.enumaration;
+package edu.icet.ecom.util.enums;
 
 public enum ResponseType {
 	CREATED,

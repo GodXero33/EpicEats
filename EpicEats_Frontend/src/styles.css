@@ -17,16 +17,20 @@
 	--background-color: #161825;
 	--header-1: #ffffff;
 	--text-1: #ffffff;
+	--text-2: #000000;
 	--scrollbar-color: #ffffff;
 	--action-button: #ff7733;
+	--hue-l-1: 10;
 }
 
 :root:has( .main-nav input[type="checkbox"]:checked) { /* light */
 	--background-color: #cdd3ff;
 	--header-1: #000000;
 	--text-1: #000000;
+	--text-2: #ffffff;
 	--scrollbar-color: #000000;
 	--action-button: #ff7733;
+	--hue-l-1: 90;
 }
 
 * {
@@ -46,3 +50,207 @@ html, body {
 body {
 	background-color: var(--background-color);
 }
+
+.form {
+	position: relative;
+	padding-block: 1rem;
+	padding-inline: 1rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: fit-content;
+
+	.input {
+		position: relative;
+		margin-block: 1rem;
+		padding-top: 1rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: fit-content;
+		border-bottom: 2px solid var(--action-button);
+	}
+
+	.label {
+		position: absolute;
+		padding-left: 0.5rem;
+		padding-top: 1rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		font-size: 1.2rem;
+		font-family: verdana;
+		color: hsl(from var(--action-button) h s calc(l * 1.1));
+		transition: all 0.2s linear;
+	}
+
+	.input:has( input:focus), .input:has(input:not(:placeholder-shown)) {
+		.label {
+			font-size: 0.8rem;
+			height: 0.9rem;
+		}
+	}
+
+	.input input {
+		position: relative;
+		padding: 0.5rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		font-size: 1.2rem;
+		font-family: verdana;
+		color: var(--text-1);
+		outline: none;
+		border: none;
+		background-color: transparent;
+	}
+
+	.input:has( input:user-invalid) {
+		border-bottom: 2px solid #ff0000;
+	}
+
+	.action {
+		position: relative;
+		margin-block: 1rem;
+		padding: 0.4rem;
+		padding-inline: 1rem;
+		top: 0;
+		left: calc(100% - 1rem);
+		transform: translateX(-100%);
+		background-color: var(--action-button);
+		outline: none;
+		border: 2px solid hsl(from var(--action-button) h s calc(l * 1.1));
+		border-radius: 0.3rem;
+		cursor: pointer;
+		font-size: 1.1rem;
+		font-family: verdana;
+		color: var(--text-1);
+		transition: background-color 0.2s linear;
+	}
+
+	.action:hover {
+		background-color: hsla(from var(--action-button) h s calc(l * 1.1) / 0.2);
+	}
+
+	hr {
+		border: 0;
+		height: 0.5rem;
+		background-image: linear-gradient(90deg, transparent, hsl(from var(--background-color) h s calc(l * 2)), transparent);
+	}
+
+	.title, .notice {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		padding-inline: 1rem;
+		font-size: 1.1rem;
+		color: var(--header-1);
+	}
+
+	.notice {
+		margin-top: 1.2rem;
+		padding-inline: 2rem;
+		text-indent: 1rem;
+		font-size: 0.9rem;
+	}
+}
+
+.side-navbar {
+	border-right: 2px solid hsl(from var(--background-color) h s calc(l * 1.5));
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-color) transparent;
+
+	.nav-section {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: fit-content;
+		color: var(--text-1);
+		font-family: verdana;
+
+		& > * {
+			padding: 0.5rem;
+			display: grid;
+			align-items: center;
+			cursor: pointer;
+			overflow: hidden;
+		}
+
+		&:has( input:checked) .nav-btn {
+			height: 0;
+			padding: 0;
+			pointer-events: none;
+		}
+
+		.nav-title {
+			position: relative;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: fit-content;
+			border-block: 2px solid hsl(from var(--background-color) h s calc(l * 1.5));
+		}
+
+		.nav-title div {
+			position: relative;
+			padding-left: 0.2rem;
+			border-left: 0.3rem solid var(--text-1);
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: fit-content;
+			font-size: 0.9rem;
+		}
+
+		.nav-title input {
+			--webkit-appearance: none;
+			appearance: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			cursor: pointer;
+		}
+
+		.nav-btn {
+			position: relative;
+			padding-left: 1.5rem;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: fit-content;
+			font-size: 0.9rem;
+		}
+
+		.nav-btn.active {
+			background-color: hsl(from var(--background-color) h s calc(l + 20));
+		}
+
+		.nav-title, .nav-btn {
+			transition: background-color 0.2s linear;
+		}
+
+		.nav-title:hover {
+			background-color: hsl(from var(--action-button) h s calc(l * 1.1));
+		}
+
+		.nav-btn:not(.active):hover {
+			background-color: hsl(from var(--action-button) h s calc(l * 0.9));
+		}
+
+		&:has( input:checked) .nav-title:has( ~ .nav-btn.active) {
+			background-color: hsl(from var(--background-color) h s calc(l + 20));
+		}
+	}
+}
+

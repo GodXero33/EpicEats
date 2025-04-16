@@ -1,6 +1,6 @@
 package edu.icet.ecom.dto.employee;
 
-import edu.icet.ecom.util.enumaration.EmployeeRole;
+import edu.icet.ecom.util.enums.EmployeeRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

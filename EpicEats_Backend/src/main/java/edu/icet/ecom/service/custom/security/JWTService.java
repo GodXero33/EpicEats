@@ -1,6 +1,6 @@
 package edu.icet.ecom.service.custom.security;
 
-import edu.icet.ecom.util.enumaration.UserRole;
+import edu.icet.ecom.util.enums.UserRole;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JWTService {

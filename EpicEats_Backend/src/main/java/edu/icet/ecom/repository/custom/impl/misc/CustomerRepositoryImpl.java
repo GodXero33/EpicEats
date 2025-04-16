@@ -1,12 +1,10 @@
 package edu.icet.ecom.repository.custom.impl.misc;
 
-import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.entity.misc.CustomerEntity;
 import edu.icet.ecom.repository.custom.misc.CustomerRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.MenuItemCategory;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;

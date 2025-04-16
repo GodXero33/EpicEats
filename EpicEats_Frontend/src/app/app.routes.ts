@@ -10,6 +10,17 @@ import { FinanceComponent } from './component/finance/finance.component';
 import { MerchandiseComponent } from './component/merchandise/merchandise.component';
 import { RestaurantComponent } from './component/restaurant/restaurant.component';
 import { SettingsComponent } from './component/settings/settings.component';
+import { AddEmployeeComponent } from './component/employee/add-employee/add-employee.component';
+import { UpdateEmployeeComponent } from './component/employee/update-employee/update-employee.component';
+import { TerminateEmployeeComponent } from './component/employee/terminate-employee/terminate-employee.component';
+import { SearchEmployeeComponent } from './component/employee/search-employee/search-employee.component';
+import { AddEmployeeShiftComponent } from './component/employee/add-employee-shift/add-employee-shift.component';
+import { UpdateEmployeeShiftComponent } from './component/employee/update-employee-shift/update-employee-shift.component';
+import { DeleteEmployeeShiftComponent } from './component/employee/delete-employee-shift/delete-employee-shift.component';
+import { SearchEmployeeShiftComponent } from './component/employee/search-employee-shift/search-employee-shift.component';
+import { UpdateEmployeePromotionComponent } from './component/employee/update-employee-promotion/update-employee-promotion.component';
+import { DeleteEmployeePromotionComponent } from './component/employee/delete-employee-promotion/delete-employee-promotion.component';
+import { SearchEmployeePromotionComponent } from './component/employee/search-employee-promotion/search-employee-promotion.component';
 
 export const routes: Routes = [
 	{
@@ -32,7 +43,70 @@ export const routes: Routes = [
 	{
 		path: 'employee',
 		component: EmployeeComponent,
-		canActivate: [AuthGuard]
+		canActivate: [AuthGuard],
+		data: { adminOnly: true },
+		children: [
+			{
+				path: '',
+				component: AddEmployeeComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'add',
+				component: AddEmployeeComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'update',
+				component: UpdateEmployeeComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'terminate',
+				component: TerminateEmployeeComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'search',
+				component: SearchEmployeeComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'shift-add',
+				component: AddEmployeeShiftComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'shift-update',
+				component: UpdateEmployeeShiftComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'shift-delete',
+				component: DeleteEmployeeShiftComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'shift-search',
+				component: SearchEmployeeShiftComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'promotion-update',
+				component: UpdateEmployeePromotionComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'promotion-delete',
+				component: DeleteEmployeePromotionComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'promotion-search',
+				component: SearchEmployeePromotionComponent,
+				canActivate: [AuthGuard]
+			}
+		]
 	},
 	{
 		path: 'order',

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -10,16 +11,16 @@ export class HomeComponent {
   public username: string = 'sathish';
   public greet: string = '';
 
-  constructor () {
+  constructor (private authService: AuthService) {
     this.updateGreet();
-    setInterval(this.updateGreet, 1 * 60 * 1000);
+    setInterval(this.updateGreet.bind(this), 1 * 60 * 1000);
   }
 
   private updateGreet () {
     const hours = new Date().getHours();
-    const username = sessionStorage.getItem('username');
+    const username = this.authService.getUsername();
 
     this.greet = hours <= 12 ? 'Morning' : hours <= 15 ? 'Afternoon' : 'evening';
-    this.username = username ? username : '';
+    this.username = username ? username : 'mate';
   }
 }

@@ -2,13 +2,13 @@ import { Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angu
 import { AlertComponent } from '../alert/alert.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { LoginUser } from '../../model/login-user.model';
+import { LoginUser } from '../../model/security/login-user.model';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Employee } from '../../model/employee.model';
+import { Employee } from '../../model/employee/employee.model';
 import { AuthService } from '../../service/auth.service';
-import { User } from '../../model/user.model';
-import { UserRole } from '../../model/user-role.enum';
+import { User } from '../../model/security/user.model';
+import { UserRole } from '../../enum/user-role.enum';
 
 @Component({
   selector: 'app-signup',

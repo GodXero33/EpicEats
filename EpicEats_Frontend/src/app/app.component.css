@@ -26,6 +26,10 @@ nav {
 	display: flex;
 	justify-content: center;
 	gap: 1px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-color) transparent;
 
 	.nav-btn {
 		position: relative;
@@ -43,7 +47,7 @@ nav {
 		&::after {
 			content: '';
 			position: absolute;
-			top: 100%;
+			top: calc(100% - 0.1rem);
 			left: 50%;
 			width: 0;
 			height: 0.1rem;

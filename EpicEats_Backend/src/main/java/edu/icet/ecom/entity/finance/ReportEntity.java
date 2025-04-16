@@ -1,7 +1,7 @@
 package edu.icet.ecom.entity.finance;
 
 import edu.icet.ecom.entity.employee.EmployeeEntity;
-import edu.icet.ecom.util.enumaration.ReportType;
+import edu.icet.ecom.util.enums.ReportType;
 import lombok.*;
 
 import java.time.LocalDate;

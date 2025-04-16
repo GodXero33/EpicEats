@@ -8,7 +8,7 @@ import edu.icet.ecom.entity.merchandise.SuperSalesPackageEntity;
 import edu.icet.ecom.repository.custom.merchandise.SalesPackageRepository;
 import edu.icet.ecom.service.custom.merchandise.SalesPackageService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;

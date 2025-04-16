@@ -2,7 +2,7 @@ package edu.icet.ecom.filter;
 
 import edu.icet.ecom.service.custom.security.JWTService;
 import edu.icet.ecom.service.custom.security.CustomUserDetailsService;
-import edu.icet.ecom.util.enumaration.UserRole;
+import edu.icet.ecom.util.enums.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
