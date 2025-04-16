@@ -17,16 +17,20 @@
 	--background-color: #161825;
 	--header-1: #ffffff;
 	--text-1: #ffffff;
+	--text-2: #000000;
 	--scrollbar-color: #ffffff;
 	--action-button: #ff7733;
+	--hue-l-1: 10;
 }
 
 :root:has( .main-nav input[type="checkbox"]:checked) { /* light */
 	--background-color: #cdd3ff;
 	--header-1: #000000;
 	--text-1: #000000;
+	--text-2: #ffffff;
 	--scrollbar-color: #000000;
 	--action-button: #ff7733;
+	--hue-l-1: 90;
 }
 
 * {

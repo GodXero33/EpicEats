@@ -23,17 +23,6 @@ export class AppComponent {
   @ViewChild('restaurantNavBtn') restaurantNavBtn!: ElementRef;
   @ViewChild('settingsNavBtn') settingsNavBtn!: ElementRef;
 
-  private navRouteMatchers = [
-    { match: '/home', getRef: () => this.homeNavBtn },
-    { match: '/employee', getRef: () => this.employeeNavBtn },
-    { match: '/order', getRef: () => this.orderNavBtn },
-    { match: '/inventory', getRef: () => this.inventoryNavBtn },
-    { match: '/finance', getRef: () => this.financeNavBtn },
-    { match: '/merchandise', getRef: () => this.merchandiseNavBtn },
-    { match: '/restaurant', getRef: () => this.restaurantNavBtn },
-    { match: '/settings', getRef: () => this.settingsNavBtn },
-  ];
-
   @ViewChild('homeNavBtn') set _currentNavBtn (reference: ElementRef) {
     if (reference) this.currentNavBtn = reference.nativeElement;
   }
