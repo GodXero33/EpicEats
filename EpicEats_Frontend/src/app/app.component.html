@@ -1,13 +1,13 @@
 <nav class="main-nav">
 	<div *ngIf = "showNavbar" id="navbar-button-container">
 		<div class="nav-btn active" #homeNavBtn><span (click)="navBarNavigateTo('home', homeNavBtn)">Home</span></div>
-		<div class="nav-btn" *ngIf="isAdmin" #employeeNavBtn><span (click)="navBarNavigateTo('home', employeeNavBtn)">Employee</span></div>
-		<div class="nav-btn" #orderNavBtn><span (click)="navBarNavigateTo('home', orderNavBtn)">Order</span></div>
-		<div class="nav-btn" #inventoryNavBtn><span (click)="navBarNavigateTo('home', inventoryNavBtn)">Inventory</span></div>
-		<div class="nav-btn" #financeNavBtn><span (click)="navBarNavigateTo('home', financeNavBtn)">Finance</span></div>
-		<div class="nav-btn" #merchandiseNavBtn><span (click)="navBarNavigateTo('home', merchandiseNavBtn)">Merchandise</span></div>
-		<div class="nav-btn" #restaurantNavBtn><span (click)="navBarNavigateTo('home', restaurantNavBtn)">Restaurant</span></div>
-		<div class="nav-btn" #settingsNavBtn><span (click)="navBarNavigateTo('home', settingsNavBtn)">Settings</span></div>
+		<div class="nav-btn" *ngIf="isAdmin" #employeeNavBtn><span (click)="navBarNavigateTo('employee', employeeNavBtn)">Employee</span></div>
+		<div class="nav-btn" #orderNavBtn><span (click)="navBarNavigateTo('order', orderNavBtn)">Order</span></div>
+		<div class="nav-btn" #inventoryNavBtn><span (click)="navBarNavigateTo('inventory', inventoryNavBtn)">Inventory</span></div>
+		<div class="nav-btn" #financeNavBtn><span (click)="navBarNavigateTo('finance', financeNavBtn)">Finance</span></div>
+		<div class="nav-btn" #merchandiseNavBtn><span (click)="navBarNavigateTo('merchandise', merchandiseNavBtn)">Merchandise</span></div>
+		<div class="nav-btn" #restaurantNavBtn><span (click)="navBarNavigateTo('restaurant', restaurantNavBtn)">Restaurant</span></div>
+		<div class="nav-btn" #settingsNavBtn><span (click)="navBarNavigateTo('settings', settingsNavBtn)">Settings</span></div>
 	</div>
 	<div id="navbar-theme-input-container">
 		<input type="checkbox" id="theme-toggle" title="theme">
