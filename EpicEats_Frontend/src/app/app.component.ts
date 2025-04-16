@@ -12,6 +12,7 @@ import { AuthService } from './service/auth.service';
 export class AppComponent {
   public showNavbar: boolean = true;
   public isAdmin: boolean = false;
+  public currentRoute: string | null = null;
   private currentNavBtn!: HTMLElement;
   @ViewChild('homeNavBtn') homeNavBtn!: ElementRef;
   @ViewChild('employeeNavBtn') employeeNavBtn!: ElementRef;
@@ -37,33 +38,24 @@ export class AppComponent {
     if (reference) this.currentNavBtn = reference.nativeElement;
   }
 
+  private logout (): void { // remove this after all
+    this.authService.logout();
+  }
+
   constructor (private authService: AuthService, private router: Router) {
+    (window as any).logout = this.logout.bind(this); // remove this after all
+
     this.router.events.subscribe(event => {
       const navHidePaths: Array<String> = ['', '/login', '/signup'];
-      const routerUrl: string = this.router.url;
 
       if (event instanceof NavigationEnd) {
-        this.showNavbar = !navHidePaths.includes(routerUrl);
+        this.showNavbar = !navHidePaths.includes(event.url);
         this.isAdmin = this.authService.isAdmin();
 
-        if (routerUrl !== '/signup' && !this.authService.isAuthenticated())
+        if (event.url !== '/signup' && !this.authService.isAuthenticated())
           this.router.navigate(['/login']);
 
-        const matched = this.navRouteMatchers.find(m => routerUrl.startsWith(m.match));
-
-        if (matched) {
-          const newBtnRef: ElementRef = matched.getRef();
-
-          if (!newBtnRef) return;
-
-          const newBtn: HTMLElement = matched.getRef().nativeElement;
-
-          if (this.currentNavBtn) this.currentNavBtn.classList.remove('active');
-
-          newBtn.classList.add('active');
-
-          this.currentNavBtn = newBtn;
-        }
+        this.currentRoute = event.url.split('/')[1];
       }
     });
   }

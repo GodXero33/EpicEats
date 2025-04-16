@@ -13,7 +13,7 @@ export class HomeComponent {
 
   constructor (private authService: AuthService) {
     this.updateGreet();
-    setInterval(this.updateGreet, 1 * 60 * 1000);
+    setInterval(this.updateGreet.bind(this), 1 * 60 * 1000);
   }
 
   private updateGreet () {
@@ -21,6 +21,6 @@ export class HomeComponent {
     const username = this.authService.getUsername();
 
     this.greet = hours <= 12 ? 'Morning' : hours <= 15 ? 'Afternoon' : 'evening';
-    this.username = username ? username : '';
+    this.username = username ? username : 'mate';
   }
 }
