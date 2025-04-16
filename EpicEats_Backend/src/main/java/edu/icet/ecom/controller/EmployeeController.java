@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/employee")
+@PreAuthorize("hasAuthority('ADMIN')")
 @Tag(name = "Employee Management", description = "APIs for managing employees")
 public class EmployeeController {
 	private final EmployeeService employeeService;

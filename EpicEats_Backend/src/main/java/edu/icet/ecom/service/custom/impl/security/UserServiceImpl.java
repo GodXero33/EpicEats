@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
 		return authentication.isAuthenticated() ?
 			new Response<>(TokenAndUser.builder()
 				.user(this.mapper.map(response.getData(), User.class))
-				.token(this.jwtService.generateToken(user.getUsername()))
+				.token(this.jwtService.generateToken(user.getUsername(), response.getData().getRole()))
 				.build(), ResponseType.SUCCESS) :
 			new Response<>(null, ResponseType.FAILED);
 	}

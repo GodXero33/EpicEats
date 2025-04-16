@@ -21,7 +21,7 @@
 	--action-button: #ff7733;
 }
 
-:root:has( #navbar-theme-input-container input:checked) { /* light */
+:root:has( .main-nav input[type="checkbox"]:checked) { /* light */
 	--background-color: #cdd3ff;
 	--header-1: #000000;
 	--text-1: #000000;
@@ -45,69 +45,4 @@ html, body {
 
 body {
 	background-color: var(--background-color);
-}
-
-nav {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: var(--navbar-height);
-	z-index: 10000;
-	display: flex;
-	flex-direction: row;
-
-	div {
-		position: relative;
-		top: 0;
-		left: 0;
-		height: var(--navbar-height);
-	}
-}
-
-#navbar-button-container {
-	flex-grow: 1;
-}
-
-#navbar-theme-input-container {
-	padding: 0.4rem;
-	aspect-ratio: 1 / 1;
-	width: var(--navbar-height);
-	margin-left: auto;
-	align-self: flex-end;
-
-	input {
-		-webkit-appearance: none;
-		appearance: none;
-		position: relative;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background-image: url(../public/img/moon.png);
-		background-size: 80% 80%;
-		background-position: center center;
-		cursor: pointer;
-		filter: invert(100%);
-		transition: transform 0.2s linear;
-	}
-
-	input:checked {
-		background-image: url(../public/img/summer.png);
-		filter: invert(0);
-	}
-
-	input:hover {
-		transform: rotate(90deg);
-	}
-
-	@media (prefers-color-scheme: light) {
-		input {
-			filter: invert(0);
-		}
-
-		input:checked {
-			filter: invert(100%);
-		}
-	}
 }

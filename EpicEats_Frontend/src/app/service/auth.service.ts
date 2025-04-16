@@ -9,12 +9,27 @@ export class AuthService {
 
 	public setToken (token: string, role: string, username: string): void {
 		sessionStorage.setItem('authToken', token);
-		sessionStorage.setItem('userRole', role);
-		sessionStorage.setItem('username', username);
+	}
+
+	public isAdmin () {
+		const role: string | null = this.getRole();
+		return role != null && role.toLowerCase() === 'admin';
 	}
 
 	public getToken (): string | null {
 		return sessionStorage.getItem('authToken');
+	}
+
+	public getUsername (): string | null {
+		const token: string | null = this.getToken();
+
+		return !token ? null : this.decodeToken(token).sub;
+	}
+
+	public getRole (): string | null {
+		const token: string | null = this.getToken();
+
+		return !token ? null : this.decodeToken(token).role;
 	}
 
 	private isTokenExpired (): boolean {
@@ -36,7 +51,6 @@ export class AuthService {
 
 	public logout (): void {
 		sessionStorage.removeItem('authToken');
-		sessionStorage.removeItem('userRole');
 		this.router.navigate(['/login']);
 	}
 }

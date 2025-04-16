@@ -27,6 +27,8 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 	public UserDetails loadUserByUsername (String username) throws UsernameNotFoundException {
 		final Response<UserEntity> response = this.userRepository.getByUserName(username);
 
+		if (response.getStatus() == ResponseType.SERVER_ERROR) return null;
+
 		if (response.getStatus() == ResponseType.NOT_FOUND) {
 			this.logger.warn("Requested user not found: {}", username);
 			return null;
