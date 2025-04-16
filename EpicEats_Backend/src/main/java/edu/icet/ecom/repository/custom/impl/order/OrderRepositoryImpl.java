@@ -11,7 +11,7 @@ import edu.icet.ecom.repository.custom.order.OrderRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.DateTimeUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;

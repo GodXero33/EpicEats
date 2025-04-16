@@ -1,6 +1,6 @@
 package edu.icet.ecom.entity.merchandise;
 
-import edu.icet.ecom.util.enumaration.MenuItemCategory;
+import edu.icet.ecom.util.enums.MenuItemCategory;
 import lombok.*;
 
 @Getter

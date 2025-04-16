@@ -1,6 +1,6 @@
 package edu.icet.ecom.dto.finance;
 
-import edu.icet.ecom.util.enumaration.ReportType;
+import edu.icet.ecom.util.enums.ReportType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

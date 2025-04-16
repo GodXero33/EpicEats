@@ -4,8 +4,8 @@ import edu.icet.ecom.entity.merchandise.MenuItemEntity;
 import edu.icet.ecom.repository.custom.merchandise.MenuItemRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.MenuItemCategory;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.MenuItemCategory;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor

@@ -4,7 +4,7 @@ import edu.icet.ecom.entity.inventory.SupplierEntity;
 import edu.icet.ecom.repository.custom.inventory.SupplierRepository;
 import edu.icet.ecom.util.CrudUtil;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;

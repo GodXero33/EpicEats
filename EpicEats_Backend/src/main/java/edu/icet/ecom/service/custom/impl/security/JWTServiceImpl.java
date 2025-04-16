@@ -1,7 +1,7 @@
 package edu.icet.ecom.service.custom.impl.security;
 
 import edu.icet.ecom.service.custom.security.JWTService;
-import edu.icet.ecom.util.enumaration.UserRole;
+import edu.icet.ecom.util.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

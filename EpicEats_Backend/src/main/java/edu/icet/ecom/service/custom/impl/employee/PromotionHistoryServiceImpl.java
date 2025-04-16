@@ -10,7 +10,7 @@ import edu.icet.ecom.repository.custom.employee.PromotionHistoryRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.employee.PromotionHistoryService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;

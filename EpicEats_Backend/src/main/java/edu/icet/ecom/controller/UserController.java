@@ -6,7 +6,7 @@ import edu.icet.ecom.util.ControllerResponseUtil;
 import edu.icet.ecom.util.CustomHttpResponse;
 import edu.icet.ecom.service.custom.security.UserService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import edu.icet.ecom.config.apidoc.security.user.UserDeleteApiDoc;
 import edu.icet.ecom.config.apidoc.security.user.UserLoginApiDoc;
 import edu.icet.ecom.config.apidoc.security.user.UserRegisterApiDoc;

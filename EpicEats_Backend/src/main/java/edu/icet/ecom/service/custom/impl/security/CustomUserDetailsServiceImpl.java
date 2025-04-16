@@ -6,7 +6,7 @@ import edu.icet.ecom.entity.security.UserEntity;
 import edu.icet.ecom.repository.custom.security.UserRepository;
 import edu.icet.ecom.service.custom.security.CustomUserDetailsService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;

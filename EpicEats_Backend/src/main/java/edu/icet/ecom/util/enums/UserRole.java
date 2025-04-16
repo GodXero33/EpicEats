@@ -1,4 +1,4 @@
-package edu.icet.ecom.util.enumaration;
+package edu.icet.ecom.util.enums;
 
 import java.util.Arrays;
 

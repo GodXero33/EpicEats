@@ -8,7 +8,7 @@ import edu.icet.ecom.entity.order.SuperOrderEntity;
 import edu.icet.ecom.repository.custom.order.OrderRepository;
 import edu.icet.ecom.service.custom.order.OrderService;
 import edu.icet.ecom.util.Response;
-import edu.icet.ecom.util.enumaration.ResponseType;
+import edu.icet.ecom.util.enums.ResponseType;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
