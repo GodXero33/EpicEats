@@ -2,12 +2,13 @@
 	<div id="signup-container">
 		<div class="header">Epic Eats</div>
 		<div class="header">Signup</div>
-		<div id="signup-navigation-control">
-			<div class="singup-navigate-step-btn">Back</div>
+		<br>
+		<div id="signup-navigation-control" *ngIf="!signupOk">
+			<div class="singup-navigate-step-btn" (click)="signupStepBack()">Back</div>
 		</div>
 
 		<div class="section-container">
-			<div class="signup-step first-note hide">
+			<div class="signup-step first-note" #signupStep>
 				<h1>Signup Access Notice</h1>
 				<ul>
 					<li>New accounts require admin approval.</li>
@@ -18,37 +19,37 @@
 				<br>
 				<p>Click <b>Proceed</b> to continue the signup process.</p>
 				<div class="form">
-					<button class="action" tabindex="1">Proceed</button>
+					<button class="action" tabindex="-1" (click)="firstSignupStepProceed()">Proceed</button>
 				</div>
 			</div>
 
-			<div class="signup-step hide">
+			<div class="signup-step hide" #signupStep>
 				<h1>Admin login</h1>
 				<br>
-				<p>Add admin username and password below and click login to continue.</p>
+				<p>Enter the admin username and password below, then click <b>Login</b> to continue.</p>
 				<div class="form">
 					<div class="input">
-						<input type="text" spellcheck="false" autocomplete="off" placeholder="" [(ngModel)]="adminUsername" #adminUsernameInput (keydown)="onAdminLoginKeydown($event)">
+						<input type="text" spellcheck="false" autocomplete="off" placeholder="" tabindex="-1" [(ngModel)]="adminUsername" #adminUsernameInput (keydown)="onAdminLoginKeydown($event)">
 						<div class="label">Admin Username</div>
 					</div>
 					<div class="input">
-						<input type="password" placeholder="" [(ngModel)]="adminPassword" #adminPasswordInput (keydown)="onAdminLoginKeydown($event)">
+						<input type="password" placeholder="" [(ngModel)]="adminPassword" tabindex="-1" #adminPasswordInput (keydown)="onAdminLoginKeydown($event)">
 						<div class="label">Admin Password</div>
 					</div>
 					<button class="action" tabindex="0" (click)="adminLogin()">Login</button>
 				</div>
 			</div>
 
-			<div class="signup-step">
+			<div class="signup-step hide" #signupStep>
 				<h1>Employee select</h1>
 				<br>
-				<p>Select employee that needs to create user account by typing employee id in below text field and click search.</p>
+				<p>Enter the employee ID below for the user who needs an account, then click <b>Search</b>.</p>
 				<div class="form">
 					<div class="input">
-						<input type="number" placeholder="" min="1" [(ngModel)]="employeeId" #employeeIdInput (keydown)="onEmployeeSelectKeydown($event)">
+						<input type="number" placeholder="" min="1" [(ngModel)]="employeeId" tabindex="-1" #employeeIdInput (keydown)="onEmployeeSelectKeydown($event)">
 						<div class="label">Employee ID</div>
 					</div>
-					<button class="action" tabindex="0" (click)="employeeSearch()">Search</button>
+					<button class="action" tabindex="-1" (click)="employeeSearch()">Search</button>
 					<hr>
 				</div>
 				<div id="employee-details" *ngIf="loadedEmployee">
@@ -58,14 +59,51 @@
 					<div class="label"><span>Email</span><span>{{ loadedEmployee.email }}</span></div>
 
 					<div class="form">
-						<button class="action" tabindex="0" (click)="employeeSearch()">Confirm</button>
+						<button class="action" tabindex="0" (click)="employeeConfirm()" tabindex="-1" #employeeConfirmBtn>Confirm</button>
 					</div>
 				</div>
 				<br>
-				<p>If you are not able to enter employee id here somehow, first login as admin and there in employee section you can search employee by more specific details.</p>
+				<p>If you're unable to enter the employee ID here, log in as an admin and search for the employee in the employee section using more specific details.</p>
 				<br>
+			</div>
+
+			<div class="signup-step hide" #signupStep>
+				<h1>User Datails</h1>
+				<br>
+				<p>Complete the form below with the new user's information, then click <b>Signup</b>.</p>
+				<div class="form">
+					<div class="input">
+						<input type="text" placeholder="" autocomplete="off" spellcheck="false" tabindex="-1" [(ngModel)]="signupUserUsername" #signupUserUsernameField (keydown)="onUserSignupKeyDown($event)">
+						<div class="label">Username</div>
+					</div>
+					<div class="input">
+						<input type="password" placeholder="" [(ngModel)]="signupUserPassword" tabindex="-1" #signupUserPasswordField (keydown)="onUserSignupKeyDown($event)">
+						<div class="label">Password</div>
+					</div>
+					<div class="input">
+						<input type="password" placeholder="" [(ngModel)]="signupUserConfirmPassword" tabindex="-1" #signupUserConfirmPasswordField (keydown)="onUserSignupKeyDown($event)">
+						<div class="label">Confirm Password</div>
+					</div>
+					<div class="select-input">
+						<select name="" id="" [(ngModel)]="signupUserRole" tabindex="-1" #signupUserRoleSelect>
+							<option value="ADMIN">Admin</option>
+							<option value="EMPLOYEE">Employee</option>
+						</select>
+					</div>
+					<button class="action" tabindex="-1" (click)="newUserSignup()">Signup</button>
+				</div>
+			</div>
+
+			<div class="signup-step hide" #signupStep>
+				<h1>Signup proccess done</h1>
+				<br>
+				<p>Please log in again using the new account. Click <b>OK</b> to go to the login page.</p>
+				<div class="form">
+					<button class="action" tabindex="-1" (click)="backToLogin()">Ok</button>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 <app-alert *ngIf="errorMessage" type="error" [message]="errorMessage" />
+<app-alert *ngIf="infoMessage" type="info" [message]="infoMessage" />
