@@ -39,22 +39,27 @@ export class AppComponent {
 
   constructor (private authService: AuthService, private router: Router) {
     this.router.events.subscribe(event => {
-      const navHidePaths = ['', '/login', '/signup'];
+      const navHidePaths: Array<String> = ['', '/login', '/signup'];
+      const routerUrl: string = this.router.url;
 
       if (event instanceof NavigationEnd) {
-        this.showNavbar = !navHidePaths.includes(this.router.url);
+        this.showNavbar = !navHidePaths.includes(routerUrl);
         this.isAdmin = this.authService.isAdmin();
 
-        if (this.router.url !== '/signup' && !this.authService.isAuthenticated())
+        if (routerUrl !== '/signup' && !this.authService.isAuthenticated())
           this.router.navigate(['/login']);
 
-        const matched = this.navRouteMatchers.find(m => this.router.url.startsWith(m.match));
-        
+        const matched = this.navRouteMatchers.find(m => routerUrl.startsWith(m.match));
+
         if (matched) {
-          const newBtn = matched.getRef().nativeElement;
+          const newBtnRef: ElementRef = matched.getRef();
+
+          if (!newBtnRef) return;
+
+          const newBtn: HTMLElement = matched.getRef().nativeElement;
 
           if (this.currentNavBtn) this.currentNavBtn.classList.remove('active');
-          
+
           newBtn.classList.add('active');
 
           this.currentNavBtn = newBtn;
