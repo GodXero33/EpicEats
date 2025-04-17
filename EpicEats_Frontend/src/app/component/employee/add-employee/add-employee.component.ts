@@ -5,6 +5,7 @@ import { Employee } from '../../../model/employee/employee.model';
 import { EmployeeRole } from '../../../enum/employee-role.enum';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { AuthService } from '../../../service/auth.service';
+import { ApiService } from '../../../service/api.service';
 
 @Component({
   selector: 'app-add-employee',
@@ -31,7 +32,7 @@ export class AddEmployeeComponent {
   @ViewChild('roleSelect') roleSelect!: ElementRef;
   @ViewChild('dobField') dobField!: ElementRef;
 
-  constructor (private http: HttpClient, private authService: AuthService) {
+  constructor (private apiService: ApiService) {
     const today: Date = new Date();
 
     const subtractYears = (date: Date, years: number): Date => {
@@ -87,18 +88,13 @@ export class AddEmployeeComponent {
       .dob(this.dob)
       .build();
 
-      const headers = new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.authService.getToken()}`
+      this.apiService.post('/employee', newEmployee).subscribe({
+        next: (response) => {
+          console.log(response);
+        },
+        error: (error) => {
+          console.error(error.message);
+        }
       });
-
-    this.http.post<any>('http://localhost:8080/employee/', newEmployee, { headers }).subscribe({
-      next: (response: HttpResponse<any>) => {
-        console.log(response.body);
-      },
-      error: (error: HttpErrorResponse) => {
-        console.log(error.error.message);
-      }
-    });
   }
 }
