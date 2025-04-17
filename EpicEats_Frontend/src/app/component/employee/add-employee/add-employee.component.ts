@@ -3,8 +3,6 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Employee } from '../../../model/employee/employee.model';
 import { EmployeeRole } from '../../../enum/employee-role.enum';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { AuthService } from '../../../service/auth.service';
 import { ApiService } from '../../../service/api.service';
 
 @Component({
@@ -14,9 +12,9 @@ import { ApiService } from '../../../service/api.service';
   styleUrl: './add-employee.component.css'
 })
 export class AddEmployeeComponent {
-  public name: string = 'shan';
-  public phone: string = '0770110488';
-  public email: string = 'shansathish33@gmail.com';
+  public name: string = '';
+  public phone: string = '';
+  public email: string = '';
   public address: string = '';
   public salary: number = 0;
   public role: string = 'CASHIER';
