@@ -86,13 +86,48 @@ export class AddEmployeeComponent {
       .dob(this.dob)
       .build();
 
-      this.apiService.post('/employee', newEmployee).subscribe({
-        next: (response) => {
-          console.log(response);
-        },
-        error: (error) => {
-          console.error(error.message);
-        }
-      });
+    this.apiService.post('/employee', newEmployee).subscribe({
+      next: () => {
+        this.clearInputs();
+      },
+      error: (error) => {
+        console.error(error.message);
+      }
+    });
+  }
+
+  private clearInputs (): void {
+    this.name = '';
+    this.phone = '';
+    this.email = '';
+    this.address = '';
+    this.salary = 0;
+    this.role = 'CASHIER';
+    this.dob = this.maxDateForDOB;
+  }
+
+  public onKeydown (event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+
+    const target: EventTarget | null = event.target;
+
+    if (target == this.nameField.nativeElement) {
+      this.phoneField.nativeElement.focus();
+      return;
+    }
+
+    if (target == this.phoneField.nativeElement) {
+      this.emailField.nativeElement.focus();
+      return;
+    }
+
+    if (target == this.emailField.nativeElement) {
+      this.addressField.nativeElement.focus();
+      return;
+    }
+
+    if (target == this.addressField.nativeElement) {
+      this.salaryField.nativeElement.focus();
+    }
   }
 }
