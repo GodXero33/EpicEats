@@ -35,7 +35,7 @@ public class OrderController {
 	private final MenuItemService menuItemService;
 
 	@OrderAddApiDoc
-	@PostMapping("/")
+	@PostMapping("")
 	public CustomHttpResponse<Order> add (@Valid @RequestBody OrderLite order, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 

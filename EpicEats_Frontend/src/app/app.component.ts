@@ -1,19 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './service/auth.service';
+import { AlertCommunicationService } from './service/alert-communication.service';
+import { Subscription } from 'rxjs';
+import { AlertComponent } from './component/alert/alert.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, AlertComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   public showNavbar: boolean = true;
   public isAdmin: boolean = false;
   public currentRoute: string | null = null;
-  private currentNavBtn!: HTMLElement;
+  public errorAlert: string = '';
+  public infoAlert: string = '';
+  private alertSubscription!: Subscription;
   @ViewChild('homeNavBtn') homeNavBtn!: ElementRef;
   @ViewChild('employeeNavBtn') employeeNavBtn!: ElementRef;
   @ViewChild('orderNavBtn') orderNavBtn!: ElementRef;
@@ -23,15 +28,11 @@ export class AppComponent {
   @ViewChild('restaurantNavBtn') restaurantNavBtn!: ElementRef;
   @ViewChild('settingsNavBtn') settingsNavBtn!: ElementRef;
 
-  @ViewChild('homeNavBtn') set _currentNavBtn (reference: ElementRef) {
-    if (reference) this.currentNavBtn = reference.nativeElement;
-  }
-
   private logout (): void { // remove this after all
     this.authService.logout();
   }
 
-  constructor (private authService: AuthService, private router: Router) {
+  constructor (private authService: AuthService, private router: Router, private alertCommunicationService: AlertCommunicationService) {
     (window as any).logout = this.logout.bind(this); // remove this after all
 
     this.router.events.subscribe(event => {
@@ -46,6 +47,17 @@ export class AppComponent {
 
         this.currentRoute = event.url.split('/')[1];
       }
+    });
+  }
+
+  ngOnDestroy (): void {
+    if (this.alertSubscription) this.alertSubscription.unsubscribe();
+  }
+
+  ngOnInit (): void {
+    this.alertSubscription = this.alertCommunicationService.alertValue$.subscribe((alert: { error: string, info: string }) => {
+      this.errorAlert = alert.error;
+      this.infoAlert = alert.info;
     });
   }
 

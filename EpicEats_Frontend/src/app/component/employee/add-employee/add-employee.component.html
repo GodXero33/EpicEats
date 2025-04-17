@@ -1,6 +1,39 @@
 <h1>Add Employee</h1>
-<div class="form">
-	<div class="input">
-		
+<div id="form-cont">
+	<div class="form">
+		<div class="input">
+			<input type="text" autocomplete="nope" spellcheck="false" placeholder="" [(ngModel)]="name" #nameField (keydown)="onKeydown($event)">
+			<div class="label">Name</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="phone" #phoneField (keydown)="onKeydown($event)">
+			<div class="label">Phone</div>
+		</div>
+		<div class="input">
+			<input type="email" placeholder="" [(ngModel)]="email" #emailField (keydown)="onKeydown($event)">
+			<div class="label">Email</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="address" #addressField (keydown)="onKeydown($event)">
+			<div class="label">Adderss</div>
+		</div>
+		<div class="input">
+			<input type="number" min="0.0" placeholder="" [(ngModel)]="salary" #salaryField>
+			<div class="label">Salary</div>
+		</div>
+		<div class="select-input">
+			<select [(ngModel)]="role" #roleSelect>
+				<option value="CASHIER">Cashier</option>
+				<option value="MANAGER">Manager</option>
+				<option value="CHEF">Chef</option>
+				<option value="WAITER">Waiter</option>
+				<option value="SUPERVISOR">Supervisor</option>
+			</select>
+		</div>
+		<div class="input">
+			<input type="date" placeholder="" [(ngModel)]="dob" #dobField [min] = "minDateForDOB" [max] = "maxDateForDOB">
+			<div class="label">Birthday</div>
+		</div>
+		<button class="action" (click)="addEmployee()">Add</button>
 	</div>
 </div>

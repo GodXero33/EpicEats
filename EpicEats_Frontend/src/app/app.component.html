@@ -15,3 +15,5 @@
 </nav>
 
 <router-outlet />
+<app-alert *ngIf="errorAlert" type="error" [message]="errorAlert" />
+<app-alert *ngIf="infoAlert" type="info" [message]="infoAlert" />

@@ -6,11 +6,11 @@ import { LoginUser } from '../../model/security/login-user.model';
 import { Router } from '@angular/router';
 import { ViewChild, ElementRef } from '@angular/core';
 import { AuthService } from '../../service/auth.service';
-import { AlertComponent } from "../alert/alert.component";
+import { AlertCommunicationService } from '../../service/alert-communication.service';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, AlertComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -19,22 +19,13 @@ export class LoginComponent implements OnInit {
   public password: string = '';
   @ViewChild('usernameInput') usernameField!: ElementRef;
   @ViewChild('passwordInput') passwordField!: ElementRef;
-  public errorMessage: string = '';
 
-  constructor (private authService: AuthService, private http: HttpClient, private router: Router) {}
+  constructor (private authService: AuthService, private http: HttpClient, private router: Router, private alertCommunicationService: AlertCommunicationService) {}
   
   public ngOnInit (): void {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/home']);
     }
-  }
-
-  private showErrorAlert (message: string): void {
-    this.errorMessage = message;
-
-    setTimeout(() => {
-      this.errorMessage = '';
-    }, 5000);
   }
 
   private validateInputs (): boolean {
@@ -77,7 +68,7 @@ export class LoginComponent implements OnInit {
           this.authService.setToken(response.body.data.token, response.body.data.user.role, response.body.data.user.username);
           this.router.navigate(['/home']);
         } else {
-          this.showErrorAlert('An unexpected error occurred');
+          this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
       error: (error: HttpErrorResponse) => {
@@ -87,7 +78,7 @@ export class LoginComponent implements OnInit {
             'Invalid username or password' :
             'An unexpected error occurred';
 
-        this.showErrorAlert(errorMessage);
+        this.alertCommunicationService.showError(errorMessage);
 
         if (error.status === 401) {
           const usernameField = this.usernameField.nativeElement;

@@ -1,5 +1,4 @@
 import { Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { AlertComponent } from '../alert/alert.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoginUser } from '../../model/security/login-user.model';
@@ -9,18 +8,17 @@ import { Employee } from '../../model/employee/employee.model';
 import { AuthService } from '../../service/auth.service';
 import { User } from '../../model/security/user.model';
 import { UserRole } from '../../enum/user-role.enum';
+import { AlertCommunicationService } from '../../service/alert-communication.service';
 
 @Component({
   selector: 'app-signup',
-  imports: [CommonModule, FormsModule, AlertComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })
 export class SignupComponent {
   public adminUsername: string = '';
   public adminPassword: string = '';
-  public errorMessage: string = '';
-  public infoMessage: string = '';
   public employeeId!: number;
   public loadedEmployee: Employee | null = null;
   public signupUserUsername: string = '';
@@ -53,7 +51,7 @@ export class SignupComponent {
     this.signupStepContainers = query.toArray().map(elementRef => elementRef.nativeElement);
   }
 
-  constructor (private http: HttpClient, private router: Router, private authService: AuthService) {
+  constructor (private http: HttpClient, private router: Router, private authService: AuthService, private alertCommunicationService: AlertCommunicationService) {
     window.addEventListener('keydown', (event: KeyboardEvent) => {
       if (event.key === 'Tab')
         event.preventDefault();
@@ -85,24 +83,6 @@ export class SignupComponent {
   private scrollEmployeeConfirmButtonIntoView (): void {
     if (this.employeeConfirmBtn)
       this.employeeConfirmBtn.scrollIntoView({ behavior: 'smooth', block: "end" });
-  }
-
-  private showErrorAlert (message: string): void {
-    this.errorMessage = message;
-    this.infoMessage = '';
-
-    setTimeout(() => {
-      this.errorMessage = '';
-    }, 5000);
-  }
-
-  private showInfoAlert (message: string): void {
-    this.infoMessage = message;
-    this.errorMessage = '';
-
-    setTimeout(() => {
-      this.infoMessage = '';
-    }, 5000);
   }
 
   private showSignupStep (step: number): void {
@@ -139,7 +119,7 @@ export class SignupComponent {
 
   private handleAdminLoginResponseOkData (data: any): void {
     if (!data.user) {
-      this.showErrorAlert('Invalid server response');
+      this.alertCommunicationService.showError('Invalid server response');
       return;
     }
 
@@ -172,7 +152,7 @@ export class SignupComponent {
         if (response.status === 200) {
           this.handleAdminLoginResponseOkData(response.body.data);
         } else {
-          this.showErrorAlert('An unexpected error occurred');
+          this.alertCommunicationService.showError('An unexpected error occurrede');
         }
       },
       error: (error: HttpErrorResponse) => {
@@ -182,7 +162,7 @@ export class SignupComponent {
             'Invalid username or password' :
             'An unexpected error occurred';
 
-        this.showErrorAlert(errorMessage);
+        this.alertCommunicationService.showError(errorMessage);
 
         if (error.status === 401) {
           const usernameField = this.adminUsernameField.nativeElement;
@@ -230,7 +210,7 @@ export class SignupComponent {
       next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
           if (!response.body.data) {
-            this.showErrorAlert('Invalid server response');
+            this.alertCommunicationService.showError('Invalid server response');
             return;
           }
 
@@ -243,12 +223,12 @@ export class SignupComponent {
             .email(employeeData.email)
             .build();
 
-          this.showInfoAlert('Employee found');
+          this.alertCommunicationService.showInfo('Employee found');
           this.scrollEmployeeConfirmButtonIntoView();
         } else {
           this.loadedEmployee = null;
 
-          this.showErrorAlert('An unexpected error occurred');
+          this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
       error: (error: HttpErrorResponse) => {
@@ -260,7 +240,7 @@ export class SignupComponent {
             'Failed to connect server. Try login again.' :
             'An unexpected error occurred';
 
-        this.showErrorAlert(errorMessage);
+        this.alertCommunicationService.showError(errorMessage);
       }
     });
   }
@@ -361,7 +341,7 @@ export class SignupComponent {
       next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
           if (!response.body.data || !response.body.data.username) {
-            this.showErrorAlert('Invalid server response');
+            this.alertCommunicationService.showError('Invalid server response');
             return;
           }
 
@@ -371,13 +351,13 @@ export class SignupComponent {
         } else {
           this.loadedEmployee = null;
 
-          this.showErrorAlert('An unexpected error occurred');
+          this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
       error: (error: HttpErrorResponse) => {
         this.loadedEmployee = null;
 
-        this.showErrorAlert(error.error.message);
+        this.alertCommunicationService.showError(error.error.message);
       }
     });
   }

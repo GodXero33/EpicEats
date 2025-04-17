@@ -50,7 +50,7 @@ public class CustomerController {
 	}
 
 	@CustomerAddApiDoc
-	@PostMapping("/")
+	@PostMapping("")
 	public CustomHttpResponse<Customer> add (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -72,7 +72,7 @@ public class CustomerController {
 	}
 
 	@CustomerUpdateApiDoc
-	@PutMapping("/")
+	@PutMapping("")
 	public CustomHttpResponse<Customer> update (@Valid @RequestBody Customer customer, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (customer.getId() == null || customer.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Customer id can't be null, zero or negative");

@@ -62,7 +62,7 @@ public class FinanceController {
 	}
 
 	@ExpenseAddApiDoc
-	@PostMapping("/expense/")
+	@PostMapping("/expense")
 	public CustomHttpResponse<Expense> addExpense (@Valid @RequestBody Expense expense, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -74,7 +74,7 @@ public class FinanceController {
 	}
 
 	@ExpenseUpdateApiDoc
-	@PutMapping("/expense/")
+	@PutMapping("/expense")
 	public CustomHttpResponse<Expense> updateExpense (@Valid @RequestBody Expense expense, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -154,7 +154,7 @@ public class FinanceController {
 	}
 
 	@ReportAddApiDoc
-	@PostMapping("/report/")
+	@PostMapping("/report")
 	public CustomHttpResponse<Report> addReport (@Valid @RequestBody ReportLite reportLite, BindingResult result) {
 		if (result.hasErrors()) this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -172,7 +172,7 @@ public class FinanceController {
 	}
 
 	@ReportUpdateApiDoc
-	@PutMapping("/report/")
+	@PutMapping("/report")
 	public CustomHttpResponse<Report> updateReport (@Valid @RequestBody ReportLite reportLite, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
