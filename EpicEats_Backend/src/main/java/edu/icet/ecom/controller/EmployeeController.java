@@ -62,7 +62,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeAddApiDoc
-	@PostMapping("/")
+	@PostMapping("")
 	public CustomHttpResponse<Employee> add (@Valid @RequestBody Employee employee, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -84,7 +84,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeUpdateApiDoc
-	@PutMapping("/")
+	@PutMapping("")
 	public CustomHttpResponse<Employee> update (@Valid @RequestBody Employee employee, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employee.getId() == null || employee.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Employee id can't be null, zero or negative");
@@ -180,7 +180,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftAddApiDoc
-	@PostMapping("/shift/")
+	@PostMapping("/shift")
 	public CustomHttpResponse<EmployeeShift> addShift (@Valid @RequestBody EmployeeShiftLite employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -196,7 +196,7 @@ public class EmployeeController {
 	}
 
 	@EmployeeShiftUpdateApiDoc
-	@PutMapping("/shift/")
+	@PutMapping("/shift")
 	public CustomHttpResponse<EmployeeShift> updateShift (@Valid @RequestBody EmployeeShiftLite employeeShift, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (employeeShift.getId() == null || employeeShift.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Shift id can't be null, zero or negative");
@@ -287,7 +287,7 @@ public class EmployeeController {
 	}
 
 	@PromotionHistoryUpdateApiShift
-	@PutMapping("/promotion/")
+	@PutMapping("/promotion")
 	public CustomHttpResponse<PromotionHistory> updatePromotion (@Valid @RequestBody PromotionHistoryLite promotionHistory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (promotionHistory.getId() == null || promotionHistory.getId() <= 0) return this.controllerResponseUtil.getInvalidDetailsResponse("Promotion history id can't be null, zero or negative");

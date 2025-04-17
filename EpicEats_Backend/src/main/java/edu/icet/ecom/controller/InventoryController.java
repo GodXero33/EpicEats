@@ -90,7 +90,7 @@ public class InventoryController {
 	}
 
 	@InventoryAddApiDoc
-	@PostMapping("/")
+	@PostMapping("")
 	public CustomHttpResponse<SupplierStockRecord> add (@Valid @RequestBody SupplierStockRecordLite supplierStockRecord, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (supplierStockRecord.getSupplierId() == null || supplierStockRecord.getSupplierId() <= 0) this.getInvalidIdResponse();
@@ -110,7 +110,7 @@ public class InventoryController {
 	}
 
 	@InventoryUpdateApiDoc
-	@PutMapping("/")
+	@PutMapping("")
 	public CustomHttpResponse<Inventory> update (@Valid @RequestBody Inventory inventory, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 		if (inventory.getId() == null || inventory.getId() <= 0) return this.getInvalidIdResponse();
@@ -209,7 +209,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseAddApiDoc
-	@PostMapping("/purchase/")
+	@PostMapping("/purchase")
 	public CustomHttpResponse<InventoryPurchase> addInventoryPurchase (@Valid @RequestBody InventoryPurchaseLite inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
@@ -227,7 +227,7 @@ public class InventoryController {
 	}
 
 	@InventoryPurchaseUpdateApiDoc
-	@PutMapping("/purchase/")
+	@PutMapping("/purchase")
 	public CustomHttpResponse<InventoryPurchase> updateInventoryPurchase (@Valid @RequestBody InventoryPurchaseLite inventoryPurchase, BindingResult result) {
 		if (result.hasErrors()) return this.controllerResponseUtil.getInvalidDetailsResponse(result);
 
