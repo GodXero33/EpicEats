@@ -1,1 +1,44 @@
-<p>update-employee works!</p>
+<h1>Update Employee</h1>
+<div id="form-cont">
+	<div class="form">
+		<div class="input">
+			<input type="number" min="1" placeholder="" [(ngModel)]="id" #idField (keydown)="onKeydown($event)">
+			<div class="label">Employee ID</div>
+		</div>
+		<button class="action" (click)="searchEmployee()">Search</button>
+		<div class="input">
+			<input type="text" autocomplete="nope" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="name" #nameField (keydown)="onKeydown($event)">
+			<div class="label">Name</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="phone" #phoneField (keydown)="onKeydown($event)">
+			<div class="label">Phone</div>
+		</div>
+		<div class="input">
+			<input type="email" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="email" #emailField (keydown)="onKeydown($event)">
+			<div class="label">Email</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="address" #addressField (keydown)="onKeydown($event)">
+			<div class="label">Adderss</div>
+		</div>
+		<div class="input">
+			<input type="number" min="0.0" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="salary" #salaryField>
+			<div class="label">Salary</div>
+		</div>
+		<div class="select-input">
+			<select [disabled]="!searchedEmployee" [(ngModel)]="role" #roleSelect>
+				<option value="CASHIER">Cashier</option>
+				<option value="MANAGER">Manager</option>
+				<option value="CHEF">Chef</option>
+				<option value="WAITER">Waiter</option>
+				<option value="SUPERVISOR">Supervisor</option>
+			</select>
+		</div>
+		<div class="input">
+			<input type="date" placeholder="" [disabled]="!searchedEmployee" [(ngModel)]="dob" #dobField [min] = "minDateForDOB" [max] = "maxDateForDOB">
+			<div class="label">Birthday</div>
+		</div>
+		<button class="action" [disabled]="!searchedEmployee" (click)="updateEmployee()">Update</button>
+	</div>
+</div>

@@ -53,7 +53,6 @@ export class ApiService {
 
 	private handleResponse = <T>(response: any): T => {
 		if (response && typeof response === 'object' && 'message' in response && 'data' in response) {
-			console.log('API Success:', response);
 			this.alertCommunicationService.showInfo(response.message);
 
 			return response.data as T;

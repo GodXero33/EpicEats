@@ -22,13 +22,19 @@ export class AddEmployeeComponent {
   public minDateForDOB: string = '';
   public maxDateForDOB: string = '';
 
-  @ViewChild('nameField') nameField!: ElementRef;
+  public nameField!: ElementRef;
   @ViewChild('phoneField') phoneField!: ElementRef;
   @ViewChild('emailField') emailField!: ElementRef;
   @ViewChild('addressField') addressField!: ElementRef;
   @ViewChild('salaryField') salaryField!: ElementRef;
   @ViewChild('roleSelect') roleSelect!: ElementRef;
   @ViewChild('dobField') dobField!: ElementRef;
+
+  @ViewChild('nameField') set _nameField (reference: ElementRef) {
+    this.nameField = reference;
+
+    this.nameField.nativeElement.focus();
+  }
 
   constructor (private apiService: ApiService) {
     const today: Date = new Date();
