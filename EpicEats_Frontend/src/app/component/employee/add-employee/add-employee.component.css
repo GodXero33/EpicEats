@@ -1,0 +1,14 @@
+h1 {
+	color: var(--text-1);
+	font-size: 1.3rem;
+	font-family: verdana;
+}
+
+#form-cont {
+	position: relative;
+	top: 0;
+	left: 50%;
+	width: clamp(200px, 100%, 500px);
+	height: fit-content;
+	transform: translateX(-50%);
+}
