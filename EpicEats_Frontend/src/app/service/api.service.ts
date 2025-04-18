@@ -20,8 +20,8 @@ export class ApiService {
 		});
 	}
 
-	public get<T>(endpoint: string, params?: HttpParams): Observable<T> {
-		return this.http.get<T>(`${this.baseUrl}${endpoint}`, { headers: this.buildHeaders(), params }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
+	public get<T>(endpoint: string): Observable<T> {
+		return this.http.get<T>(`${this.baseUrl}${endpoint}`, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
 	public post<T>(endpoint: string, body: any): Observable<T> {
@@ -36,6 +36,10 @@ export class ApiService {
 		return this.http.delete<T>(`${this.baseUrl}${endpoint}`, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
+	public patch<T>(endpoint: string): Observable<T> {
+		return this.http.patch<T>(`${this.baseUrl}${endpoint}`, null, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
+	}
+
 	private handleError = (error: HttpErrorResponse): Observable<never> => {
 		let errorMessage = 'An unknown error occurred!';
 
@@ -44,10 +48,10 @@ export class ApiService {
 		} else if (error.status === 401) {
 			errorMessage = 'Unauthorized: Please log in again';
 		} else {
-			errorMessage = `Error ${error.status}: ${error.error.message}`;
+			errorMessage = `Error ${error.status}: ${error.error?.message}`;
 		}
 
-		this.alertCommunicationService.showError(error.error.message);
+		this.alertCommunicationService.showError(error.error?.message);
 		return throwError(() => new Error(errorMessage));
 	}
 
@@ -58,7 +62,6 @@ export class ApiService {
 			return response.data as T;
 		}
 
-		console.log('API Success (raw):', response);
 		return response as T;
 	}
 }
