@@ -56,7 +56,7 @@ export class AddEmployeeComponent {
   }
 
   private validateInputs (): boolean {
-    if (!/^[A-Za-z0-9]+(_[A-Za-z0-9]+)*$/.test(this.name)) {
+    if (!/^[A-Za-z]+( [A-Za-z]+)*$/.test(this.name)) {
       this.nameField.nativeElement.setCustomValidity('Employee name must contain only letters, numbers, and underscores (no leading/trailing/multiple underscores)');
       this.nameField.nativeElement.reportValidity();
       return false;
