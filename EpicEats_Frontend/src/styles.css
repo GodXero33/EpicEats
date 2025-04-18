@@ -175,8 +175,6 @@ body {
 		padding: 0.4rem;
 		padding-inline: 1rem;
 		top: 0;
-		left: calc(100% - 1rem);
-		transform: translateX(-100%);
 		background-color: var(--action-button);
 		outline: none;
 		border: 2px solid hsl(from var(--action-button) h s calc(l * 1.1));
@@ -186,6 +184,11 @@ body {
 		font-family: verdana;
 		color: var(--text-1);
 		transition: background-color 0.2s linear;
+	}
+
+	.action:not(.left) {
+		left: calc(100% - 1rem);
+		transform: translateX(-100%);
 	}
 
 	.action:not(:disabled):hover {
@@ -288,7 +291,8 @@ body {
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: calc(var(--font-size) + var(--padding) * 2);
+		height: fit-content;
+		min-height: calc(var(--font-size) + var(--padding) * 2);
 		font-size: var(--font-size);
 		font-family: verdana;
 		color: var(--text-1);
@@ -307,8 +311,6 @@ body {
 		padding: 0.4rem;
 		padding-inline: 1rem;
 		top: 0;
-		left: calc(100% - 1rem);
-		transform: translateX(-100%);
 		background-color: var(--action-button);
 		outline: none;
 		border: 2px solid hsl(from var(--action-button) h s calc(l * 1.1));
@@ -318,6 +320,11 @@ body {
 		font-family: verdana;
 		color: var(--text-1);
 		transition: background-color 0.2s linear;
+	}
+
+	.action:not(:has(.left)) {
+		left: calc(100% - 1rem);
+		transform: translateX(-100%);
 	}
 
 	.action:not(:disabled):hover {
@@ -469,4 +476,42 @@ body {
 .scrollbar-hidden {
 	overflow-x: hidden;
 	overflow-y: hidden;
+}
+
+.table-cont {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	th, td {
+		padding: 0.75rem 1rem;
+		text-align: left;
+		border-bottom: 1px solid hsl(from var(--background-color) h s calc(l * 0.8));
+		color: var(--text-1);
+		background-color: transparent;
+	}
+
+	th {
+		font-weight: bold;
+	}
+
+	tr {
+		background-color: hsl(from var(--background-color) h s calc(l * 0.9));
+	}
+
+	tr:has( th) {
+		background-color: hsl(from var(--action-button) h s calc(l * 0.9));
+	}
+
+	tr:hover {
+		background-color: hsl(from var(--action-button) h s calc(l * 1.1));
+		transition: background-color 0.2s ease-in-out;
+	}
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../service/api.service';
 import { Employee } from '../../../model/employee/employee.model';
@@ -19,6 +19,12 @@ export class SearchEmployeeComponent {
   public searchByIdSalary!: number | undefined;
   public searchByIdRole!: string;
   public searchByIdDob!: string;
+
+  public allEmployeesLoadedEmployees: Array<Employee> = [];
+
+  @ViewChild('searchByIdIdField') set _searchByIdIdField (reference: ElementRef) {
+    reference.nativeElement.focus();
+  }
 
   constructor (private apiService: ApiService) {}
 
@@ -58,5 +64,31 @@ export class SearchEmployeeComponent {
     this.searchByIdSalary = undefined;
     this.searchByIdRole = '';
     this.searchByIdDob = '';
+  }
+
+  public loadAllEmployees (): void {
+    this.apiService.get('/employee/all').subscribe({
+      next: (response) => {
+        if (!Array.isArray(response)) return;
+
+        this.allEmployeesLoadedEmployees.length = 0;
+
+        response.forEach((employeeData: Employee) => this.allEmployeesLoadedEmployees.push(Employee.builder()
+          .id(employeeData.id)
+          .name(employeeData.name)
+          .phone(employeeData.phone)
+          .email(employeeData.email)
+          .address(employeeData.address)
+          .salary(employeeData.salary)
+          .role(employeeData.role)
+          .dob(employeeData.dob)
+          .build()
+        ));
+      },
+      error: (error) => {
+        this.clearSearchByIdDetails();
+        console.error(error.message);
+      }
+    });
   }
 }

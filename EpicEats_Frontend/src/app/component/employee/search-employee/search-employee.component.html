@@ -1,21 +1,44 @@
 <div id="search-emp-cont">
 	<h1>Search Employee</h1>
 	<div id="form-cont">
-		<div class="local-nav">
-			<div class="local-nav-btn">
-				<div>Search by ID</div>
-				<input type="radio" name="employee-search-local-nav" checked>
-			</div>
-			<div class="local-nav-btn">
-				<div>Advanced Search</div>
-				<input type="radio" name="employee-search-local-nav">
-			</div>
-		</div>
 		<div class="local-content-cont scrollbar scrollbar-y">
+			<div class="local-content full">
+				<div class="form">
+					<button class="action left" (click)="loadAllEmployees()">Refresh</button>
+				</div>
+				<div class="table-cont scrollbar scrollbar-x">
+					<table>
+						<tbody>
+							<tr>
+								<th>ID</th>
+								<th>Name</th>
+								<th>Phone</th>
+								<th>Email</th>
+								<th class="fix-w">Address</th>
+								<th>Salary</th>
+								<th>Role</th>
+								<th>Birthday</th>
+							</tr>
+							@for (employee of allEmployeesLoadedEmployees; track $index) {
+								<tr>
+									<td>{{ employee.id }}</td>
+									<td>{{ employee.name }}</td>
+									<td>{{ employee.phone }}</td>
+									<td>{{ employee.email }}</td>
+									<td>{{ employee.address }}</td>
+									<td>{{ employee.salary }}</td>
+									<td>{{ employee.role }}</td>
+									<td>{{ employee.dob }}</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
 			<div class="local-content">
 				<div class="form">
 					<div class="input">
-						<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)">
+						<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)" #searchByIdIdField>
 						<div class="label">Employee ID</div>
 					</div>
 					<button class="action" (click)="searchByIdSearch()">Search</button>
@@ -54,10 +77,26 @@
 			<div class="local-content">
 				<div class="form">
 					<div class="input">
-						<input type="number" placeholder="">
-						<div class="label">Employee ID A</div>
+						<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)" #searchByIdIdField>
+						<div class="label">Employee ID</div>
 					</div>
+					<button class="action" (click)="searchByIdSearch()">Search</button>
 				</div>
+			</div>
+		</div>
+
+		<div class="local-nav">
+			<div class="local-nav-btn">
+				<div>All Employees</div>
+				<input type="radio" name="employee-search-local-nav" checked>
+			</div>
+			<div class="local-nav-btn">
+				<div>Search by ID</div>
+				<input type="radio" name="employee-search-local-nav">
+			</div>
+			<div class="local-nav-btn">
+				<div>Advanced Search</div>
+				<input type="radio" name="employee-search-local-nav">
 			</div>
 		</div>
 	</div>

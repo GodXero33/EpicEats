@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
     this.http.post<any>('http://localhost:8080/user/login', loginUser, { headers, observe: 'response' }).subscribe({
       next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
-          this.authService.setToken(response.body.data.token, response.body.data.user.role, response.body.data.user.username);
+          this.authService.setToken(response.body.data.token);
           this.router.navigate(['/home']);
         } else {
           this.alertCommunicationService.showError('An unexpected error occurred');
