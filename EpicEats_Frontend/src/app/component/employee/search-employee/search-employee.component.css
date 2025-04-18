@@ -1,0 +1,111 @@
+#search-emp-cont {
+	position: absolute;
+	padding-top: 1.5rem;
+	padding-bottom: 0.5rem;
+	padding-inline: 1rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+h1 {
+	color: var(--text-1);
+	font-size: 1.3rem;
+	font-family: verdana;
+}
+
+#form-cont {
+	--border-size: 2px;
+	--primary-bg: hsl(from var(--background-color) h s calc(l * 1.5));
+	position: relative;
+	top: 0;
+	left: 50%;
+	width: 100%;
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+
+	.local-nav {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: fit-content;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 0.2rem;
+		z-index: 1;
+
+		.local-nav-btn {
+			position: relative;
+			padding: 0.4rem;
+			top: 0;
+			left: 0;
+			height: fit-content;
+			background-color: var(--primary-bg);
+			border: var(--border-size) solid transparent;
+			border-bottom: none;
+			border-radius: 0.5rem 0.5rem 0 0;
+			font-size: 0.9rem;
+			font-family: verdana;
+			color: var(--text-1);
+		}
+
+		.local-nav-btn:has( input:checked) {
+			top: var(--border-size);
+			border-color: hsl(from rgb(255, 255, 255) h s var(--hue-l-2));
+		}
+
+		.local-nav-btn input {
+			--webkit-appearance: none;
+			appearance: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			cursor: pointer;
+		}
+	}
+
+	.local-content-cont {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		flex-grow: 1;
+		background-color: var(--primary-bg);
+		border-top: var(--border-size) solid hsl(from rgb(255, 255, 255) h s var(--hue-l-2));
+
+		.local-content {
+			display: none;
+			position: absolute;
+			top: 0;
+			left: 50%;
+			width: 100%;
+			height: fit-content;
+			max-width: 500px;
+			min-height: 100%;
+			transform: translateX(-50%);
+		}
+	}
+
+	&:has( .local-nav .local-nav-btn:nth-child(1) input:checked) {
+		.local-content:nth-child(1) {
+			display: block;
+		}
+	}
+
+	&:has( .local-nav .local-nav-btn:nth-child(2) input:checked) {
+		.local-content:nth-child(2) {
+			display: block;
+		}
+	}
+}
