@@ -209,8 +209,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			return (Integer) this.crudUtil.execute("""
 				UPDATE employee
 				LEFT JOIN employee_shift ON employee.id = employee_shift.employee_id
-				SET employee.is_terminated = TRUE, employee_shift.is_deleted = TRUE
-				WHERE employee.is_terminated = FALSE AND employee.id = ?
+				LEFT JOIN promotion_history ON promotion_history.employee_id = employee.id
+				SET employee.is_terminated = TRUE, employee_shift.is_deleted = TRUE, promotion_history.is_deleted = TRUE
+				WHERE employee.id = ? AND employee.is_terminated = FALSE
 				""", employeeId) == 0 ?
 				new Response<>(null, ResponseType.FAILED) :
 				new Response<>(null, ResponseType.SUCCESS);
