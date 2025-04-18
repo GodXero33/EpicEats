@@ -83,7 +83,7 @@ export class AddEmployeeComponent {
     if (this.phone.length == 9) this.phone = '0' + this.phone;
 
     const newEmployee: Employee = Employee.builder()
-      .name(this.name)
+      .name(this.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '))
       .phone(this.phone)
       .email(this.email)
       .address(this.address)
