@@ -87,7 +87,7 @@ export class UpdateEmployeeComponent {
 
     const newEmployee: Employee = Employee.builder()
       .id(this.id)
-      .name(this.name)
+      .name(this.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '))
       .phone(this.phone)
       .email(this.email)
       .address(this.address)

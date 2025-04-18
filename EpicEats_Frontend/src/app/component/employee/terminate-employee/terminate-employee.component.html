@@ -1,1 +1,39 @@
-<p>terminate-employee works!</p>
+<h1>Terminate Employee</h1>
+<div id="form-cont">
+	<div class="form">
+		<div class="input">
+			<input type="number" min="1" placeholder="" [(ngModel)]="id" #idField (keydown)="onIdFieldKeydown($event)">
+			<div class="label">Employee ID</div>
+		</div>
+		<button class="action" (click)="searchEmployee()">Search</button>
+		<div class="input">
+			<input type="text" autocomplete="nope" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [value]="name" #nameField>
+			<div class="label">Name</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [value]="phone" #phoneField>
+			<div class="label">Phone</div>
+		</div>
+		<div class="input">
+			<input type="email" placeholder="" [disabled]="!searchedEmployee" [value]="email" #emailField>
+			<div class="label">Email</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [disabled]="!searchedEmployee" [value]="address" #addressField>
+			<div class="label">Address</div>
+		</div>
+		<div class="input">
+			<input type="number" min="0.0" placeholder="" [disabled]="!searchedEmployee" [value]="salary" #salaryField>
+			<div class="label">Salary</div>
+		</div>
+		<div class="input">
+			<input type="text" min="0.0" placeholder="" [disabled]="!searchedEmployee" [value]="role" #roleSelect>
+			<div class="label">Role</div>
+		</div>
+		<div class="input">
+			<input type="text" placeholder="" [disabled]="!searchedEmployee" [value]="dob">
+			<div class="label">Birthday</div>
+		</div>
+		<button class="action" [disabled]="!searchedEmployee" (click)="terminateEmployee()">Terminate</button>
+	</div>
+</div>

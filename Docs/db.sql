@@ -63,7 +63,7 @@ CREATE TABLE promotion_history (
 
 CREATE TABLE `user` (
     employee_id BIGINT,
-    user_name VARCHAR(255) NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL DEFAULT '1234',
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_login DATETIME,

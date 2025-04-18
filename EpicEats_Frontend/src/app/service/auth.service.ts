@@ -5,10 +5,35 @@ import { Router } from "@angular/router";
 	providedIn: 'root'
 })
 export class AuthService {
+	private expTimeout: any = null;
+
 	constructor (private router: Router) {}
 
-	public setToken (token: string, role: string, username: string): void {
+	public setToken (token: string): void {
 		sessionStorage.setItem('authToken', token);
+
+		const payload = token.split('.')[1];
+		const decodedPayload = JSON.parse(atob(payload));
+
+		const expMillis = decodedPayload.exp * 1000;
+		const nowMillis = Date.now();
+		let remainingTime = expMillis - nowMillis;
+
+		const ONE_MINUTE = 60_000;
+
+		if (remainingTime > ONE_MINUTE) {
+			remainingTime -= ONE_MINUTE;
+			console.log(`Token will expire in: ${remainingTime} ms`);
+		} else {
+			console.log(`Token will expire in: ${remainingTime} ms`);
+		}
+
+		if (this.expTimeout !== null) clearTimeout(this.expTimeout);
+
+		this.expTimeout = setTimeout(() => {
+			console.log("Token expired. Auto logging out.");
+			this.logout();
+		}, remainingTime);
 	}
 
 	public isAdmin () {
