@@ -12,8 +12,9 @@ export class SearchAllEmployeesComponent {
   public loadedEmployees: Array<Employee> = [];
   public viewableEmployees: Array<Employee> = [];
   public selectedEmployee: Employee | null = null;
-  public selectedEmployeeIndex: number = -1;
-  public isInvertSorted: boolean = false;
+  private selectedEmployeeIndex: number = -1;
+  private isInvertSorted: boolean = false;
+  private filterStringValue: string | null = null;
 
   @ViewChild('detailsToggleBtn') detailsToggleBtn!: ElementRef;
 
@@ -22,11 +23,25 @@ export class SearchAllEmployeesComponent {
   }
 
   public filterAllEmployees (): void {
-    function filterEmployee (employee: Employee) {
-      return employee;
+    if (this.filterStringValue == null || this.filterStringValue.length == 0) {
+      this.viewableEmployees = this.loadedEmployees.filter((employee: Employee) => employee);
+      return;
     }
 
-    this.viewableEmployees = this.loadedEmployees.filter(filterEmployee);
+    const value: string = this.filterStringValue.trim().toLowerCase();
+
+    const filterEmployees = (employee: Employee) => {
+      if (
+        employee.role.toString().toLowerCase().includes(value) ||
+        employee.name.toString().toLowerCase().includes(value) ||
+        employee.phone.toString().toLowerCase().includes(value) ||
+        employee.email.toString().toLowerCase().includes(value)
+      ) return employee;
+
+      return undefined;
+    }
+
+    this.viewableEmployees = this.loadedEmployees.filter(filterEmployees);
   }
 
   public loadAllEmployees (): void {
@@ -100,7 +115,9 @@ export class SearchAllEmployeesComponent {
 
   private sortEmployees (employeeComparator: (a: Employee, b: Employee) => number): void {
     this.isInvertSorted = !this.isInvertSorted;
-    this.viewableEmployees = this.loadedEmployees.sort(employeeComparator);
+    this.loadedEmployees = this.loadedEmployees.sort(employeeComparator);
+
+    this.filterAllEmployees();
   }
 
   public sortById (): void {
@@ -131,5 +148,11 @@ export class SearchAllEmployeesComponent {
     this.sortEmployees(this.isInvertSorted ?
       (a: Employee, b: Employee) => new Date(a.dob).getTime() - new Date(b.dob).getTime() :
       (a: Employee, b: Employee) => new Date(b.dob).getTime() - new Date(a.dob).getTime());
+  }
+
+  public onFilterFieldKeyup (event: KeyboardEvent): void {
+    this.filterStringValue = (event.target as HTMLInputElement).value;
+
+    this.filterAllEmployees();
   }
 }

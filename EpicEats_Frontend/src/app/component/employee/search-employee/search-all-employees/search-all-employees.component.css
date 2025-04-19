@@ -188,8 +188,7 @@
 	height: fit-content;
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 0.2rem;
+	gap: 0.8rem;
 
 	.action {
 		position: relative;
@@ -209,5 +208,20 @@
 
 	.action:hover {
 		background-color: hsla(from var(--action-button) h s calc(l * 1.1) / 0.2);
+	}
+
+	input {
+		position: relative;
+		padding: 0.5rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		font-size: 0.9rem;
+		font-family: verdana;
+		color: var(--text-1);
+		outline: none;
+		border: none;
+		border-bottom: 2px solid var(--action-button);
+		background-color: transparent;
 	}
 }
