@@ -1,94 +1,35 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../../service/api.service';
-import { Employee } from '../../../model/employee/employee.model';
+import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-search-employee',
-  imports: [CommonModule, FormsModule],
+  imports: [RouterOutlet],
   templateUrl: './search-employee.component.html',
-  styleUrl: './search-employee.component.css'
+  styleUrl: './search-employee.component.css',
+  encapsulation: ViewEncapsulation.None
 })
-export class SearchEmployeeComponent {
-  public searchByIdId: number = 1;
-  public searchByIdName!: string;
-  public searchByIdPhone!: string;
-  public searchByIdEmail!: string;
-  public searchByIdAddress!: string;
-  public searchByIdSalary!: number | undefined;
-  public searchByIdRole!: string;
-  public searchByIdDob!: string;
+export class SearchEmployeeComponent implements OnDestroy {
+  public currentRoute!: string;
+  private destroyRouterSub$: Subject<void> = new Subject();
 
-  public allEmployeesLoadedEmployees: Array<Employee> = [];
+  constructor (private router: Router) {
+    this.currentRoute = this.router.url.split('/')[3];
 
-  @ViewChild('searchByIdIdField') set _searchByIdIdField (reference: ElementRef) {
-    reference.nativeElement.focus();
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroyRouterSub$)
+      )
+      .subscribe(event => this.currentRoute = event.url.split('/')[3]);
   }
 
-  constructor (private apiService: ApiService) {}
-
-  public searchByIdIdFieldOnKeydown (event: KeyboardEvent): void {
-    if (event.key !== 'Enter' || !this.searchByIdId) return;
-
-    this.searchByIdSearch();
+  public ngOnDestroy (): void {
+    this.destroyRouterSub$.next();
+    this.destroyRouterSub$.complete();
   }
 
-  public searchByIdSearch ():void {
-    this.apiService.get(`/employee/${this.searchByIdId}`).subscribe({
-      next: (response) => {
-        const searchedEmployee = response as Employee;
-
-        this.searchByIdId = searchedEmployee.id;
-        this.searchByIdName = searchedEmployee.name;
-        this.searchByIdPhone = searchedEmployee.phone;
-        this.searchByIdEmail = searchedEmployee.email;
-        this.searchByIdAddress = searchedEmployee.address;
-        this.searchByIdSalary = searchedEmployee.salary;
-        this.searchByIdRole = searchedEmployee.role;
-        this.searchByIdDob = searchedEmployee.dob;
-      },
-      error: (error) => {
-        this.clearSearchByIdDetails();
-        console.error(error.message);
-      }
-    });
-  }
-
-  private clearSearchByIdDetails () {
-    this.searchByIdId = 1;
-    this.searchByIdName = '';
-    this.searchByIdPhone = '';
-    this.searchByIdEmail = '';
-    this.searchByIdAddress = '';
-    this.searchByIdSalary = undefined;
-    this.searchByIdRole = '';
-    this.searchByIdDob = '';
-  }
-
-  public loadAllEmployees (): void {
-    this.apiService.get('/employee/all').subscribe({
-      next: (response) => {
-        if (!Array.isArray(response)) return;
-
-        this.allEmployeesLoadedEmployees.length = 0;
-
-        response.forEach((employeeData: Employee) => this.allEmployeesLoadedEmployees.push(Employee.builder()
-          .id(employeeData.id)
-          .name(employeeData.name)
-          .phone(employeeData.phone)
-          .email(employeeData.email)
-          .address(employeeData.address)
-          .salary(employeeData.salary)
-          .role(employeeData.role)
-          .dob(employeeData.dob)
-          .build()
-        ));
-      },
-      error: (error) => {
-        this.clearSearchByIdDetails();
-        console.error(error.message);
-      }
-    });
+  public navigateSection (path: string): void {
+    this.router.navigate([`employee/search/${path}`]);
   }
 }

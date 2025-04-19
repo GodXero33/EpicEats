@@ -5,7 +5,7 @@
 				<div>Employee</div>
 				<input type="checkbox">
 			</div>
-			<div class="nav-btn" [class.active]="currentRoute === 'add'" (click)="sideNavBarNavigateTo('add')">Add Employee</div>
+			<div class="nav-btn" [class.active]="!currentRoute || currentRoute === 'add'" (click)="sideNavBarNavigateTo('add')">Add Employee</div>
 			<div class="nav-btn" [class.active]="currentRoute === 'update'" (click)="sideNavBarNavigateTo('update')">Update Employee</div>
 			<div class="nav-btn" [class.active]="currentRoute === 'terminate'" (click)="sideNavBarNavigateTo('terminate')">Terminate Employee</div>
 			<div class="nav-btn" [class.active]="currentRoute === 'search'" (click)="sideNavBarNavigateTo('search')">Search Employee</div>

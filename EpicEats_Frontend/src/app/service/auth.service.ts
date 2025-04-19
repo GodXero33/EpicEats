@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Router } from "@angular/router";
+import { NavigationEnd, Router } from "@angular/router";
+import { filter } from "rxjs";
 
 @Injectable({
 	providedIn: 'root'
@@ -7,7 +8,19 @@ import { Router } from "@angular/router";
 export class AuthService {
 	private expTimeout: any = null;
 
-	constructor (private router: Router) {}
+	constructor (private router: Router) {
+		this.startAutoLogoutCheck();
+	}
+
+	private startAutoLogoutCheck(): void {
+		this.router.events.pipe(
+			filter(event => event instanceof NavigationEnd)
+		).subscribe(() => {
+			const token = this.getToken();
+
+			if (token) this.setToken(token);
+		});
+	}
 
 	public setToken (token: string): void {
 		sessionStorage.setItem('authToken', token);
@@ -15,18 +28,13 @@ export class AuthService {
 		const payload = token.split('.')[1];
 		const decodedPayload = JSON.parse(atob(payload));
 
+		const ONE_MINUTE = 60000;
 		const expMillis = decodedPayload.exp * 1000;
 		const nowMillis = Date.now();
-		let remainingTime = expMillis - nowMillis;
+		const deltaMillis = expMillis - nowMillis;
+		let remainingTime = deltaMillis > ONE_MINUTE ? deltaMillis - ONE_MINUTE : deltaMillis;
 
-		const ONE_MINUTE = 60_000;
-
-		if (remainingTime > ONE_MINUTE) {
-			remainingTime -= ONE_MINUTE;
-			console.log(`Token will expire in: ${remainingTime} ms`);
-		} else {
-			console.log(`Token will expire in: ${remainingTime} ms`);
-		}
+		console.log(`Token will expire in: ${remainingTime} ms`);
 
 		if (this.expTimeout !== null) clearTimeout(this.expTimeout);
 

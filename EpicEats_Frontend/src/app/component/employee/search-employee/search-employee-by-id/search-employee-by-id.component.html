@@ -1,0 +1,39 @@
+<div class="local-content">
+	<div class="form">
+		<div class="input">
+			<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)" #searchByIdIdField>
+			<div class="label">Employee ID</div>
+		</div>
+		<button class="action" (click)="searchByIdSearch()">Search</button>
+	</div>
+	<div class="form-details">
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdName }}</div>
+			<div class="label">Name</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdPhone }}</div>
+			<div class="label">Phone</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdEmail }}</div>
+			<div class="label">Email</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdAddress }}</div>
+			<div class="label">Address</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdSalary }}</div>
+			<div class="label">Salary</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdRole }}</div>
+			<div class="label">Role</div>
+		</div>
+		<div class="input-detail">
+			<div class="input-label">{{ searchByIdDob }}</div>
+			<div class="label">Birthday</div>
+		</div>
+	</div>
+</div>

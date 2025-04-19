@@ -21,6 +21,8 @@ import { SearchEmployeeShiftComponent } from './component/employee/search-employ
 import { UpdateEmployeePromotionComponent } from './component/employee/update-employee-promotion/update-employee-promotion.component';
 import { DeleteEmployeePromotionComponent } from './component/employee/delete-employee-promotion/delete-employee-promotion.component';
 import { SearchEmployeePromotionComponent } from './component/employee/search-employee-promotion/search-employee-promotion.component';
+import { SearchAllEmployeesComponent } from './component/employee/search-employee/search-all-employees/search-all-employees.component';
+import { SearchEmployeeByIdComponent } from './component/employee/search-employee/search-employee-by-id/search-employee-by-id.component';
 
 export const routes: Routes = [
 	{
@@ -69,7 +71,24 @@ export const routes: Routes = [
 			{
 				path: 'search',
 				component: SearchEmployeeComponent,
-				canActivate: [AuthGuard]
+				canActivate: [AuthGuard],
+				children: [
+					{
+						path: '',
+						component: SearchEmployeeByIdComponent,
+						canActivate: [AuthGuard]
+					},
+					{
+						path: 'all',
+						component: SearchAllEmployeesComponent,
+						canActivate: [AuthGuard]
+					},
+					{
+						path: 'by-id',
+						component: SearchEmployeeByIdComponent,
+						canActivate: [AuthGuard]
+					}
+				]
 			},
 			{
 				path: 'shift-add',

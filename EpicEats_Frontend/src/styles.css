@@ -435,10 +435,6 @@ body {
 			background-color: hsl(from var(--background-color) h s calc(l + 20));
 		}
 
-		.nav-title, .nav-btn {
-			transition: background-color 0.2s linear;
-		}
-
 		.nav-title:hover {
 			background-color: hsl(from var(--action-button) h s calc(l * 1.1));
 		}
@@ -479,39 +475,64 @@ body {
 }
 
 .table-cont {
-	position: relative;
+	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
+	overflow-x: auto;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-color) transparent;
 
 	table {
-		width: 100%;
+		width: fit-content;
+		height: fit-content;
 		border-collapse: collapse;
 	}
 
 	th, td {
-		padding: 0.75rem 1rem;
+		padding-inline: 0.8rem;
+		min-width: 100px;
+		max-width: 300px;
+		width: max-content;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
 		text-align: left;
-		border-bottom: 1px solid hsl(from var(--background-color) h s calc(l * 0.8));
 		color: var(--text-1);
 		background-color: transparent;
 	}
 
 	th {
+		padding-block: 0.5rem;
+		text-align: center;
 		font-weight: bold;
 	}
 
-	tr {
-		background-color: hsl(from var(--background-color) h s calc(l * 0.9));
+	td {
+		padding-block: 1rem;
+	}
+
+	td.center {
+		text-align: center;
+	}
+
+	td.right {
+		text-align: right;
 	}
 
 	tr:has( th) {
 		background-color: hsl(from var(--action-button) h s calc(l * 0.9));
 	}
 
-	tr:hover {
-		background-color: hsl(from var(--action-button) h s calc(l * 1.1));
-		transition: background-color 0.2s ease-in-out;
+	tr:has(:not( th)):hover {
+		background-color: hsl(from var(--background-color) h s calc(l * 1.5));
+	}
+
+	tr:has( th) {
+		position: sticky;
+		top: 0;
+		z-index: 2;
 	}
 }
