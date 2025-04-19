@@ -6,8 +6,7 @@ import { filter, Subject, takeUntil } from 'rxjs';
   selector: 'app-search-employee',
   imports: [RouterOutlet],
   templateUrl: './search-employee.component.html',
-  styleUrl: './search-employee.component.css',
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './search-employee.component.css'
 })
 export class SearchEmployeeComponent implements OnDestroy {
   public currentRoute!: string;
