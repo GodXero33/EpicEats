@@ -12,6 +12,7 @@ export class SearchAllEmployeesComponent {
   public loadedEmployees: Array<Employee> = [];
   public viewableEmployees: Array<Employee> = [];
   public selectedEmployee: Employee | null = null;
+  public selectedEmployeeIndex: number = -1;
 
   @ViewChild('detailsToggleBtn') detailsToggleBtn!: ElementRef;
 
@@ -76,7 +77,23 @@ export class SearchAllEmployeesComponent {
     if (index === -1 || index > this.viewableEmployees.length) return;
 
     this.selectedEmployee = this.viewableEmployees[index - 1];
+    this.selectedEmployeeIndex = index - 1;
 
     this.detailsToggleBtn.nativeElement.checked = true;
+  }
+
+  public terminateSelectedEmployee () {
+    if (this.selectedEmployee == null || !confirm('Do you sure you want to terminate this employee?')) return;
+
+    this.apiService.patch(`/employee/terminate/${this.selectedEmployee.id}`).subscribe({
+      next: () => {
+        this.viewableEmployees.splice(this.selectedEmployeeIndex, 1);
+        this.selectedEmployee = null;
+        this.detailsToggleBtn.nativeElement.checked = false;
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 }
