@@ -67,3 +67,110 @@
 		background-color: hsl(from var(--background-color) h s calc(l * 1.5));
 	}
 }
+
+#employee-details-cont {
+	--background: hsl(from var(--background-color) h s calc(l * 1.2));
+	--toggle-height: 2rem;
+	--padding-top: 1rem;
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 100%;
+	max-width: 600px;
+	height: 0;
+	transform: translateX(-50%);
+	transition: height 0.15s linear;
+	display: flex;
+	flex-direction: column;
+	filter: drop-shadow(0 0 5px #12121288);
+}
+
+#employee-details-toggle-btn {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--toggle-height);
+	background-color: var(--background);
+	border-radius: 1rem 1rem 0 0;
+
+	input {
+		--webkit-appearance: none;
+		appearance: none;
+		position: absolute;
+		right: 0;
+		width: calc(var(--toggle-height) * 1.5);
+		height: 100%;
+		cursor: pointer;
+		outline: none;
+		border: none;
+	}
+
+	input::before {
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-image: url(../../../../../../public/img/arrowhead-up.png);
+		background-position: center center;
+		background-size: auto 80%;
+		background-repeat: no-repeat;
+		filter: invert(var(--invert-1));
+	}
+
+	input:checked::before {
+		transform: rotate(180deg);
+	}
+}
+
+#employee-details-cont:has( #employee-details-toggle-btn input:checked) {
+	height: calc(100% - var(--padding-top));
+}
+
+#employee-details {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	flex-grow: 1;
+	background-color: var(--background);
+
+	.detail {
+		position: relative;
+		padding-inline: 1rem;
+		padding-block: 0.5rem;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: fit-content;
+		font-family: verdana;
+	}
+
+	.detail .label {
+		margin-bottom: 0.3rem;
+		font-size: 0.9rem;
+		color: var(--action-button);
+	}
+
+	.detail .value {
+		font-size: 1rem;
+		color: var(--text-1);
+	}
+}
+
+#employee-details-backdrop {
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.2);
+	transition: opacity 0.15s linear;
+}
+
+#all-employees-local-cont:has(#employee-details-cont #employee-details-toggle-btn input:checked) #employee-details-backdrop {
+	opacity: 1;
+	pointer-events: all;
+}

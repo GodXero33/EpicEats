@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Employee } from '../../../../model/employee/employee.model';
 import { ApiService } from '../../../../service/api.service';
 
@@ -9,17 +9,23 @@ import { ApiService } from '../../../../service/api.service';
   styleUrl: './search-all-employees.component.css'
 })
 export class SearchAllEmployeesComponent {
-  public allEmployeesLoadedEmployees: Array<Employee> = [];
-  public allEmployeesViewableEmployees: Array<Employee> = [];
+  public loadedEmployees: Array<Employee> = [];
+  public viewableEmployees: Array<Employee> = [];
+  public selectedEmployee: Employee | null = null;
+  public selectedEmployeeIndex: number = -1;
 
-  constructor (private apiService: ApiService) {}
+  @ViewChild('detailsToggleBtn') detailsToggleBtn!: ElementRef;
+
+  constructor (private apiService: ApiService) {
+    this.loadAllEmployees();
+  }
 
   public filterAllEmployees (): void {
     function filterEmployee (employee: Employee) {
       return employee;
     }
 
-    this.allEmployeesViewableEmployees = this.allEmployeesLoadedEmployees.filter(filterEmployee);
+    this.viewableEmployees = this.loadedEmployees.filter(filterEmployee);
   }
 
   public loadAllEmployees (): void {
@@ -27,9 +33,9 @@ export class SearchAllEmployeesComponent {
       next: (response) => {
         if (!Array.isArray(response)) return;
 
-        this.allEmployeesLoadedEmployees.length = 0;
+        this.loadedEmployees.length = 0;
 
-        response.forEach((employeeData: Employee) => this.allEmployeesLoadedEmployees.push(Employee.builder()
+        response.forEach((employeeData: Employee) => this.loadedEmployees.push(Employee.builder()
           .id(employeeData.id)
           .name(employeeData.name)
           .phone(employeeData.phone)
@@ -58,16 +64,36 @@ export class SearchAllEmployeesComponent {
 
     if (!targetTR) return;
 
+    if (targetTR.querySelectorAll('th').length) return;
+
     const tbody: HTMLElement | null = targetTR.parentElement;
-    
+
     if (!tbody) return;
 
     const allRows = Array.from(tbody.querySelectorAll('tr'));
 
     const index = allRows.indexOf(targetTR);
 
-    if (index === -1 || index > this.allEmployeesViewableEmployees.length) return;
+    if (index === -1 || index > this.viewableEmployees.length) return;
 
-    console.log(this.allEmployeesViewableEmployees[index - 1]);
+    this.selectedEmployee = this.viewableEmployees[index - 1];
+    this.selectedEmployeeIndex = index - 1;
+
+    this.detailsToggleBtn.nativeElement.checked = true;
+  }
+
+  public terminateSelectedEmployee () {
+    if (this.selectedEmployee == null || !confirm('Do you sure you want to terminate this employee?')) return;
+
+    this.apiService.patch(`/employee/terminate/${this.selectedEmployee.id}`).subscribe({
+      next: () => {
+        this.viewableEmployees.splice(this.selectedEmployeeIndex, 1);
+        this.selectedEmployee = null;
+        this.detailsToggleBtn.nativeElement.checked = false;
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 }

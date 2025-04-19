@@ -17,7 +17,7 @@
 							<th>Role</th>
 							<th>Birthday</th>
 						</tr>
-						@for (employee of allEmployeesViewableEmployees; track $index) {
+						@for (employee of viewableEmployees; track $index) {
 							<tr>
 								<td class="center">{{ employee.id }}</td>
 								<td [title]="employee.name">{{ employee.name }}</td>
@@ -31,6 +31,49 @@
 						}
 					</tbody>
 				</table>
+			</div>
+		</div>
+		<div id="employee-details-backdrop"></div>
+		<div id="employee-details-cont">
+			<div id="employee-details-toggle-btn">
+				<input type="checkbox" #detailsToggleBtn>
+			</div>
+			<div id="employee-details" class="scrollbar scrollbar-y">
+				<div class="detail">
+					<div class="label">ID</div>
+					<div class="value">{{ selectedEmployee?.id }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Name</div>
+					<div class="value">{{ selectedEmployee?.name }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Phone</div>
+					<div class="value">{{ selectedEmployee?.phone }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Email</div>
+					<div class="value">{{ selectedEmployee?.email }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Address</div>
+					<div class="value">{{ selectedEmployee?.address }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Salary</div>
+					<div class="value">{{ selectedEmployee?.salary }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Role</div>
+					<div class="value">{{ selectedEmployee?.role }}</div>
+				</div>
+				<div class="detail">
+					<div class="label">Birthday</div>
+					<div class="value">{{ selectedEmployee?.dob }}</div>
+				</div>
+				<div class="form">
+					<button class="action" (click)="terminateSelectedEmployee()">Terminate</button>
+				</div>
 			</div>
 		</div>
 	</div>

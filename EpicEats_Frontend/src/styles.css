@@ -486,6 +486,7 @@ body {
 	scrollbar-color: var(--scrollbar-color) transparent;
 
 	table {
+		isolation: isolate;
 		width: fit-content;
 		height: fit-content;
 		border-collapse: collapse;
