@@ -13,6 +13,7 @@ export class SearchAllEmployeesComponent {
   public viewableEmployees: Array<Employee> = [];
   public selectedEmployee: Employee | null = null;
   public selectedEmployeeIndex: number = -1;
+  public isInvertSorted: boolean = false;
 
   @ViewChild('detailsToggleBtn') detailsToggleBtn!: ElementRef;
 
@@ -95,5 +96,40 @@ export class SearchAllEmployeesComponent {
         console.error(error);
       }
     });
+  }
+
+  private sortEmployees (employeeComparator: (a: Employee, b: Employee) => number): void {
+    this.isInvertSorted = !this.isInvertSorted;
+    this.viewableEmployees = this.loadedEmployees.sort(employeeComparator);
+  }
+
+  public sortById (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.id - b.id :
+      (a: Employee, b: Employee) => b.id - a.id);
+  }
+
+  public sortByName (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.name.localeCompare(b.name) :
+      (a: Employee, b: Employee) => b.name.localeCompare(a.name));
+  }
+
+  public sortBySalary (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.salary - b.salary :
+      (a: Employee, b: Employee) => b.salary - a.salary);
+  }
+
+  public sortByRole (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.role.localeCompare(b.role) :
+      (a: Employee, b: Employee) => b.role.localeCompare(a.role));
+  }
+
+  public sortByDOB (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => new Date(a.dob).getTime() - new Date(b.dob).getTime() :
+      (a: Employee, b: Employee) => new Date(b.dob).getTime() - new Date(a.dob).getTime());
   }
 }

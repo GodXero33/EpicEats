@@ -1,21 +1,22 @@
 <div class="local-content full full-y">
 	<div id="all-employees-local-cont">
-		<div class="form">
+		<div id="all-employees-controls-cont">
 			<button class="action left" (click)="loadAllEmployees()">Refresh</button>
+			<button class="action left" (click)="loadAllEmployees()">Filter</button>
 		</div>
 		<div id="all-employees-table-cont" class="">
 			<div class="table-cont" (click)="onAllEmployeesTableClick($event)">
 				<table>
 					<tbody>
 						<tr>
-							<th>ID</th>
-							<th>Name</th>
+							<th (click)="sortById()" class="pointer" title="sort by id">ID</th>
+							<th (click)="sortByName()" class="pointer" title="sort by name">Name</th>
 							<th>Phone</th>
 							<th>Email</th>
 							<th>Address</th>
-							<th>Salary (Rs)</th>
-							<th>Role</th>
-							<th>Birthday</th>
+							<th (click)="sortBySalary()" class="pointer" title="sort by salary">Salary (Rs)</th>
+							<th (click)="sortByRole()" class="pointer" title="sort by role">Role</th>
+							<th (click)="sortByDOB()" class="pointer" title="sort by birthday">Birthday</th>
 						</tr>
 						@for (employee of viewableEmployees; track $index) {
 							<tr>
