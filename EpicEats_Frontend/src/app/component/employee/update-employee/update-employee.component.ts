@@ -81,7 +81,7 @@ export class UpdateEmployeeComponent {
   }
 
   public updateEmployee (): void {
-    if (!this.validateInputs()) return;
+    if (!this.validateInputs() || !confirm('Are you sure you want to update this employee?')) return;
 
     if (this.phone.length == 9) this.phone = '0' + this.phone;
 
