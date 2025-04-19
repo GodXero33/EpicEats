@@ -26,7 +26,9 @@ export class SearchEmployeeComponent {
     reference.nativeElement.focus();
   }
 
-  constructor (private apiService: ApiService) {}
+  constructor (private apiService: ApiService) {
+    this.loadAllEmployees();
+  }
 
   public searchByIdIdFieldOnKeydown (event: KeyboardEvent): void {
     if (event.key !== 'Enter' || !this.searchByIdId) return;

@@ -2,37 +2,41 @@
 	<h1>Search Employee</h1>
 	<div id="form-cont">
 		<div class="local-content-cont scrollbar scrollbar-y">
-			<div class="local-content full">
-				<div class="form">
-					<button class="action left" (click)="loadAllEmployees()">Refresh</button>
-				</div>
-				<div class="table-cont scrollbar scrollbar-x">
-					<table>
-						<tbody>
-							<tr>
-								<th>ID</th>
-								<th>Name</th>
-								<th>Phone</th>
-								<th>Email</th>
-								<th class="fix-w">Address</th>
-								<th>Salary</th>
-								<th>Role</th>
-								<th>Birthday</th>
-							</tr>
-							@for (employee of allEmployeesLoadedEmployees; track $index) {
-								<tr>
-									<td>{{ employee.id }}</td>
-									<td>{{ employee.name }}</td>
-									<td>{{ employee.phone }}</td>
-									<td>{{ employee.email }}</td>
-									<td>{{ employee.address }}</td>
-									<td>{{ employee.salary }}</td>
-									<td>{{ employee.role }}</td>
-									<td>{{ employee.dob }}</td>
-								</tr>
-							}
-						</tbody>
-					</table>
+			<div class="local-content full full-y">
+				<div id="all-employees-local-cont">
+					<div class="form">
+						<button class="action left" (click)="loadAllEmployees()">Refresh</button>
+					</div>
+					<div id="all-employees-table-cont" class="">
+						<div class="table-cont">
+							<table>
+								<tbody>
+									<tr>
+										<th>ID</th>
+										<th>Name</th>
+										<th>Phone</th>
+										<th>Email</th>
+										<th class="fix-w">Address</th>
+										<th>Salary (Rs)</th>
+										<th>Role</th>
+										<th>Birthday</th>
+									</tr>
+									@for (employee of allEmployeesLoadedEmployees; track $index) {
+										<tr>
+											<td class="center">{{ employee.id }}</td>
+											<td [title]="employee.name">{{ employee.name }}</td>
+											<td [title]="employee.phone">{{ employee.phone }}</td>
+											<td [title]="employee.email">{{ employee.email }}</td>
+											<td [title]="employee.address">{{ employee.address }}</td>
+											<td class="right">{{ employee.salary }}</td>
+											<td>{{ employee.role }}</td>
+											<td>{{ employee.dob }}</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="local-content">
