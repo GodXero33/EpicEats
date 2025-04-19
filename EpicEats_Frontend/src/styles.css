@@ -435,10 +435,6 @@ body {
 			background-color: hsl(from var(--background-color) h s calc(l + 20));
 		}
 
-		.nav-title, .nav-btn {
-			transition: background-color 0.2s linear;
-		}
-
 		.nav-title:hover {
 			background-color: hsl(from var(--action-button) h s calc(l * 1.1));
 		}

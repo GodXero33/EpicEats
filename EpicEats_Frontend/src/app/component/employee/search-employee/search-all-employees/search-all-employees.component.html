@@ -1,0 +1,37 @@
+<div class="local-content full full-y">
+	<div id="all-employees-local-cont">
+		<div class="form">
+			<button class="action left" (click)="loadAllEmployees()">Refresh</button>
+		</div>
+		<div id="all-employees-table-cont" class="">
+			<div class="table-cont" (click)="onAllEmployeesTableClick($event)">
+				<table>
+					<tbody>
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Phone</th>
+							<th>Email</th>
+							<th>Address</th>
+							<th>Salary (Rs)</th>
+							<th>Role</th>
+							<th>Birthday</th>
+						</tr>
+						@for (employee of allEmployeesViewableEmployees; track $index) {
+							<tr>
+								<td class="center">{{ employee.id }}</td>
+								<td [title]="employee.name">{{ employee.name }}</td>
+								<td [title]="employee.phone">{{ employee.phone }}</td>
+								<td [title]="employee.email">{{ employee.email }}</td>
+								<td [title]="employee.address">{{ employee.address }}</td>
+								<td class="right">{{ employee.salary }}</td>
+								<td>{{ employee.role }}</td>
+								<td>{{ employee.dob }}</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

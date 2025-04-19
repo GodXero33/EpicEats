@@ -1,106 +1,16 @@
 <div id="search-emp-cont">
 	<h1>Search Employee</h1>
 	<div id="form-cont">
-		<div class="local-content-cont scrollbar scrollbar-y">
-			<div class="local-content full full-y">
-				<div id="all-employees-local-cont">
-					<div class="form">
-						<button class="action left" (click)="loadAllEmployees()">Refresh</button>
-					</div>
-					<div id="all-employees-table-cont" class="">
-						<div class="table-cont">
-							<table>
-								<tbody>
-									<tr>
-										<th>ID</th>
-										<th>Name</th>
-										<th>Phone</th>
-										<th>Email</th>
-										<th class="fix-w">Address</th>
-										<th>Salary (Rs)</th>
-										<th>Role</th>
-										<th>Birthday</th>
-									</tr>
-									@for (employee of allEmployeesLoadedEmployees; track $index) {
-										<tr>
-											<td class="center">{{ employee.id }}</td>
-											<td [title]="employee.name">{{ employee.name }}</td>
-											<td [title]="employee.phone">{{ employee.phone }}</td>
-											<td [title]="employee.email">{{ employee.email }}</td>
-											<td [title]="employee.address">{{ employee.address }}</td>
-											<td class="right">{{ employee.salary }}</td>
-											<td>{{ employee.role }}</td>
-											<td>{{ employee.dob }}</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="local-content">
-				<div class="form">
-					<div class="input">
-						<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)" #searchByIdIdField>
-						<div class="label">Employee ID</div>
-					</div>
-					<button class="action" (click)="searchByIdSearch()">Search</button>
-				</div>
-				<div class="form-details">
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdName }}</div>
-						<div class="label">Name</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdPhone }}</div>
-						<div class="label">Phone</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdEmail }}</div>
-						<div class="label">Email</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdAddress }}</div>
-						<div class="label">Address</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdSalary }}</div>
-						<div class="label">Salary</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdRole }}</div>
-						<div class="label">Role</div>
-					</div>
-					<div class="input-detail">
-						<div class="input-label">{{ searchByIdDob }}</div>
-						<div class="label">Birthday</div>
-					</div>
-				</div>
-			</div>
-			<div class="local-content">
-				<div class="form">
-					<div class="input">
-						<input type="number" min="1" placeholder="" [(ngModel)]="searchByIdId" (keydown)="searchByIdIdFieldOnKeydown($event)" #searchByIdIdField>
-						<div class="label">Employee ID</div>
-					</div>
-					<button class="action" (click)="searchByIdSearch()">Search</button>
-				</div>
-			</div>
+		<div class="local-content-cont">
+			<router-outlet />
 		</div>
 
 		<div class="local-nav">
 			<div class="local-nav-btn">
-				<div>All Employees</div>
-				<input type="radio" name="employee-search-local-nav" checked>
+				<div (click)="navigateSection('all')">All Employees</div>
 			</div>
 			<div class="local-nav-btn">
-				<div>Search by ID</div>
-				<input type="radio" name="employee-search-local-nav">
-			</div>
-			<div class="local-nav-btn">
-				<div>Advanced Search</div>
-				<input type="radio" name="employee-search-local-nav">
+				<div (click)="navigateSection('by-id')">Search by ID</div>
 			</div>
 		</div>
 	</div>
