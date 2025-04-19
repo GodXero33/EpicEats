@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Employee } from '../../../../model/employee/employee.model';
 import { ApiService } from '../../../../service/api.service';
+import { EmployeeRole } from '../../../../enum/employee-role.enum';
 
 @Component({
   selector: 'app-search-all-employees',
@@ -154,5 +155,11 @@ export class SearchAllEmployeesComponent {
     this.filterStringValue = (event.target as HTMLInputElement).value;
 
     this.filterAllEmployees();
+  }
+
+  public getFormatterRole (role: EmployeeRole): string {
+    const value: string = role.toString().toLowerCase();
+
+    return value[0].toUpperCase() + value.substring(1);
   }
 }

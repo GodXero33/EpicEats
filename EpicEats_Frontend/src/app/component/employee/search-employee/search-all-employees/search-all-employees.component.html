@@ -26,7 +26,7 @@
 								<td [title]="employee.email">{{ employee.email }}</td>
 								<td [title]="employee.address">{{ employee.address }}</td>
 								<td class="right">{{ employee.salary }}</td>
-								<td>{{ employee.role }}</td>
+								<td>{{ getFormatterRole(employee.role) }}</td>
 								<td>{{ employee.dob }}</td>
 							</tr>
 						}
