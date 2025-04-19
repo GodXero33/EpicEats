@@ -75,7 +75,7 @@ export const routes: Routes = [
 				children: [
 					{
 						path: '',
-						component: SearchAllEmployeesComponent,
+						component: SearchEmployeeByIdComponent,
 						canActivate: [AuthGuard]
 					},
 					{

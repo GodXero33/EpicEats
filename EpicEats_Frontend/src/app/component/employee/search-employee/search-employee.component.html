@@ -6,8 +6,8 @@
 		</div>
 
 		<div class="local-nav">
-			<div [class.active]="!currentRoute || currentRoute === 'all'" (click)="navigateSection('all')" class="local-nav-btn">All Employees</div>
-			<div [class.active]="currentRoute === 'by-id'" (click)="navigateSection('by-id')" class="local-nav-btn">Search by ID</div>
+			<div [class.active]="currentRoute === 'all'" (click)="navigateSection('all')" class="local-nav-btn">All Employees</div>
+			<div [class.active]="!currentRoute || currentRoute === 'by-id'" (click)="navigateSection('by-id')" class="local-nav-btn">Search by ID</div>
 		</div>
 	</div>
 </div>

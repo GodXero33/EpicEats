@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 
@@ -6,7 +6,8 @@ import { filter, Subject, takeUntil } from 'rxjs';
   selector: 'app-search-employee',
   imports: [RouterOutlet],
   templateUrl: './search-employee.component.html',
-  styleUrl: './search-employee.component.css'
+  styleUrl: './search-employee.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class SearchEmployeeComponent implements OnDestroy {
   public currentRoute!: string;
