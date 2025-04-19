@@ -28,18 +28,13 @@ export class AuthService {
 		const payload = token.split('.')[1];
 		const decodedPayload = JSON.parse(atob(payload));
 
+		const ONE_MINUTE = 60000;
 		const expMillis = decodedPayload.exp * 1000;
 		const nowMillis = Date.now();
-		let remainingTime = expMillis - nowMillis;
+		const deltaMillis = expMillis - nowMillis;
+		let remainingTime = deltaMillis > ONE_MINUTE ? deltaMillis - ONE_MINUTE : deltaMillis;
 
-		const ONE_MINUTE = 60_000;
-
-		if (remainingTime > ONE_MINUTE) {
-			remainingTime -= ONE_MINUTE;
-			console.log(`Token will expire in: ${remainingTime} ms`);
-		} else {
-			console.log(`Token will expire in: ${remainingTime} ms`);
-		}
+		console.log(`Token will expire in: ${remainingTime} ms`);
 
 		if (this.expTimeout !== null) clearTimeout(this.expTimeout);
 

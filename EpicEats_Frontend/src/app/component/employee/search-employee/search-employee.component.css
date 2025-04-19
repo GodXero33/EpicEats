@@ -54,23 +54,14 @@ h1 {
 			font-family: verdana;
 			color: var(--text-1);
 			text-wrap: nowrap;
+			cursor: pointer;
 		}
 
-		.local-nav-btn:has( input:checked) {
+		.local-nav-btn.active {
 			transform: translateY(var(--border-size));
 			border: var(--border-size) solid hsl(from rgb(255, 255, 255) h s var(--hue-l-2));
 			border-bottom: none;
-		}
-
-		.local-nav-btn input {
-			--webkit-appearance: none;
-			appearance: none;
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			cursor: pointer;
+			cursor: default;
 		}
 	}
 
@@ -107,38 +98,14 @@ h1 {
 		}
 	}
 
-	&:has( .local-nav .local-nav-btn:nth-child(1) input:checked) {
+	&:has( .local-nav .local-nav-btn:nth-child(1).active) {
 		.local-content:nth-child(1) {
 			display: block;
 		}
 	}
 
-	&:has( .local-nav .local-nav-btn:nth-child(2) input:checked) {
+	&:has( .local-nav .local-nav-btn:nth-child(2).active) {
 		.local-content:nth-child(2) {
-			display: block;
-		}
-	}
-
-	&:has( .local-nav .local-nav-btn:nth-child(3) input:checked) {
-		.local-content:nth-child(3) {
-			display: block;
-		}
-	}
-
-	&:has( .local-nav .local-nav-btn:nth-child(4) input:checked) {
-		.local-content:nth-child(4) {
-			display: block;
-		}
-	}
-
-	&:has( .local-nav .local-nav-btn:nth-child(5) input:checked) {
-		.local-content:nth-child(5) {
-			display: block;
-		}
-	}
-
-	&:has( .local-nav .local-nav-btn:nth-child(6) input:checked) {
-		.local-content:nth-child(6) {
 			display: block;
 		}
 	}

@@ -74,6 +74,11 @@ export const routes: Routes = [
 				canActivate: [AuthGuard],
 				children: [
 					{
+						path: '',
+						component: SearchAllEmployeesComponent,
+						canActivate: [AuthGuard]
+					},
+					{
 						path: 'all',
 						component: SearchAllEmployeesComponent,
 						canActivate: [AuthGuard]

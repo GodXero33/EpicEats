@@ -1,5 +1,6 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, OnDestroy } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-search-employee',
@@ -7,16 +8,27 @@ import { Router, RouterOutlet } from '@angular/router';
   templateUrl: './search-employee.component.html',
   styleUrl: './search-employee.component.css'
 })
-export class SearchEmployeeComponent {
-  public navigatedRoute: string = '';
+export class SearchEmployeeComponent implements OnDestroy {
+  public currentRoute!: string;
+  private destroyRouterSub$: Subject<void> = new Subject();
 
-  constructor (private router: Router) {}
+  constructor (private router: Router) {
+    this.currentRoute = this.router.url.split('/')[3];
+
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroyRouterSub$)
+      )
+      .subscribe(event => this.currentRoute = event.url.split('/')[3]);
+  }
+
+  public ngOnDestroy (): void {
+    this.destroyRouterSub$.next();
+    this.destroyRouterSub$.complete();
+  }
 
   public navigateSection (path: string): void {
-    if (path !== 'all' && path !== 'by-id') return;
-
-    this.navigatedRoute = path;
-
     this.router.navigate([`employee/search/${path}`]);
   }
 }
