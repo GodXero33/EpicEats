@@ -42,7 +42,7 @@ public id: number = 1;
   constructor (private apiService: ApiService) {}
 
   public terminateEmployee (): void {
-    if (!this.searchedEmployee) return;
+    if (!this.searchedEmployee || !confirm('Are you sure you want to terminate this employee?')) return;
 
     this.apiService.patch(`/employee/terminate/${this.searchedEmployee.id}`).subscribe({
       next: () => {

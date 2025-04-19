@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Employee } from '../../../../model/employee/employee.model';
 import { ApiService } from '../../../../service/api.service';
+import { EmployeeRole } from '../../../../enum/employee-role.enum';
 
 @Component({
   selector: 'app-search-all-employees',
@@ -12,7 +13,9 @@ export class SearchAllEmployeesComponent {
   public loadedEmployees: Array<Employee> = [];
   public viewableEmployees: Array<Employee> = [];
   public selectedEmployee: Employee | null = null;
-  public selectedEmployeeIndex: number = -1;
+  private selectedEmployeeIndex: number = -1;
+  private isInvertSorted: boolean = false;
+  private filterStringValue: string | null = null;
 
   @ViewChild('detailsToggleBtn') detailsToggleBtn!: ElementRef;
 
@@ -21,11 +24,25 @@ export class SearchAllEmployeesComponent {
   }
 
   public filterAllEmployees (): void {
-    function filterEmployee (employee: Employee) {
-      return employee;
+    if (this.filterStringValue == null || this.filterStringValue.length == 0) {
+      this.viewableEmployees = this.loadedEmployees.filter((employee: Employee) => employee);
+      return;
     }
 
-    this.viewableEmployees = this.loadedEmployees.filter(filterEmployee);
+    const value: string = this.filterStringValue.trim().toLowerCase();
+
+    const filterEmployees = (employee: Employee) => {
+      if (
+        employee.role.toString().toLowerCase().includes(value) ||
+        employee.name.toString().toLowerCase().includes(value) ||
+        employee.phone.toString().toLowerCase().includes(value) ||
+        employee.email.toString().toLowerCase().includes(value)
+      ) return employee;
+
+      return undefined;
+    }
+
+    this.viewableEmployees = this.loadedEmployees.filter(filterEmployees);
   }
 
   public loadAllEmployees (): void {
@@ -95,5 +112,54 @@ export class SearchAllEmployeesComponent {
         console.error(error);
       }
     });
+  }
+
+  private sortEmployees (employeeComparator: (a: Employee, b: Employee) => number): void {
+    this.isInvertSorted = !this.isInvertSorted;
+    this.loadedEmployees = this.loadedEmployees.sort(employeeComparator);
+
+    this.filterAllEmployees();
+  }
+
+  public sortById (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.id - b.id :
+      (a: Employee, b: Employee) => b.id - a.id);
+  }
+
+  public sortByName (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.name.localeCompare(b.name) :
+      (a: Employee, b: Employee) => b.name.localeCompare(a.name));
+  }
+
+  public sortBySalary (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.salary - b.salary :
+      (a: Employee, b: Employee) => b.salary - a.salary);
+  }
+
+  public sortByRole (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => a.role.localeCompare(b.role) :
+      (a: Employee, b: Employee) => b.role.localeCompare(a.role));
+  }
+
+  public sortByDOB (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => new Date(a.dob).getTime() - new Date(b.dob).getTime() :
+      (a: Employee, b: Employee) => new Date(b.dob).getTime() - new Date(a.dob).getTime());
+  }
+
+  public onFilterFieldKeyup (event: KeyboardEvent): void {
+    this.filterStringValue = (event.target as HTMLInputElement).value;
+
+    this.filterAllEmployees();
+  }
+
+  public getFormatterRole (role: EmployeeRole): string {
+    const value: string = role.toString().toLowerCase();
+
+    return value[0].toUpperCase() + value.substring(1);
   }
 }
