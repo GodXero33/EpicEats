@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Router } from "@angular/router";
+import { NavigationEnd, Router } from "@angular/router";
+import { filter } from "rxjs";
 
 @Injectable({
 	providedIn: 'root'
@@ -7,7 +8,19 @@ import { Router } from "@angular/router";
 export class AuthService {
 	private expTimeout: any = null;
 
-	constructor (private router: Router) {}
+	constructor (private router: Router) {
+		this.startAutoLogoutCheck();
+	}
+
+	private startAutoLogoutCheck(): void {
+		this.router.events.pipe(
+			filter(event => event instanceof NavigationEnd)
+		).subscribe(() => {
+			const token = this.getToken();
+
+			if (token) this.setToken(token);
+		});
+	}
 
 	public setToken (token: string): void {
 		sessionStorage.setItem('authToken', token);
