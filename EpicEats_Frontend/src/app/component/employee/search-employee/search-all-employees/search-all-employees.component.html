@@ -2,7 +2,7 @@
 	<div id="all-employees-local-cont">
 		<div id="all-employees-controls-cont">
 			<button class="action left" (click)="loadAllEmployees()">Refresh</button>
-			<input type="text" autocomplete="nope" spellcheck="false" placeholder="Filter employees by name, phone, email or role" (keyup)="onFilterFieldKeyup($event)">
+			<input type="text" autocomplete="nope" spellcheck="false" placeholder="Filter employees by name, phone, email or role" (input)="onFilterFieldInput($event)">
 		</div>
 		<div id="all-employees-table-cont" class="">
 			<div class="table-cont" (click)="onAllEmployeesTableClick($event)">

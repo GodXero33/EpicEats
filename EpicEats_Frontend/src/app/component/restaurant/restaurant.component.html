@@ -1,1 +1,28 @@
-<p>restaurant works!</p>
+<div id="employee-cont">
+	<div class="side-navbar">
+		<div class="nav-section">
+			<div class="nav-title">
+				<div>Tables</div>
+				<input type="checkbox" checked>
+			</div>
+			<div class="nav-btn" [class.active]="!currentRoute || currentRoute === 'table-add'" (click)="sideNavBarNavigateTo('table-add')">Add Table</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'table-update'" (click)="sideNavBarNavigateTo('table-update')">Update Table</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'table-delete'" (click)="sideNavBarNavigateTo('table-delete')">Delete Table</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'table-search'" (click)="sideNavBarNavigateTo('table-search')">Search Table</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'design-layout'" (click)="sideNavBarNavigateTo('design-layout')">Design Layout</div>
+		</div>
+		<div class="nav-section">
+			<div class="nav-title">
+				<div>Bookings</div>
+				<input type="checkbox" checked>
+			</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'booking-add'" (click)="sideNavBarNavigateTo('booking-add')">Add Booking</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'booking-update'" (click)="sideNavBarNavigateTo('booking-update')">Update Booking</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'booking-delete'" (click)="sideNavBarNavigateTo('booking-delete')">Delete Booking</div>
+			<div class="nav-btn" [class.active]="currentRoute === 'booking-search'" (click)="sideNavBarNavigateTo('booking-search')">Search Booking</div>
+		</div>
+	</div>
+	<div class="content-cont">
+		<router-outlet />
+	</div>
+</div>

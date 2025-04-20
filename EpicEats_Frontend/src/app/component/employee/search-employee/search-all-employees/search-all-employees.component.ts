@@ -151,7 +151,7 @@ export class SearchAllEmployeesComponent {
       (a: Employee, b: Employee) => new Date(b.dob).getTime() - new Date(a.dob).getTime());
   }
 
-  public onFilterFieldKeyup (event: KeyboardEvent): void {
+  public onFilterFieldInput (event: Event): void {
     this.filterStringValue = (event.target as HTMLInputElement).value;
 
     this.filterAllEmployees();
