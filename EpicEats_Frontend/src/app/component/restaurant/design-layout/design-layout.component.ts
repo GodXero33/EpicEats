@@ -22,7 +22,7 @@ export class DesignLayoutComponent implements OnDestroy {
   
   public ngOnDestroy (): void {
     this.designLayoutDrawer.removeEvents();
-    this.designLayoutDrawer.saveStatus();
+    this.designLayoutDrawer.saveLayout();
   }
 
   private loadLayout (): void {
@@ -38,7 +38,7 @@ export class DesignLayoutComponent implements OnDestroy {
   }
 
   public saveData (): void {
-    this.apiService.post('/restaurant/layout', this.designLayoutDrawer.statusToString()).subscribe({
+    this.apiService.post('/restaurant/layout', this.designLayoutDrawer.layoutToString()).subscribe({
       next: () => {
         alert('Layout saved');
       },
