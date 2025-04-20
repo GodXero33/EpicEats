@@ -3,6 +3,7 @@ package edu.icet.ecom.controller;
 import edu.icet.ecom.config.apidoc.restaurant.*;
 import edu.icet.ecom.dto.restaurant.*;
 import edu.icet.ecom.service.custom.misc.CustomerService;
+import edu.icet.ecom.service.custom.misc.LayoutFileService;
 import edu.icet.ecom.service.custom.restaurant.RestaurantTableService;
 import edu.icet.ecom.util.Constants;
 import edu.icet.ecom.util.ControllerResponseUtil;
@@ -25,6 +26,7 @@ import java.util.List;
 @Tag(name = "Restaurant Management", description = "APIs for managing restaurant")
 public class RestaurantController {
 	private final RestaurantTableService restaurantTableService;
+	private final LayoutFileService layoutFileService;
 	private final CustomerService customerService;
 	private final ControllerResponseUtil controllerResponseUtil;
 
@@ -234,5 +236,21 @@ public class RestaurantController {
 		return response.getStatus() == ResponseType.DELETED ?
 			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All booking deleted related table") :
 			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@PostMapping("/layout")
+	public CustomHttpResponse<Object> saveLayout (@RequestBody String json) {
+		return this.layoutFileService.saveLayout(json) ?
+			new CustomHttpResponse<>(HttpStatus.OK, null, "Layout saved") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
+	@GetMapping("/layout")
+	public CustomHttpResponse<String> getLayout () {
+		final String layout = this.layoutFileService.loadLayout();
+
+		return layout == null ?
+			this.controllerResponseUtil.getServerErrorResponse() :
+			new CustomHttpResponse<>(HttpStatus.OK, layout, "Layout loaded");
 	}
 }

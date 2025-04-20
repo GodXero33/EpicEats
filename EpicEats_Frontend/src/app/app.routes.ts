@@ -23,6 +23,15 @@ import { DeleteEmployeePromotionComponent } from './component/employee/delete-em
 import { SearchEmployeePromotionComponent } from './component/employee/search-employee-promotion/search-employee-promotion.component';
 import { SearchAllEmployeesComponent } from './component/employee/search-employee/search-all-employees/search-all-employees.component';
 import { SearchEmployeeByIdComponent } from './component/employee/search-employee/search-employee-by-id/search-employee-by-id.component';
+import { AddRestaurantTableComponent } from './component/restaurant/add-restaurant-table/add-restaurant-table.component';
+import { UpdateRestaurantTableComponent } from './component/restaurant/update-restaurant-table/update-restaurant-table.component';
+import { DeleteRestaurantTableComponent } from './component/restaurant/delete-restaurant-table/delete-restaurant-table.component';
+import { SearchRestaurantTableComponent } from './component/restaurant/search-restaurant-table/search-restaurant-table.component';
+import { DesignLayoutComponent } from './component/restaurant/design-layout/design-layout.component';
+import { AddRestaurantTableBookingComponent } from './component/restaurant/add-restaurant-table-booking/add-restaurant-table-booking.component';
+import { UpdateRestaurantTableBookingComponent } from './component/restaurant/update-restaurant-table-booking/update-restaurant-table-booking.component';
+import { DeleteRestaurantTableBookingComponent } from './component/restaurant/delete-restaurant-table-booking/delete-restaurant-table-booking.component';
+import { SearchRestaurantTableBookingComponent } from './component/restaurant/search-restaurant-table-booking/search-restaurant-table-booking.component';
 
 export const routes: Routes = [
 	{
@@ -150,7 +159,59 @@ export const routes: Routes = [
 	{
 		path: 'restaurant',
 		component: RestaurantComponent,
-		canActivate: [AuthGuard]
+		canActivate: [AuthGuard],
+		children: [
+			{
+				path: '',
+				component: AddRestaurantTableComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'table-add',
+				component: AddRestaurantTableComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'table-update',
+				component: UpdateRestaurantTableComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'table-delete',
+				component: DeleteRestaurantTableComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'table-search',
+				component: SearchRestaurantTableComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'design-layout',
+				component: DesignLayoutComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'booking-add',
+				component: AddRestaurantTableBookingComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'booking-update',
+				component: UpdateRestaurantTableBookingComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'booking-delete',
+				component: DeleteRestaurantTableBookingComponent,
+				canActivate: [AuthGuard]
+			},
+			{
+				path: 'booking-search',
+				component: SearchRestaurantTableBookingComponent,
+				canActivate: [AuthGuard]
+			}
+		]
 	},
 	{
 		path: 'settings',

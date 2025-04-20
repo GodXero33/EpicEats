@@ -1,0 +1,31 @@
+#employee-cont {
+	position: absolute;
+	top: var(--navbar-height);
+	left: 0;
+	width: 100%;
+	height: calc(100% - var(--navbar-height));
+	display: flex;
+	flex-direction: row;
+}
+
+#employee-cont > div {
+	position: relative;
+	top: 0;
+	left: 0;
+	height: 100%;
+}
+
+.side-navbar {
+	padding-block: 1rem;
+	width: clamp(180px, 30%, 240px);
+}
+
+.content-cont {
+	padding-block: 2rem;
+	padding-inline: 1rem;
+	flex-grow: 1;
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--scrollbar-color) transparent;
+}
