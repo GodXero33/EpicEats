@@ -3,7 +3,7 @@
 		<div class="nav-section">
 			<div class="nav-title">
 				<div>Tables</div>
-				<input type="checkbox" checked>
+				<input type="checkbox">
 			</div>
 			<div class="nav-btn" [class.active]="!currentRoute || currentRoute === 'table-add'" (click)="sideNavBarNavigateTo('table-add')">Add Table</div>
 			<div class="nav-btn" [class.active]="currentRoute === 'table-update'" (click)="sideNavBarNavigateTo('table-update')">Update Table</div>

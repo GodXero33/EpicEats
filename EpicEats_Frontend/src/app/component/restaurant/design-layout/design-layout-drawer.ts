@@ -95,6 +95,18 @@ export class DesignLayoutDrawer {
 	private bgColor: string = '#232323';
 	private layout: Layout = new Layout();
 
+	private translateX: number = 0;
+	private translateY: number = 0;
+
+	private scale: number = 1;
+	private maxScale: number = 6;
+	private minScale: number = 0.2;
+	private scaleFact: number = 0.1;
+
+	private isCanvasDragging: boolean = false;
+	private canvasDragOffsetX: number = 0;
+	private canvasDragOffsetY: number = 0;
+
 	public setCanvas (canvas: HTMLCanvasElement): void {
 		this.canvas = canvas;
 
@@ -121,19 +133,42 @@ export class DesignLayoutDrawer {
 
 		this.eventAdded = true;
 
-		const resize = () => {
-			this.resize();
-		}
+		const resize = () => this.resize();
+		const mousedown = (event: MouseEvent) => {
+			if (event.target != this.canvas) return;
+
+			this.mousedown(event);
+		};
+		const contextmenu = (event: MouseEvent) => {
+			if (event.target === this.canvas) event.preventDefault();
+		};
+		const mousemove = (event: MouseEvent) => this.mousemove(event);
+		const mouseup = (event: MouseEvent) => this.mouseup(event);
+		const wheel = (event: WheelEvent) => this.wheel(event);
 
 		this.eventFuncs.set('resize', resize);
+		this.eventFuncs.set('mousedown', mousedown);
+		this.eventFuncs.set('contextmenu', contextmenu);
+		this.eventFuncs.set('mousemove', mousemove);
+		this.eventFuncs.set('mouseup', mouseup);
+		this.eventFuncs.set('wheel', wheel);
 
 		window.addEventListener('resize', resize);
+		window.addEventListener('mousedown', mousedown);
+		window.addEventListener('contextmenu', contextmenu);
+		window.addEventListener('mousemove', mousemove);
+		window.addEventListener('mouseup', mouseup);
+		window.addEventListener('wheel', wheel);
 	}
 
 	public removeEvents () {
 		this.eventAdded = false;
 
-		window.addEventListener('resize', this.eventFuncs.get('resize'));
+		const keys: MapIterator<String> = this.eventFuncs.keys();
+
+		for (const [eventName, handler] of this.eventFuncs)
+			window.removeEventListener(eventName as string, handler);
+
 		this.eventFuncs.clear();
 	}
 
@@ -147,6 +182,35 @@ export class DesignLayoutDrawer {
 		this.canvas.height = this.height;
 	}
 
+	private mousedown (event: MouseEvent): void {
+		if (event.button === 0) {
+			this.isCanvasDragging = true;
+			this.canvasDragOffsetX = event.x;
+			this.canvasDragOffsetY = event.y;
+		}
+	}
+
+	private mousemove (event: MouseEvent): void {
+		if (this.isCanvasDragging) {
+			this.translateX += event.x - this.canvasDragOffsetX;
+			this.translateY += event.y - this.canvasDragOffsetY;
+			
+			this.canvasDragOffsetX = event.x;
+			this.canvasDragOffsetY = event.y;
+		}
+	}
+
+	private mouseup (event: MouseEvent): void {
+		this.isCanvasDragging = false;
+	}
+
+	private wheel (event: WheelEvent): void {
+		this.scale += Math.sign(event.deltaY) * this.scaleFact;
+
+		if (this.scale < this.minScale) this.scale = this.minScale;
+		if (this.scale > this.maxScale) this.scale = this.maxScale;
+	}
+
 	private draw () {
 		this.ctx.fillStyle = this.bgColor;
 		this.ctx.fillRect(0, 0, this.width, this.height);
@@ -154,6 +218,8 @@ export class DesignLayoutDrawer {
 		const transform: DOMMatrix = this.ctx.getTransform();
 
 		this.ctx.translate(this.width * 0.5, this.height * 0.5);
+		this.ctx.translate(this.translateX, this.translateY);
+		this.ctx.scale(this.scale, this.scale);
 		this.layout.draw(this.ctx);
 		this.ctx.setTransform(transform);
 	}
