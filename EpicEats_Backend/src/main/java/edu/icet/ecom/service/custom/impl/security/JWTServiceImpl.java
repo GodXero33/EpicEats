@@ -11,7 +11,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +23,28 @@ import java.util.function.Function;
 @Service
 @Primary
 public class JWTServiceImpl implements JWTService {
-	@Value("${jwt.secret}")
-	private String secretKey;
-	@Value("${jwt.lifetime}")
-	private Integer tokenLifeTime;
+	private final String secretKey;
+	private final Integer tokenLifeTime;
+
+	public JWTServiceImpl (
+		@Value("${jwt.secret}") String secretKey,
+		@Value("${jwt.lifetime}") Integer tokenLifeTime,
+		@Value("${jwt.key_gen.enable}") boolean enableKeyGen
+	) throws NoSuchAlgorithmException {
+		this.tokenLifeTime = tokenLifeTime;
+
+		if (enableKeyGen) {
+			KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+			SecretKey generatedSecretKey = keyGenerator.generateKey();
+			this.secretKey = Base64.getUrlEncoder().encodeToString(generatedSecretKey.getEncoded());
+		} else {
+			this.secretKey = secretKey;
+		}
+	}
 
 	@Override
 	public String generateToken (String adminName, UserRole role) {
-		System.out.println(this.tokenLifeTime + ", lifetime");
+		System.out.println(this.secretKey);
 		final Map<String, Object> claims = new HashMap<>();
 
 		claims.put("role", role);
