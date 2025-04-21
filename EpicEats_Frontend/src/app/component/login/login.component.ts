@@ -66,7 +66,10 @@ export class LoginComponent implements OnInit {
       next: (response: HttpResponse<any>) => {
         if (response.status === 200) {
           this.authService.setToken(response.body.data.token);
-          this.router.navigate(['/home']);
+
+          const lastRoute: string | null = sessionStorage.getItem('last-route');
+
+          this.router.navigate([lastRoute ? lastRoute : '/home']);
         } else {
           this.alertCommunicationService.showError('An unexpected error occurred');
         }
