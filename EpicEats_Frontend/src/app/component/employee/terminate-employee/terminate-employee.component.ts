@@ -1,7 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ApiService } from '../../../service/api.service';
 import { Employee } from '../../../model/employee/employee.model';
-import { EmployeeRole } from '../../../enum/employee-role.enum';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 

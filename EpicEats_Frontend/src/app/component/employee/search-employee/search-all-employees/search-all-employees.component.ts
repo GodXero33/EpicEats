@@ -25,13 +25,13 @@ export class SearchAllEmployeesComponent {
 
   public filterAllEmployees (): void {
     if (this.filterStringValue == null || this.filterStringValue.length == 0) {
-      this.viewableEmployees = this.loadedEmployees.filter((employee: Employee) => employee);
+      this.viewableEmployees = this.loadedEmployees.filter(employee => employee);
       return;
     }
 
     const value: string = this.filterStringValue.trim().toLowerCase();
 
-    const filterEmployees = (employee: Employee) => {
+    const filterEmployees = (employee: Employee): Employee | undefined => {
       if (
         employee.role.toString().toLowerCase().includes(value) ||
         employee.name.toString().toLowerCase().includes(value) ||
@@ -73,7 +73,7 @@ export class SearchAllEmployeesComponent {
   }
 
   public onAllEmployeesTableClick (event: MouseEvent): void {
-    let targetTR: HTMLTableRowElement | null = null;
+    let targetTR = null;
 
     if (event.target instanceof HTMLTableCellElement) targetTR = event.target.parentElement as HTMLTableRowElement;
 
@@ -83,7 +83,7 @@ export class SearchAllEmployeesComponent {
 
     if (targetTR.querySelectorAll('th').length) return;
 
-    const tbody: HTMLElement | null = targetTR.parentElement;
+    const tbody = targetTR.parentElement;
 
     if (!tbody) return;
 
@@ -158,7 +158,7 @@ export class SearchAllEmployeesComponent {
   }
 
   public getFormatterRole (role: EmployeeRole): string {
-    const value: string = role.toString().toLowerCase();
+    const value = role.toString().toLowerCase();
 
     return value[0].toUpperCase() + value.substring(1);
   }

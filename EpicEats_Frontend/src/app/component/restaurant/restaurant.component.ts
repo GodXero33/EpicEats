@@ -20,7 +20,7 @@ public currentRoute!: string;
         filter(event => event instanceof NavigationEnd),
         takeUntil(this.destroyRouterSub$)
       )
-      .subscribe((event: NavigationEnd) => this.currentRoute = event.url.split('/')[2]);
+      .subscribe(event => this.currentRoute = event.url.split('/')[2]);
   }
 
   public ngOnDestroy (): void {

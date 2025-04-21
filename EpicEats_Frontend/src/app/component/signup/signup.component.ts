@@ -2,7 +2,7 @@ import { Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angu
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { LoginUser } from '../../model/security/login-user.model';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Employee } from '../../model/employee/employee.model';
 import { AuthService } from '../../service/auth.service';
@@ -138,7 +138,7 @@ export class SignupComponent {
   public adminLogin (): void {
     if (!this.validateAdminLoginInputs()) return;
 
-    const loginAdmin: LoginUser = LoginUser.builder()
+    const loginAdmin = LoginUser.builder()
       .username(this.adminUsername)
       .password(this.adminPassword)
       .build();
@@ -148,15 +148,15 @@ export class SignupComponent {
     });
 
     this.http.post<any>('http://localhost:8080/user/login', loginAdmin, { headers, observe: 'response' }).subscribe({
-      next: (response: HttpResponse<any>) => {
+      next: (response) => {
         if (response.status === 200) {
           this.handleAdminLoginResponseOkData(response.body.data);
         } else {
-          this.alertCommunicationService.showError('An unexpected error occurrede');
+          this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
-      error: (error: HttpErrorResponse) => {
-        const errorMessage: string = error.status === 0 ?
+      error: (error) => {
+        const errorMessage = error.status === 0 ?
           'Failed to connect server' :
           error.status === 401 ?
             'Invalid username or password' :
@@ -207,14 +207,14 @@ export class SignupComponent {
     });
 
     this.http.get<any>(`http://localhost:8080/employee/${this.employeeId}`, { headers, observe: 'response' }).subscribe({
-      next: (response: HttpResponse<any>) => {
+      next: (response) => {
         if (response.status === 200) {
           if (!response.body.data) {
             this.alertCommunicationService.showError('Invalid server response');
             return;
           }
 
-          const employeeData: any = response.body.data;
+          const employeeData = response.body.data;
 
           this.loadedEmployee = Employee.builder()
             .name(employeeData.name)
@@ -231,7 +231,7 @@ export class SignupComponent {
           this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
-      error: (error: HttpErrorResponse) => {
+      error: (error) => {
         this.loadedEmployee = null;
 
         const errorMessage: string = error.status === 0 ?
@@ -325,7 +325,7 @@ export class SignupComponent {
   public newUserSignup (): void {
     if (!this.validateSignupUserInputs()) return;
 
-    const newUser: User = User.builder()
+    const newUser = User.builder()
       .username(this.signupUserUsername)
       .password(this.signupUserPassword)
       .employeeId(this.employeeId)
@@ -338,7 +338,7 @@ export class SignupComponent {
     }); 
 
     this.http.post<any>(`http://localhost:8080/user/register`, newUser, { headers, observe: 'response' }).subscribe({
-      next: (response: HttpResponse<any>) => {
+      next: (response) => {
         if (response.status === 200) {
           if (!response.body.data || !response.body.data.username) {
             this.alertCommunicationService.showError('Invalid server response');
@@ -354,7 +354,7 @@ export class SignupComponent {
           this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
-      error: (error: HttpErrorResponse) => {
+      error: (error) => {
         this.loadedEmployee = null;
 
         this.alertCommunicationService.showError(error.error.message);

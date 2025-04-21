@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LoginUser } from '../../model/security/login-user.model';
@@ -53,7 +53,7 @@ export class LoginComponent implements OnInit {
   public login (): void {
     if (!this.validateInputs()) return;
 
-    const loginUser: LoginUser = LoginUser.builder()
+    const loginUser = LoginUser.builder()
       .username(this.username)
       .password(this.password)
       .build();
@@ -63,16 +63,23 @@ export class LoginComponent implements OnInit {
     });
 
     this.http.post<any>('http://localhost:8080/user/login', loginUser, { headers, observe: 'response' }).subscribe({
-      next: (response: HttpResponse<any>) => {
+      next: (response) => {
         if (response.status === 200) {
           this.authService.setToken(response.body.data.token);
-          this.router.navigate(['/home']);
+
+          const lastRoute = sessionStorage.getItem('last-route');
+          const lastUser = sessionStorage.getItem('last-user');
+
+          sessionStorage.removeItem('last-route');
+			    sessionStorage.removeItem('last-user');
+
+          this.router.navigate([lastRoute && lastUser === this.authService.getUsername() ? lastRoute : '/home']);
         } else {
           this.alertCommunicationService.showError('An unexpected error occurred');
         }
       },
-      error: (error: HttpErrorResponse) => {
-        const errorMessage: string = error.status === 0 ?
+      error: (error) => {
+        const errorMessage = error.status === 0 ?
           'Failed to connect server' :
           error.status === 401 ?
             'Invalid username or password' :

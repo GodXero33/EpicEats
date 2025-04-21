@@ -469,6 +469,21 @@ body {
 	overflow-y: auto;
 }
 
+.scrollbar-x.scrollbar-scroll {
+	overflow-x: scroll;
+	overflow-y: hidden;
+}
+
+.scrollbar-y.scrollbar-scroll {
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.scrollbar-xy.scrollbar-scroll {
+	overflow-x: scroll;
+	overflow-y: scroll;
+}
+
 .scrollbar-hidden {
 	overflow-x: hidden;
 	overflow-y: hidden;

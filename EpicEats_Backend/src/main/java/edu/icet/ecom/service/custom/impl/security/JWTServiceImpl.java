@@ -11,7 +11,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +23,24 @@ import java.util.function.Function;
 @Service
 @Primary
 public class JWTServiceImpl implements JWTService {
-	@Value("${jwt.secret}")
-	private String secretKey;
+	private final String secretKey;
+	private final Integer tokenLifeTime;
+
+	public JWTServiceImpl (
+		@Value("${jwt.secret}") String secretKey,
+		@Value("${jwt.lifetime}") Integer tokenLifeTime,
+		@Value("${jwt.key_gen.enable}") boolean enableKeyGen
+	) throws NoSuchAlgorithmException {
+		this.tokenLifeTime = tokenLifeTime;
+
+		if (enableKeyGen) {
+			KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+			SecretKey generatedSecretKey = keyGenerator.generateKey();
+			this.secretKey = Base64.getUrlEncoder().encodeToString(generatedSecretKey.getEncoded());
+		} else {
+			this.secretKey = secretKey;
+		}
+	}
 
 	@Override
 	public String generateToken (String adminName, UserRole role) {
@@ -33,7 +52,7 @@ public class JWTServiceImpl implements JWTService {
 			.claims().add(claims)
 			.subject(adminName)
 			.issuedAt(new Date(System.currentTimeMillis()))
-			.expiration(new Date(System.currentTimeMillis() + 3 * 60 * 60 * 1000))
+			.expiration(new Date(System.currentTimeMillis() + this.tokenLifeTime))
 			.and()
 			.signWith(this.getKey())
 			.compact();

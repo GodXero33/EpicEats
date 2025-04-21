@@ -1,6 +1,20 @@
+<div id="controls-cont">
+	<div id="top-controls-cont" class="scrollbar scrollbar-x">
+		<div class="btn" (click)="snapBtnOnClick()" [class.active]="isSnapEnabled">Snap</div>
+		<div class="btn" (click)="saveData()">Save</div>
+	</div>
+	<div id="left-controls-cont" class="scrollbar scrollbar-y">
+		<div class="btn" title="Cursor">
+			<input type="radio" name="layout-design-draw-option" checked [(ngModel)]="selectedOption" [value]="'cursor'" (change)="onOptionChange()">
+		</div>
+		<div class="btn" title="Table">
+			<input type="radio" name="layout-design-draw-option" [(ngModel)]="selectedOption" [value]="'table-rect'" (change)="onOptionChange()">
+		</div>
+		<div class="btn" title="Round table">
+			<input type="radio" name="layout-design-draw-option" [(ngModel)]="selectedOption" [value]="'table-round'" (change)="onOptionChange()">
+		</div>
+	</div>
+</div>
 <div id="canvas-cont">
 	<canvas #canvas></canvas>
-</div>
-<div id="top-controls-cont">
-	<button (click)="saveData()">Save</button>
 </div>
