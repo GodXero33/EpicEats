@@ -1,17 +1,19 @@
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { DesignLayoutDrawer } from './design-layout-drawer/design-layout-drawer';
 import { ApiService } from '../../../service/api.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-design-layout',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './design-layout.component.html',
   styleUrl: './design-layout.component.css'
 })
 export class DesignLayoutComponent implements OnDestroy {
   private designLayoutDrawer: DesignLayoutDrawer = new DesignLayoutDrawer();
   private canvasRef!: ElementRef;
-  public isSnapEnabled = true;
+  public isSnapEnabled: boolean = true;
+  public selectedOption: string = 'cursor';
   
   @ViewChild('canvas') set _canvas (reference: ElementRef) {
     this.canvasRef = reference;
@@ -54,5 +56,9 @@ export class DesignLayoutComponent implements OnDestroy {
     this.isSnapEnabled = !this.isSnapEnabled;
 
     this.designLayoutDrawer.setSnap(this.isSnapEnabled);
+  }
+
+  public onOptionChange (): void {
+    this.designLayoutDrawer.setNewObjectType(this.selectedOption);
   }
 }

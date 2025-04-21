@@ -46,7 +46,7 @@
 	gap: 0.25rem;
 	flex-shrink: 0;
 
-	button {
+	.btn {
 		position: relative;
 		padding-inline: 1rem;
 		top: 0;
@@ -54,19 +54,17 @@
 		width: fit-content;
 		height: fit-content;
 		background-color: #ffffff;
-		border: none;
-		outline: none;
 		color: #000000;
 		font-size: 1rem;
 		font-family: verdana;
 		cursor: pointer;
 	}
 
-	button:hover {
+	.btn:hover {
 		background-color: #cccccc;
 	}
 
-	button.active {
+	.btn.active {
 		background-color: #75e3f4;
 	}
 }
@@ -91,5 +89,41 @@
 		width: 100%;
 		aspect-ratio: 1 / 1;
 		background-color: #ffffff;
+		background-position: center center;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		border: 2px solid #ffffff;
+
+		input {
+			--webkit-appearance: none;
+			appearance: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			cursor: pointer;
+		}
+	}
+
+	.btn:has( input:checked) {
+		border-color: red;
+	}
+
+	.btn:has(:not( input:checked)):hover {
+		filter: invert(100%);
+	}
+
+	.btn:nth-child(1) {
+		background-size: 50% 50%;
+		background-image: url(../../../../../public/img/layout-design/cursor.png);
+	}
+
+	.btn:nth-child(2) {
+		background-image: url(../../../../../public/img/layout-design/rect.png);
+	}
+
+	.btn:nth-child(3) {
+		background-image: url(../../../../../public/img/layout-design/ellipse.png);
 	}
 }

@@ -40,7 +40,7 @@ export class DesignLayoutDrawer {
 
 	private deleteObject: DesignLayoutObject | null = null;
 
-	private newObjectType: string | null = 'table-rect';
+	private newObjectType: string = 'cursor';
 
 	public setCanvas (canvas: HTMLCanvasElement): void {
 		this.canvas = canvas;
@@ -69,14 +69,8 @@ export class DesignLayoutDrawer {
 		this.eventAdded = true;
 
 		const resize = () => this.resize();
-		const mousedown = (event: MouseEvent) => {
-			if (event.target != this.canvas) return;
-
-			this.mousedown(event);
-		};
-		const contextmenu = (event: MouseEvent) => {
-			if (event.target === this.canvas) event.preventDefault();
-		};
+		const mousedown = (event: MouseEvent) => this.mousedown(event);
+		const contextmenu = (event: MouseEvent) => { if (event.target === this.canvas) event.preventDefault(); };
 		const mousemove = (event: MouseEvent) => this.mousemove(event);
 		const mouseup = (event: MouseEvent) => this.mouseup(event);
 		const wheel = (event: WheelEvent) => this.wheel(event);
@@ -119,6 +113,8 @@ export class DesignLayoutDrawer {
 	}
 
 	private mousedown (event: MouseEvent): void {
+		if (event.target != this.canvas) return;
+
 		if (event.button === 0) {
 			this.updateDragOffset(event);
 
@@ -138,7 +134,7 @@ export class DesignLayoutDrawer {
 	}
 
 	private mousemove (event: MouseEvent): void {
-		if (this.isObjectDragging && this.dragObject && this.dragRowObject) {
+		if (this.isObjectDragging && this.dragObject && this.dragRowObject && this.newObjectType === 'cursor') {
 			this.dragRowObject.x += (event.x - this.dragOffsetX) / this.scale;
 			this.dragRowObject.y += (event.y - this.dragOffsetY) / this.scale;
 
@@ -155,7 +151,7 @@ export class DesignLayoutDrawer {
 			return;
 		}
 
-		if (this.isCanvasDragging) {
+		if (this.isCanvasDragging && this.newObjectType === 'cursor') {
 			this.translateX += event.x - this.dragOffsetX;
 			this.translateY += event.y - this.dragOffsetY;
 			
@@ -169,6 +165,11 @@ export class DesignLayoutDrawer {
 	}
 
 	private mouseup (event: MouseEvent): void {
+		if (event.target != this.canvas) {
+			this.clearMouseStatus();
+			return;
+		}
+
 		this.isCanvasDragging = false;
 		this.isObjectDragging = false;
 
@@ -214,6 +215,14 @@ export class DesignLayoutDrawer {
 
 		const [mrx, mry] = this.getRelativeMousePosition(event);
 		this.hoverObject = this.layout.getHoveredObject(mrx, mry);
+	}
+
+	private clearMouseStatus (): void {
+		this.isCanvasDragging = false;
+		this.isObjectDragging = false;
+		this.deleteObject = null;
+		this.hoverObject = null;
+		this.dragObject = null;
 	}
 
 	private addNewObject (mx: number, my: number): DesignLayoutObject | null {
@@ -301,5 +310,9 @@ export class DesignLayoutDrawer {
 
 	public setSnap (snap: boolean): void {
 		this.gridSnap = snap;
+	}
+
+	public setNewObjectType (type: string) {
+		this.newObjectType = type;
 	}
 }
