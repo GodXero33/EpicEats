@@ -1,24 +1,45 @@
+# Server configuration
 server:
-  port: xxxx
+  port: 8080  # This REST API will run on localhost:8080
 
 spring:
+  # Jackson settings for JSON serialization
+  jackson:
+    default-property-inclusion: non_null  # Ignore null fields when converting to JSON
+
+  output:
+    ansi:
+      enabled: ALWAYS  # Always use ANSI colors in logs (for better visibility)
+
+  # Custom DB credentials
   db:
     username: xxxx
     password: xxxx
     database: xxxx
+
   security:
     user:
-      name: user
-      password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      name: xxxx  # Default Spring Security username
+      password: xxxx  # BCrypt hashed password
+
+  # Email settings for sending mails
   mail:
-    host: xxxx.xxxx.com
-    port: xxx
-    username: xxxxxx@xxx.com
-    password: xxxxxxxxxxxxxxxx
+    host: xxxx  # SMTP server
+    port: 587  # TLS port (kept as-is since it's public info)
+    username: xxxx  # Your sender email
+    password: xxxx  # App password
     properties:
       mail:
         smtp:
-          auth: true
+          auth: true  # Enable SMTP authentication
           starttls:
-            enable: true
-  from: xxxxxx@xxx.com
+            enable: true  # Enable TLS encryption for email
+
+  from: xxxx  # Default "from" email address for outbound mails
+
+# JWT (JSON Web Token) settings
+jwt:
+  secret: xxxx  # Secret key used to sign JWT tokens
+  lifetime: 10800000  # Token validity in milliseconds (kept, not sensitive)
+  key_gen:
+    enable: false  # Toggle to enable/disable dynamic JWT secret key generation
