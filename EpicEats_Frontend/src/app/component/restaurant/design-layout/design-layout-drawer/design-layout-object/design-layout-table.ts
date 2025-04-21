@@ -10,7 +10,7 @@ export class DesignLayoutTable extends DesignLayoutObject {
 		this.type = type;
 	}
 
-	public override draw (ctx: CanvasRenderingContext2D) {
+	public override draw (ctx: CanvasRenderingContext2D): void {
 		ctx.fillStyle = this.color;
 
 		ctx.save();
@@ -45,14 +45,7 @@ export class DesignLayoutTable extends DesignLayoutObject {
 		ctx.restore();
 	}
 
-	public static isValidTable (obj: any): obj is {
-		x: number,
-		y: number,
-		w: number,
-		h: number,
-		rotation?: number,
-		type?: string
-	} {
+	public static isValidTable (obj: any): boolean {
 		return obj &&
 			typeof obj.x === 'number' &&
 			typeof obj.y === 'number' &&

@@ -20,23 +20,23 @@ export class ApiService {
 		});
 	}
 
-	public get<T>(endpoint: string): Observable<T> {
+	public get<T> (endpoint: string): Observable<T> {
 		return this.http.get<T>(`${this.baseUrl}${endpoint}`, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
-	public post<T>(endpoint: string, body: any): Observable<T> {
+	public post<T> (endpoint: string, body: any): Observable<T> {
 		return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
-	public put<T>(endpoint: string, body: any): Observable<T> {
+	public put<T> (endpoint: string, body: any): Observable<T> {
 		return this.http.put<T>(`${this.baseUrl}${endpoint}`, body, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
-	public delete<T>(endpoint: string): Observable<T> {
+	public delete<T> (endpoint: string): Observable<T> {
 		return this.http.delete<T>(`${this.baseUrl}${endpoint}`, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 
-	public patch<T>(endpoint: string): Observable<T> {
+	public patch<T> (endpoint: string): Observable<T> {
 		return this.http.patch<T>(`${this.baseUrl}${endpoint}`, null, { headers: this.buildHeaders() }).pipe(catchError(this.handleError), map((res) => this.handleResponse<T>(res)));
 	}
 

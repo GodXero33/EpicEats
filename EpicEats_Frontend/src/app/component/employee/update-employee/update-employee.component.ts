@@ -40,7 +40,7 @@ export class UpdateEmployeeComponent {
   }
 
   constructor (private apiService: ApiService) {
-    const today: Date = new Date();
+    const today = new Date();
 
     const subtractYears = (date: Date, years: number): Date => {
       const d = new Date(date);
@@ -85,7 +85,7 @@ export class UpdateEmployeeComponent {
 
     if (this.phone.length == 9) this.phone = '0' + this.phone;
 
-    const newEmployee: Employee = Employee.builder()
+    const newEmployee = Employee.builder()
       .id(this.id)
       .name(this.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' '))
       .phone(this.phone)
@@ -151,7 +151,7 @@ export class UpdateEmployeeComponent {
   public onKeydown (event: KeyboardEvent): void {
     if (event.key !== 'Enter') return;
 
-    const target: EventTarget | null = event.target;
+    const target = event.target;
 
     if (target == this.idField.nativeElement) {
       this.searchEmployee();

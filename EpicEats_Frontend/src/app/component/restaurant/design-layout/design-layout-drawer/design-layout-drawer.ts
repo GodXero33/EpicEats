@@ -15,8 +15,8 @@ export class DesignLayoutDrawer {
 	private translateY: number = 0;
 
 	private scale: number = 1;
-	private maxScale: number = 6;
-	private minScale: number = 0.2;
+	private maxScale: number = 4;
+	private minScale: number = 0.75;
 	private scaleFact: number = 0.1;
 
 	private isCanvasDragging: boolean = false;
@@ -28,7 +28,7 @@ export class DesignLayoutDrawer {
 	public setCanvas (canvas: HTMLCanvasElement): void {
 		this.canvas = canvas;
 
-		const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+		const ctx = canvas.getContext('2d');
 
 		if (!ctx) {
 			alert('Failed to load 2D context');
@@ -37,7 +37,7 @@ export class DesignLayoutDrawer {
 
 		this.ctx = ctx;
 
-		const loadedData: string | null = localStorage.getItem('design-layout-data');
+		const loadedData = localStorage.getItem('design-layout-data');
 
 		if (loadedData) this.layout.mapFromJSONString(loadedData);
 
@@ -46,7 +46,7 @@ export class DesignLayoutDrawer {
 		this.animate();
 	}
 
-	private initEvents () {
+	private initEvents (): void {
 		if (this.eventAdded) return;
 
 		this.eventAdded = true;
@@ -79,10 +79,8 @@ export class DesignLayoutDrawer {
 		window.addEventListener('wheel', wheel);
 	}
 
-	public removeEvents () {
+	public removeEvents (): void {
 		this.eventAdded = false;
-
-		const keys: MapIterator<String> = this.eventFuncs.keys();
 
 		for (const [eventName, handler] of this.eventFuncs)
 			window.removeEventListener(eventName as string, handler);
@@ -119,7 +117,8 @@ export class DesignLayoutDrawer {
 			return;
 		}
 
-		this.hoverObject = this.getHoveredObject();
+		const [mrx, mry] = this.getRelativeMousePosition(event);
+		this.hoverObject = this.layout.getHoveredObject(mrx, mry);
 	}
 
 	private mouseup (event: MouseEvent): void {
@@ -133,15 +132,20 @@ export class DesignLayoutDrawer {
 		if (this.scale > this.maxScale) this.scale = this.maxScale;
 	}
 
-	private getHoveredObject (): DesignLayoutObject | null {
-		return null;
+	private getRelativeMousePosition (event: MouseEvent): Array<number> {
+		const canvasRect = this.canvas.getBoundingClientRect();
+
+		return [
+			(event.x - canvasRect.x - this.width * 0.5 - this.translateX) / this.scale,
+			(event.y - canvasRect.y - this.height * 0.5 - this.translateY) / this.scale
+		];
 	}
 
-	private draw () {
+	private draw (): void {
 		this.ctx.fillStyle = this.bgColor;
 		this.ctx.fillRect(0, 0, this.width, this.height);
 
-		const transform: DOMMatrix = this.ctx.getTransform();
+		const transform = this.ctx.getTransform();
 
 		this.ctx.translate(this.width * 0.5, this.height * 0.5);
 		this.ctx.translate(this.translateX, this.translateY);
@@ -150,12 +154,14 @@ export class DesignLayoutDrawer {
 
 		if (this.hoverObject) this.hoverObject.drawOutline(this.ctx);
 
+		this.ctx.fillStyle = '#f00';
+
 		this.ctx.setTransform(transform);
 	}
 
-	private update () {}
+	private update (): void {}
 
-	private animate () {
+	private animate (): void {
 		this.update();
 		this.draw();
 
