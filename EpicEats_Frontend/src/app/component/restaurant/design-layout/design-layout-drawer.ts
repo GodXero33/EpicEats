@@ -5,13 +5,15 @@ class Table {
 	public h: number;
 	public rotation: number;
 	public color: string = '#ffffff';
+	public type: string;
 
-	constructor (x: number, y: number, w: number, h: number, rotation: number = 0) {
+	constructor (x: number, y: number, w: number, h: number, rotation: number = 0, type: string = 'rect') {
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
 		this.rotation = rotation;
+		this.type = type;
 	}
 
 	public draw (ctx: CanvasRenderingContext2D) {
@@ -20,8 +22,20 @@ class Table {
 		ctx.save();
 		ctx.translate(this.x, this.y);
 		ctx.rotate(this.rotation);
-		ctx.fillRect(-this.w * 0.5, -this.w * 0.5, this.w, this.h);
+		
+		this.type === 'round' ? this.drawRound(ctx) : this.drawRect(ctx);
+
 		ctx.restore();
+	}
+
+	public drawRect (ctx: CanvasRenderingContext2D) {
+		ctx.fillRect(-this.w * 0.5, -this.w * 0.5, this.w, this.h);
+	}
+
+	public drawRound (ctx: CanvasRenderingContext2D) {
+		ctx.beginPath();
+		ctx.ellipse(0, 0, this.w * 0.5, this.h * 0.5, 0, 0, Math.PI * 2, false);
+		ctx.fill();
 	}
 
 	public static isValidTable (obj: any): obj is {
@@ -29,34 +43,16 @@ class Table {
 		y: number,
 		w: number,
 		h: number,
-		type?: string,
-		rotation?: number
+		rotation?: number,
+		type?: string
 	} {
 		return obj &&
 			typeof obj.x === 'number' &&
 			typeof obj.y === 'number' &&
 			typeof obj.w === 'number' &&
 			typeof obj.h === 'number' &&
-			(obj.type === undefined || typeof obj.type === 'string') &&
-			(obj.rotation === undefined || typeof obj.rotation === 'number');
-	}
-}
-
-class RoundTable extends Table {
-	constructor (x: number, y: number, w: number, h: number, rotation: number = 0) {
-		super(x, y, w, h, rotation);
-	}
-
-	public override draw (ctx: CanvasRenderingContext2D) {
-		ctx.fillStyle = this.color;
-
-		ctx.save();
-		ctx.translate(this.x, this.y);
-		ctx.rotate(this.rotation);
-		ctx.beginPath();
-		ctx.ellipse(0, 0, this.w * 0.5, this.h * 0.5, 0, 0, Math.PI * 2, false);
-		ctx.fill();
-		ctx.restore();
+			(obj.rotation === undefined || typeof obj.rotation === 'number') &&
+			(obj.type === undefined || typeof obj.type === 'string');
 	}
 }
 
@@ -69,21 +65,14 @@ class Layout {
 
 			if (jsonObj.tables && Array.isArray(jsonObj.tables)) {
 				jsonObj.tables.forEach((table: any) => {
-					if (Table.isValidTable(table)) this.tables.push(table.type === 'round' ?
-						new RoundTable(
-							table.x,
-							table.y,
-							table.w,
-							table.h,
-							table.rotation
-						) :
-						new Table(
-							table.x,
-							table.y,
-							table.w,
-							table.h,
-							table.rotation
-						));
+					if (Table.isValidTable(table)) this.tables.push(new Table(
+						table.x,
+						table.y,
+						table.w,
+						table.h,
+						table.rotation,
+						table.type
+					));
 				});
 			}
 		} catch (error) {

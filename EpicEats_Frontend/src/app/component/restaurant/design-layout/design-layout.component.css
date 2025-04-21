@@ -1,3 +1,7 @@
+:host {
+	isolation: isolate;
+}
+
 #canvas-cont {
 	position: absolute;
 	top: 0;
@@ -14,10 +18,75 @@
 	}
 }
 
-#top-controls-cont {
+#controls-cont {
+	--left-controls-width: 80px;
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+#controls-cont > div {
+	z-index: 2;
+}
+
+#top-controls-cont {
+	position: relative;
+	padding-inline: 0.5rem;
+	padding-block: 0.25rem;
+	top: 0;
+	left: 0;
+	width: 100%;
 	height: fit-content;
+	background-color: #121212;
+	display: flex;
+	gap: 0.25rem;
+	flex-shrink: 0;
+
+	button {
+		display: block;
+		position: relative;
+		padding-inline: 1rem;
+		top: 0;
+		left: 0;
+		width: fit-content;
+		height: fit-content;
+		background-color: #ffffff;
+		border: none;
+		outline: none;
+		color: #000000;
+		font-size: 1rem;
+		font-family: verdana;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background-color: #dddddd;
+	}
+}
+
+#left-controls-cont {
+	position: relative;
+	padding-inline: 0.25rem;
+	padding-block: 0.5rem;
+	top: 0;
+	left: 0;
+	width: var(--left-controls-width);
+	background-color: #121212;
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+
+	.btn {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		background-color: #ffffff;
+	}
 }
