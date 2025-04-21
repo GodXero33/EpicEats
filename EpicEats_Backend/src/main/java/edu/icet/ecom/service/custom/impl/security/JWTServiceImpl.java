@@ -22,9 +22,12 @@ import java.util.function.Function;
 public class JWTServiceImpl implements JWTService {
 	@Value("${jwt.secret}")
 	private String secretKey;
+	@Value("${jwt.lifetime}")
+	private Integer tokenLifeTime;
 
 	@Override
 	public String generateToken (String adminName, UserRole role) {
+		System.out.println(this.tokenLifeTime + ", lifetime");
 		final Map<String, Object> claims = new HashMap<>();
 
 		claims.put("role", role);
@@ -33,7 +36,7 @@ public class JWTServiceImpl implements JWTService {
 			.claims().add(claims)
 			.subject(adminName)
 			.issuedAt(new Date(System.currentTimeMillis()))
-			.expiration(new Date(System.currentTimeMillis() + 3 * 60 * 60 * 1000))
+			.expiration(new Date(System.currentTimeMillis() + this.tokenLifeTime))
 			.and()
 			.signWith(this.getKey())
 			.compact();
