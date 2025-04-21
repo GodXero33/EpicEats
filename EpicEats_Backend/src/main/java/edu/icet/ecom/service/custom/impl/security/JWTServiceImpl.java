@@ -44,7 +44,6 @@ public class JWTServiceImpl implements JWTService {
 
 	@Override
 	public String generateToken (String adminName, UserRole role) {
-		System.out.println(this.secretKey);
 		final Map<String, Object> claims = new HashMap<>();
 
 		claims.put("role", role);

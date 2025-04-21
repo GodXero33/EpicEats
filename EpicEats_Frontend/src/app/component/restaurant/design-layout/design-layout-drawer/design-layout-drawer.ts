@@ -1,89 +1,5 @@
-class Table {
-	public x: number;
-	public y: number;
-	public w: number;
-	public h: number;
-	public rotation: number;
-	public color: string = '#ffffff';
-	public type: string;
-
-	constructor (x: number, y: number, w: number, h: number, rotation: number = 0, type: string = 'rect') {
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
-		this.rotation = rotation;
-		this.type = type;
-	}
-
-	public draw (ctx: CanvasRenderingContext2D) {
-		ctx.fillStyle = this.color;
-		
-		ctx.save();
-		ctx.translate(this.x, this.y);
-		ctx.rotate(this.rotation);
-		
-		this.type === 'round' ? this.drawRound(ctx) : this.drawRect(ctx);
-
-		ctx.restore();
-	}
-
-	public drawRect (ctx: CanvasRenderingContext2D) {
-		ctx.fillRect(-this.w * 0.5, -this.w * 0.5, this.w, this.h);
-	}
-
-	public drawRound (ctx: CanvasRenderingContext2D) {
-		ctx.beginPath();
-		ctx.ellipse(0, 0, this.w * 0.5, this.h * 0.5, 0, 0, Math.PI * 2, false);
-		ctx.fill();
-	}
-
-	public static isValidTable (obj: any): obj is {
-		x: number,
-		y: number,
-		w: number,
-		h: number,
-		rotation?: number,
-		type?: string
-	} {
-		return obj &&
-			typeof obj.x === 'number' &&
-			typeof obj.y === 'number' &&
-			typeof obj.w === 'number' &&
-			typeof obj.h === 'number' &&
-			(obj.rotation === undefined || typeof obj.rotation === 'number') &&
-			(obj.type === undefined || typeof obj.type === 'string');
-	}
-}
-
-class Layout {
-	public tables: Array<Table> = [];
-
-	public mapFromJSONString (json: string) {
-		try {
-			const jsonObj: any = JSON.parse(json);
-
-			if (jsonObj.tables && Array.isArray(jsonObj.tables)) {
-				jsonObj.tables.forEach((table: any) => {
-					if (Table.isValidTable(table)) this.tables.push(new Table(
-						table.x,
-						table.y,
-						table.w,
-						table.h,
-						table.rotation,
-						table.type
-					));
-				});
-			}
-		} catch (error) {
-			console.error('Failed to map loaded string to a layout data:', error);
-		}
-	}
-
-	public draw (ctx: CanvasRenderingContext2D) {
-		this.tables.forEach((table: Table) => table.draw(ctx));
-	}
-}
+import { DesignLayout } from "./design-layout";
+import { DesignLayoutObject } from "./design-layout-object/design-layout-object";
 
 export class DesignLayoutDrawer {
 	private canvas!: HTMLCanvasElement;
@@ -93,7 +9,7 @@ export class DesignLayoutDrawer {
 	private eventAdded: boolean = false;
 	private eventFuncs: Map<String, any> = new Map();
 	private bgColor: string = '#232323';
-	private layout: Layout = new Layout();
+	private layout: DesignLayout = new DesignLayout();
 
 	private translateX: number = 0;
 	private translateY: number = 0;
@@ -106,6 +22,8 @@ export class DesignLayoutDrawer {
 	private isCanvasDragging: boolean = false;
 	private canvasDragOffsetX: number = 0;
 	private canvasDragOffsetY: number = 0;
+
+	private hoverObject: DesignLayoutObject | null = null;
 
 	public setCanvas (canvas: HTMLCanvasElement): void {
 		this.canvas = canvas;
@@ -197,7 +115,11 @@ export class DesignLayoutDrawer {
 			
 			this.canvasDragOffsetX = event.x;
 			this.canvasDragOffsetY = event.y;
+
+			return;
 		}
+
+		this.hoverObject = this.getHoveredObject();
 	}
 
 	private mouseup (event: MouseEvent): void {
@@ -211,6 +133,10 @@ export class DesignLayoutDrawer {
 		if (this.scale > this.maxScale) this.scale = this.maxScale;
 	}
 
+	private getHoveredObject (): DesignLayoutObject | null {
+		return null;
+	}
+
 	private draw () {
 		this.ctx.fillStyle = this.bgColor;
 		this.ctx.fillRect(0, 0, this.width, this.height);
@@ -221,6 +147,9 @@ export class DesignLayoutDrawer {
 		this.ctx.translate(this.translateX, this.translateY);
 		this.ctx.scale(this.scale, this.scale);
 		this.layout.draw(this.ctx);
+
+		if (this.hoverObject) this.hoverObject.drawOutline(this.ctx);
+
 		this.ctx.setTransform(transform);
 	}
 

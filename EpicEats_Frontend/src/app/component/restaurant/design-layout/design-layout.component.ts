@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { DesignLayoutDrawer } from './design-layout-drawer';
+import { DesignLayoutDrawer } from './design-layout-drawer/design-layout-drawer';
 import { ApiService } from '../../../service/api.service';
 
 @Component({
