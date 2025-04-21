@@ -40,6 +40,7 @@ export class AuthService {
 
 		this.expTimeout = setTimeout(() => {
 			sessionStorage.setItem('last-route', this.router.url);
+			sessionStorage.setItem('last-user', decodedPayload.sub);
 			console.log("Token expired. Auto logging out.");
 			this.logout(true);
 		}, remainingTime);
@@ -86,7 +87,10 @@ export class AuthService {
 	public logout (isAutoLogout: boolean = false): void {
 		sessionStorage.removeItem('authToken');
 
-		if (!isAutoLogout) sessionStorage.removeItem('last-route');
+		if (!isAutoLogout) {
+			sessionStorage.removeItem('last-route');
+			sessionStorage.removeItem('last-user');
+		}
 		if (this.expTimeout !== null) clearTimeout(this.expTimeout);
 
 		this.router.navigate(['/login']);

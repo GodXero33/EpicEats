@@ -68,8 +68,12 @@ export class LoginComponent implements OnInit {
           this.authService.setToken(response.body.data.token);
 
           const lastRoute: string | null = sessionStorage.getItem('last-route');
+          const lastUser: string | null = sessionStorage.getItem('last-user');
 
-          this.router.navigate([lastRoute ? lastRoute : '/home']);
+          sessionStorage.removeItem('last-route');
+			    sessionStorage.removeItem('last-user');
+
+          this.router.navigate([lastRoute && lastUser === this.authService.getUsername() ? lastRoute : '/home']);
         } else {
           this.alertCommunicationService.showError('An unexpected error occurred');
         }
