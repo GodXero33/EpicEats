@@ -1,6 +1,4 @@
 export class DesignLayoutObject {
-	public static hoverColor: string = '#f00';
-
 	public x: number;
 	public y: number;
 	public w: number;

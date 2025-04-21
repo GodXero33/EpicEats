@@ -2,13 +2,16 @@ import { DesignLayout } from "./design-layout";
 import { DesignLayoutObject } from "./design-layout-object/design-layout-object";
 
 export class DesignLayoutDrawer {
+	public static readonly BG_COLOR: string = '#232323';
+	public static readonly TABLE_COLOR: string = '#ffffff';
+	public static readonly HIGHLIGHT_COLOR: string = '#ff0000';
+
 	private canvas!: HTMLCanvasElement;
 	private ctx!: CanvasRenderingContext2D;
 	private width: number = 0;
 	private height: number = 0;
 	private eventAdded: boolean = false;
 	private eventFuncs: Map<String, any> = new Map();
-	private bgColor: string = '#232323';
 	private layout: DesignLayout = new DesignLayout();
 
 	private translateX: number = 0;
@@ -142,7 +145,7 @@ export class DesignLayoutDrawer {
 	}
 
 	private draw (): void {
-		this.ctx.fillStyle = this.bgColor;
+		this.ctx.fillStyle = DesignLayoutDrawer.BG_COLOR;
 		this.ctx.fillRect(0, 0, this.width, this.height);
 
 		const transform = this.ctx.getTransform();

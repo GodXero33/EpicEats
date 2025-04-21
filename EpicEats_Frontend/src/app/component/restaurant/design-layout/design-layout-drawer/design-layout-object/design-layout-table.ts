@@ -1,7 +1,7 @@
+import { DesignLayoutDrawer } from "../design-layout-drawer";
 import { DesignLayoutObject } from "./design-layout-object";
 
 export class DesignLayoutTable extends DesignLayoutObject {
-	public color: string = '#ffffff';
 	public type: string;
 
 	constructor (x: number, y: number, w: number, h: number, rotation: number = 0, type: string = 'rect') {
@@ -11,7 +11,7 @@ export class DesignLayoutTable extends DesignLayoutObject {
 	}
 
 	public override draw (ctx: CanvasRenderingContext2D): void {
-		ctx.fillStyle = this.color;
+		ctx.fillStyle = DesignLayoutDrawer.TABLE_COLOR;
 
 		ctx.save();
 		ctx.translate(this.x, this.y);
@@ -28,7 +28,7 @@ export class DesignLayoutTable extends DesignLayoutObject {
 	}
 
 	public override drawOutline (ctx: CanvasRenderingContext2D): void {
-		ctx.strokeStyle = DesignLayoutObject.hoverColor;
+		ctx.strokeStyle = DesignLayoutDrawer.HIGHLIGHT_COLOR;
 		ctx.lineWidth = 3;
 
 		ctx.save();

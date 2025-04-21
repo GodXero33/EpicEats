@@ -29,18 +29,42 @@ export class DesignLayout {
 		this.tables.forEach(table => table.draw(ctx));
 	}
 
-	public getHoveredObject (mx: number, my: number): DesignLayoutObject | null {
+	private getHoveredTable (mx: number, my: number): DesignLayoutObject | null {
 		const tables = this.tables;
 		const length = this.tables.length;
 
 		for (let a = 0; a < length; a++) {
 			const table = tables[a];
+			const angle = table.rotation;
+			const cos = Math.cos(-angle);
+			const sin = Math.sin(-angle);
 
-			if (mx <= table.x + table.w * 0.5 &&
-				mx >= table.x - table.w * 0.5 &&
-				my <= table.y + table.h * 0.5 &&
-				my >= table.y - table.h * 0.5) return table;
+			const dx = mx - table.x;
+			const dy = my - table.y;
+
+			const localX = dx * cos - dy * sin;
+			const localY = dx * sin + dy * cos;
+
+			const halfW = table.w * 0.5;
+			const halfH = table.h * 0.5;
+
+			if (table.type === 'round') {
+				if ((localX * localX) / (halfW * halfW) + (localY * localY) / (halfH * halfH) <= 1) return table;
+			} else {
+				if (localX <= halfW &&
+				localX >= -halfW &&
+				localY <= halfH &&
+				localY >= -halfH) return table;
+			}
 		}
+
+		return null;
+	}
+
+	public getHoveredObject (mx: number, my: number): DesignLayoutObject | null {
+		const hoveredTable = this.getHoveredTable(mx, my);
+
+		if (hoveredTable) return hoveredTable;
 
 		return null;
 	}
