@@ -11,6 +11,7 @@ import { ApiService } from '../../../service/api.service';
 export class DesignLayoutComponent implements OnDestroy {
   private designLayoutDrawer: DesignLayoutDrawer = new DesignLayoutDrawer();
   private canvasRef!: ElementRef;
+  public isSnapEnabled = true;
   
   @ViewChild('canvas') set _canvas (reference: ElementRef) {
     this.canvasRef = reference;
@@ -47,5 +48,11 @@ export class DesignLayoutComponent implements OnDestroy {
         console.error(error.message);
       }
     });
+  }
+
+  public snapBtnOnClick (): void {
+    this.isSnapEnabled = !this.isSnapEnabled;
+
+    this.designLayoutDrawer.setSnap(this.isSnapEnabled);
   }
 }

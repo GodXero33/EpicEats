@@ -47,7 +47,6 @@
 	flex-shrink: 0;
 
 	button {
-		display: block;
 		position: relative;
 		padding-inline: 1rem;
 		top: 0;
@@ -64,7 +63,11 @@
 	}
 
 	button:hover {
-		background-color: #dddddd;
+		background-color: #cccccc;
+	}
+
+	button.active {
+		background-color: #75e3f4;
 	}
 }
 

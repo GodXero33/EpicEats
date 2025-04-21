@@ -1,5 +1,6 @@
 <div id="controls-cont">
 	<div id="top-controls-cont" class="scrollbar scrollbar-x">
+		<button (click)="snapBtnOnClick()" [class.active]="isSnapEnabled">Snap</button>
 		<button (click)="saveData()">Save</button>
 	</div>
 	<div id="left-controls-cont" class="scrollbar scrollbar-y">

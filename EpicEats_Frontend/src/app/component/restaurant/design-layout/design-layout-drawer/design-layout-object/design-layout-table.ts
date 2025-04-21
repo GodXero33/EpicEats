@@ -17,6 +17,8 @@ export class DesignLayoutTable extends DesignLayoutObject {
 		ctx.translate(this.x, this.y);
 		ctx.rotate(this.rotation);
 
+		ctx.shadowBlur = 5;
+
 		ctx.beginPath();
 
 		this.type === 'round' ?
@@ -27,9 +29,8 @@ export class DesignLayoutTable extends DesignLayoutObject {
 		ctx.restore();
 	}
 
-	public override drawOutline (ctx: CanvasRenderingContext2D): void {
-		ctx.strokeStyle = DesignLayoutDrawer.HIGHLIGHT_COLOR;
-		ctx.lineWidth = 3;
+	public override drawOutline (ctx: CanvasRenderingContext2D, color: string): void {
+		ctx.strokeStyle = color;
 
 		ctx.save();
 		ctx.translate(this.x, this.y);

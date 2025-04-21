@@ -13,7 +13,7 @@ export class DesignLayoutObject {
 		this.rotation = rotation;
 	}
 
-	public drawOutline (ctx: CanvasRenderingContext2D): void {}
+	public drawOutline (ctx: CanvasRenderingContext2D, color: string): void {}
 
 	public draw (ctx: CanvasRenderingContext2D): void {}
 }

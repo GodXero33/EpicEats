@@ -7,10 +7,11 @@ export class DesignLayout {
 	public mapFromJSONString (json: string): void {
 		try {
 			const jsonObj = JSON.parse(json);
+			const tables = new Array<DesignLayoutTable>();
 
 			if (jsonObj.tables && Array.isArray(jsonObj.tables)) {
 				jsonObj.tables.forEach((table: any) => {
-					if (DesignLayoutTable.isValidTable(table)) this.tables.push(new DesignLayoutTable(
+					if (DesignLayoutTable.isValidTable(table)) tables.push(new DesignLayoutTable(
 						table.x,
 						table.y,
 						table.w,
@@ -20,6 +21,8 @@ export class DesignLayout {
 					));
 				});
 			}
+
+			this.tables = tables;
 		} catch (error) {
 			console.error('Failed to map loaded string to a layout data:', error);
 		}
@@ -67,5 +70,17 @@ export class DesignLayout {
 		if (hoveredTable) return hoveredTable;
 
 		return null;
+	}
+
+	public add (obj: DesignLayoutObject): void {
+		if (obj instanceof DesignLayoutTable) {
+			this.tables.push(obj);
+		}
+	}
+
+	public delete (obj: DesignLayoutObject): void {
+		if (obj instanceof DesignLayoutTable) {
+			this.tables.splice(this.tables.findIndex(table => table === obj), 1);
+		}
 	}
 }
