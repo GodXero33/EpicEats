@@ -14,4 +14,5 @@ public interface EmployeeRepository extends CrudRepository<EmployeeEntity> {
 	Response<Boolean> isEmailExist (String email);
 	Response<Boolean> isEmailExist (String email, Long employeeId);
 	Response<List<EmployeeEntity>> getAllByIDs (List<Long> ids);
+	Response<List<EmployeeEntity>> filter (EmployeeEntity employee);
 }
