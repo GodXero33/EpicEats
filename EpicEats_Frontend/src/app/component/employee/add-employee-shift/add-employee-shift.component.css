@@ -1,0 +1,59 @@
+h1 {
+	color: var(--text-1);
+	font-size: 1.3rem;
+	font-family: verdana;
+}
+
+#form-cont {
+	position: relative;
+	top: 0;
+	left: 50%;
+	width: clamp(200px, 100%, 500px);
+	height: fit-content;
+	transform: translateX(-50%);
+}
+
+#searched-employee-list-cont {
+	position: absolute;
+	padding: 0.5rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: var(--background-color);
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+}
+
+#searched-employee-list-cont #back-btn {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	width: 2rem;
+	height: 2rem;
+	background-image: url('../../../../../public/img/arrowhead-up.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 80% 80%;
+	filter: invert(var(--invert-1));
+	cursor: pointer;
+	transform: rotate(-90deg);
+}
+
+#searched-employee-list-cont h1 {
+	padding-top: 2.5rem;
+	padding-left: 0.5rem;
+}
+
+.table-cont {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	flex-grow: 1;
+}
+
+.table-cont .pointer {
+	cursor: pointer;
+}

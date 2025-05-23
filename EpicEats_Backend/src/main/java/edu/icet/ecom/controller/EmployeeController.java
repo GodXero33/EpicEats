@@ -61,6 +61,16 @@ public class EmployeeController {
 			this.controllerResponseUtil.getServerErrorResponse();
 	}
 
+	@EmployeeFilterApiDoc
+	@PostMapping("/filter")
+	public CustomHttpResponse<List<Employee>> filter (@RequestBody Employee employee) {
+		final Response<List<Employee>> response = this.employeeService.filter(employee);
+
+		return response.getStatus() == ResponseType.FOUND ?
+			new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "All employees filtered by base on given details") :
+			this.controllerResponseUtil.getServerErrorResponse();
+	}
+
 	@EmployeeAddApiDoc
 	@PostMapping("")
 	public CustomHttpResponse<Employee> add (@Valid @RequestBody Employee employee, BindingResult result) {

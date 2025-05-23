@@ -28,13 +28,7 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('restaurantNavBtn') restaurantNavBtn!: ElementRef;
   @ViewChild('settingsNavBtn') settingsNavBtn!: ElementRef;
 
-  private logout (): void { // remove this after all
-    this.authService.logout();
-  }
-
   constructor (private authService: AuthService, private router: Router, private alertCommunicationService: AlertCommunicationService) {
-    (window as any).logout = this.logout.bind(this); // remove this after all
-
     this.router.events.subscribe(event => {
       const navHidePaths: Array<String> = ['', '/login', '/signup'];
 

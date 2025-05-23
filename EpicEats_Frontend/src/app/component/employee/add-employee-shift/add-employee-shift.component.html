@@ -1,1 +1,54 @@
-<p>add-employee-shift works!</p>
+<h1>Add Employee Shift</h1>
+<div id="form-cont">
+	<div class="form">
+		<div class="input">
+			<input type="number" min="1" placeholder="" [(ngModel)]="id" #nameField (keydown)="onKeydown($event)">
+			<div class="label">Employee ID</div>
+		</div>
+		<div class="input">
+			<input type="email" placeholder="" [(ngModel)]="email" #emailField (keydown)="onKeydown($event)">
+			<div class="label">Employee Email</div>
+		</div>
+		<div class="input">
+			<input type="date" placeholder="" [(ngModel)]="dob" #dobField>
+			<div class="label">Employee Birthday</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="phone" #phoneField (keydown)="onKeydown($event)">
+			<div class="label">Phone</div>
+		</div>
+		<button class="action" (click)="searchEmployee()">Search Employee</button>
+	</div>
+</div>
+<div id="searched-employee-list-cont" *ngIf="loadedEmployees.length">
+	<div id="back-btn" title="back" (click)="searchedEmployeeListBackBtnOnClick()"></div>
+	<h1>Matching Employees</h1>
+	<div class="table-cont">
+		<table>
+			<tbody>
+				<tr>
+					<th (click)="sortById()" class="pointer" title="sort by id">ID</th>
+					<th (click)="sortByName()" class="pointer" title="sort by name">Name</th>
+					<th>Phone</th>
+					<th>Email</th>
+					<th>Address</th>
+					<th (click)="sortBySalary()" class="pointer" title="sort by salary">Salary (Rs)</th>
+					<th (click)="sortByRole()" class="pointer" title="sort by role">Role</th>
+					<th (click)="sortByDOB()" class="pointer" title="sort by birthday">Birthday</th>
+				</tr>
+				@for (employee of viewableEmployees; track $index) {
+					<tr>
+						<td class="center">{{ employee.id }}</td>
+						<td [title]="employee.name">{{ employee.name }}</td>
+						<td [title]="employee.phone">{{ employee.phone }}</td>
+						<td [title]="employee.email">{{ employee.email }}</td>
+						<td [title]="employee.address">{{ employee.address }}</td>
+						<td class="right">{{ employee.salary }}</td>
+						<td>{{ getFormatterRole(employee.role) }}</td>
+						<td>{{ employee.dob }}</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

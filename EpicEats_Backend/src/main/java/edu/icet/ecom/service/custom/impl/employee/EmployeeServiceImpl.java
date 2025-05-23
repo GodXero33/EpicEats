@@ -6,6 +6,7 @@ import edu.icet.ecom.repository.custom.employee.EmployeeRepository;
 import edu.icet.ecom.service.SuperServiceHandler;
 import edu.icet.ecom.service.custom.employee.EmployeeService;
 import edu.icet.ecom.util.Response;
+import edu.icet.ecom.util.enums.ResponseType;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,12 @@ import java.util.List;
 public class EmployeeServiceImpl implements EmployeeService {
 	private final SuperServiceHandler<Employee, EmployeeEntity> serviceHandler;
 	private final EmployeeRepository employeeRepository;
+	private final ModelMapper mapper;
 
 	public EmployeeServiceImpl (EmployeeRepository employeeRepository, ModelMapper mapper) {
 		this.serviceHandler = new SuperServiceHandler<>(employeeRepository, mapper, Employee.class, EmployeeEntity.class);
 		this.employeeRepository = employeeRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
@@ -76,5 +79,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public Response<Boolean> isEmailExist (String email, Long employeeId) {
 		return this.employeeRepository.isEmailExist(email, employeeId);
+	}
+
+	@Override
+	public Response<List<Employee>> filter (Employee employee) {
+		final Response<List<EmployeeEntity>> response = this.employeeRepository.filter(this.mapper.map(employee, EmployeeEntity.class));
+
+		return new Response<>(response.getStatus() == ResponseType.FOUND ?
+			response.getData().stream().map(entity -> this.mapper.map(entity, Employee.class)).toList() :
+			null
+			, response.getStatus());
 	}
 }

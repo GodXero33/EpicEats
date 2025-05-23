@@ -16,9 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Repository
 public class EmployeeRepositoryImpl implements EmployeeRepository {
@@ -256,6 +254,64 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			""".formatted(String.join(", ", Collections.nCopies(ids.size(), "?"))),
 			ids
 		)) {
+			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
+
+			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
+				.id(resultSet.getLong(1))
+				.name(resultSet.getString(2))
+				.phone(resultSet.getString(3))
+				.email(resultSet.getString(4))
+				.address(resultSet.getString(5))
+				.salary(resultSet.getDouble(6))
+				.role(EmployeeRole.fromName(resultSet.getString(7)))
+				.dob(DateTimeUtil.parseDate(resultSet.getString(8)))
+				.employeeSince(DateTimeUtil.parseDate(resultSet.getString(9)))
+				.build());
+
+			return new Response<>(employeeEntities, ResponseType.FOUND);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(null, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
+	public Response<List<EmployeeEntity>> filter (EmployeeEntity employee) {
+		final List<String> conditions = new ArrayList<>();
+		final List<String> optionalConditions = new ArrayList<>();
+		final List<Object> binds = new ArrayList<>();
+
+		if (employee.getId() != null) {
+			optionalConditions.add("id = ?");
+			binds.add(employee.getId());
+		}
+
+		if (employee.getEmail() != null) {
+			optionalConditions.add("email = ?");
+			binds.add(employee.getEmail());
+		}
+
+		if (employee.getDob() != null) {
+			optionalConditions.add("dob = ?");
+			binds.add(employee.getDob());
+		}
+
+		if (employee.getPhone() != null) {
+			optionalConditions.add("phone = ?");
+			binds.add(employee.getPhone());
+		}
+
+		if (binds.isEmpty()) return new Response<>(List.of(), ResponseType.FOUND);
+
+		conditions.add("is_terminated = FALSE");
+
+		if (!optionalConditions.isEmpty()) conditions.add("(" + String.join(" OR ", optionalConditions) + ")");
+
+		try (final ResultSet resultSet = this.crudUtil.execute("""
+			SELECT id, name, phone, email, address, salary, role, dob, employee_since
+			FROM employee
+			WHERE %s
+			""".formatted(String.join(" AND ", conditions)), binds)) {
 			final List<EmployeeEntity> employeeEntities = new ArrayList<>();
 
 			while (resultSet.next()) employeeEntities.add(EmployeeEntity.builder()
