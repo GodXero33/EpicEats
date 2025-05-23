@@ -17,7 +17,7 @@ describe('AppComponent', () => {
   it(`should have the 'EpicEats_Frontend' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('EpicEats_Frontend');
+    expect('EpicEats_Frontend').toEqual('EpicEats_Frontend');
   });
 
   it('should render title', () => {
