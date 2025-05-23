@@ -2,16 +2,20 @@
 <div id="form-cont">
 	<div class="form">
 		<div class="input">
-			<input type="text" autocomplete="nope" spellcheck="false" placeholder="" [(ngModel)]="name" #nameField (keydown)="onKeydown($event)">
-			<div class="label">Employee Name</div>
+			<input type="number" min="1" placeholder="" [(ngModel)]="id" #nameField (keydown)="onKeydown($event)">
+			<div class="label">Employee ID</div>
 		</div>
 		<div class="input">
-			<input type="text" autocomplete="nope" spellcheck="false" placeholder="" [(ngModel)]="name" #nameField (keydown)="onKeydown($event)">
-			<div class="label">Employee ID</div>
+			<input type="email" placeholder="" [(ngModel)]="email" #emailField (keydown)="onKeydown($event)">
+			<div class="label">Employee Email</div>
 		</div>
 		<div class="input">
 			<input type="date" placeholder="" [(ngModel)]="dob" #dobField>
 			<div class="label">Employee Birthday</div>
+		</div>
+		<div class="input">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="phone" #phoneField (keydown)="onKeydown($event)">
+			<div class="label">Phone</div>
 		</div>
 		<button class="action" (click)="searchEmployee()">Search Employee</button>
 	</div>

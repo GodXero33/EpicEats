@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './add-employee-shift.component.css'
 })
 export class AddEmployeeShiftComponent {
+  public id: number = 1;
   public name: string = '';
   public phone: string = '';
   public email: string = '';
@@ -144,7 +145,14 @@ export class AddEmployeeShiftComponent {
   }
 
   public loadAllEmployees (): void {
-    this.apiService.get('/employee/all').subscribe({
+    const filterEmployee = Employee.builder()
+      .email(this.email)
+      .dob(this.dob)
+      .id(this.id)
+      .phone(this.phone)
+      .build();
+
+    this.apiService.post('/employee/filter', filterEmployee).subscribe({
       next: (response) => {
         if (!Array.isArray(response)) return;
 
