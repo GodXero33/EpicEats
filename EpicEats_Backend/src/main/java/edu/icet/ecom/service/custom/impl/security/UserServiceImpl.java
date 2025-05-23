@@ -90,4 +90,9 @@ public class UserServiceImpl implements UserService {
 	public Response<Boolean> isEmployeeAlreadyUser (Long employeeId) {
 		return this.userRepository.isEmployeeAlreadyUser(employeeId);
 	}
+
+	@Override
+	public Response<Boolean> setLastLogin (String username) {
+		return this.userRepository.setLastLogin(username);
+	}
 }

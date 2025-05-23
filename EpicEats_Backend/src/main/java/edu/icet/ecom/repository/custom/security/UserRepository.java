@@ -10,4 +10,5 @@ public interface UserRepository extends CrudRepository<UserEntity> {
 	Response<Boolean> isUsernameExist (String username);
 	Response<Boolean> isEmployeeExistById (Long employeeId);
 	Response<Boolean> isEmployeeAlreadyUser (Long employeeId);
+	Response<Boolean> setLastLogin (String username);
 }
