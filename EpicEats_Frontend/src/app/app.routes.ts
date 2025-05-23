@@ -15,7 +15,6 @@ import { UpdateEmployeeComponent } from './component/employee/update-employee/up
 import { TerminateEmployeeComponent } from './component/employee/terminate-employee/terminate-employee.component';
 import { SearchEmployeeComponent } from './component/employee/search-employee/search-employee.component';
 import { AddEmployeeShiftComponent } from './component/employee/add-employee-shift/add-employee-shift.component';
-import { SearchEmployeeShiftComponent } from './component/employee/search-employee-shift/search-employee-shift.component';
 import { UpdateEmployeePromotionComponent } from './component/employee/update-employee-promotion/update-employee-promotion.component';
 import { DeleteEmployeePromotionComponent } from './component/employee/delete-employee-promotion/delete-employee-promotion.component';
 import { SearchEmployeePromotionComponent } from './component/employee/search-employee-promotion/search-employee-promotion.component';
@@ -100,11 +99,6 @@ export const routes: Routes = [
 			{
 				path: 'shift-add',
 				component: AddEmployeeShiftComponent,
-				canActivate: [AuthGuard]
-			},
-			{
-				path: 'shift-search',
-				component: SearchEmployeeShiftComponent,
 				canActivate: [AuthGuard]
 			},
 			{

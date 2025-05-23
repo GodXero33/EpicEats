@@ -15,18 +15,26 @@ h1 {
 
 #searched-employee-list-cont {
 	position: absolute;
-	padding: 0.5rem;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	background-color: var(--background-color);
+}
+
+#searched-employee-list-cont .searched-employee-viewer {
+	position: absolute;
+	padding: 0.5rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 	gap: 0.6rem;
 }
 
-#searched-employee-list-cont #back-btn {
+.back-btn {
 	position: absolute;
 	top: 0.5rem;
 	right: 0.5rem;
@@ -41,7 +49,7 @@ h1 {
 	transform: rotate(-90deg);
 }
 
-#searched-employee-list-cont h1 {
+#searched-employee-list-cont .searched-employee-viewer h1 {
 	padding-top: 2.5rem;
 	padding-left: 0.5rem;
 }
@@ -56,4 +64,50 @@ h1 {
 
 .table-cont .pointer {
 	cursor: pointer;
+}
+
+#selected-employee-view-cont {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: var(--background-color);
+}
+
+#selected-employee-view {
+	position: absolute;
+	padding: 0.5rem;
+	padding-block: 3rem;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#selected-employee-view h1 {
+	color: var(--text-1);
+	font-size: 1.3rem;
+	font-family: verdana;
+	padding-left: 0.5rem;
+}
+
+#selected-employee-view p {
+	margin: 0.3rem 0;
+	padding: 0 0.5rem;
+	font-family: verdana;
+	color: var(--text-1);
+	font-size: 0.95rem;
+}
+
+#selected-employee-view p strong {
+	color: var(--text-1);
+}
+
+#employee-shifts-view {
+	height: fit-content;
+}
+
+#employee-shifts-view table td {
+	text-align: center;
 }

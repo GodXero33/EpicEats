@@ -2,53 +2,98 @@
 <div id="form-cont">
 	<div class="form">
 		<div class="input">
-			<input type="number" min="1" placeholder="" [(ngModel)]="id" #nameField (keydown)="onKeydown($event)">
+			<input type="number" min="1" placeholder="" [(ngModel)]="filterEmployee.id" #searchEmployeeIdField (keydown)="onKeydown($event)">
 			<div class="label">Employee ID</div>
 		</div>
 		<div class="input">
-			<input type="email" placeholder="" [(ngModel)]="email" #emailField (keydown)="onKeydown($event)">
+			<input type="email" placeholder="" [(ngModel)]="filterEmployee.email" #searchEmployeeEmailField (keydown)="onKeydown($event)">
 			<div class="label">Employee Email</div>
 		</div>
 		<div class="input">
-			<input type="date" placeholder="" [(ngModel)]="dob" #dobField>
+			<input type="date" placeholder="" [(ngModel)]="filterEmployee.dob" #searchEmployeeDobField>
 			<div class="label">Employee Birthday</div>
 		</div>
 		<div class="input">
-			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="phone" #phoneField (keydown)="onKeydown($event)">
+			<input type="text" autocomplete="off" spellcheck="false" placeholder="" [(ngModel)]="filterEmployee.phone" #searchEmployeePhoneField (keydown)="onKeydown($event)">
 			<div class="label">Phone</div>
 		</div>
 		<button class="action" (click)="searchEmployee()">Search Employee</button>
 	</div>
 </div>
-<div id="searched-employee-list-cont" *ngIf="loadedEmployees.length">
-	<div id="back-btn" title="back" (click)="searchedEmployeeListBackBtnOnClick()"></div>
-	<h1>Matching Employees</h1>
-	<div class="table-cont">
-		<table>
-			<tbody>
-				<tr>
-					<th (click)="sortById()" class="pointer" title="sort by id">ID</th>
-					<th (click)="sortByName()" class="pointer" title="sort by name">Name</th>
-					<th>Phone</th>
-					<th>Email</th>
-					<th>Address</th>
-					<th (click)="sortBySalary()" class="pointer" title="sort by salary">Salary (Rs)</th>
-					<th (click)="sortByRole()" class="pointer" title="sort by role">Role</th>
-					<th (click)="sortByDOB()" class="pointer" title="sort by birthday">Birthday</th>
-				</tr>
-				@for (employee of viewableEmployees; track $index) {
+<div id="searched-employee-list-cont" *ngIf="isEmployeesLoaded">
+	<div class="searched-employee-viewer" *ngIf="loadedEmployees.length">
+		<h1>Matching Employees</h1>
+		<div class="table-cont">
+			<table (click)="onSearchedEmployeesTableClick($event)">
+				<tbody>
 					<tr>
-						<td class="center">{{ employee.id }}</td>
-						<td [title]="employee.name">{{ employee.name }}</td>
-						<td [title]="employee.phone">{{ employee.phone }}</td>
-						<td [title]="employee.email">{{ employee.email }}</td>
-						<td [title]="employee.address">{{ employee.address }}</td>
-						<td class="right">{{ employee.salary }}</td>
-						<td>{{ getFormatterRole(employee.role) }}</td>
-						<td>{{ employee.dob }}</td>
+						<th (click)="sortById()" class="pointer" title="sort by id">ID</th>
+						<th (click)="sortByName()" class="pointer" title="sort by name">Name</th>
+						<th>Phone</th>
+						<th>Email</th>
+						<th>Address</th>
+						<th (click)="sortBySalary()" class="pointer" title="sort by salary">Salary (Rs)</th>
+						<th (click)="sortByRole()" class="pointer" title="sort by role">Role</th>
+						<th (click)="sortByDOB()" class="pointer" title="sort by birthday">Birthday</th>
+						<th (click)="sortByEmployeeSince()" class="pointer" title="sort by employee since">Employee Since</th>
 					</tr>
-				}
-			</tbody>
-		</table>
+					@for (employee of loadedEmployees; track $index) {
+						<tr>
+							<td class="center">{{ employee.id }}</td>
+							<td [title]="employee.name">{{ employee.name }}</td>
+							<td [title]="employee.phone">{{ employee.phone }}</td>
+							<td [title]="employee.email">{{ employee.email }}</td>
+							<td [title]="employee.address">{{ employee.address }}</td>
+							<td class="right">{{ employee.salary }}</td>
+							<td>{{ getFormatterRole(employee.role) }}</td>
+							<td>{{ employee.dob }}</td>
+							<td>{{ employee.employeeSince }}</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
 	</div>
+	<div class="searched-employee-viewer" *ngIf="loadedEmployees.length == 0">
+		<h1>Nothing to see here</h1>
+	</div>
+	<div class="back-btn" title="back" (click)="clearLoadedEmployeesList()"></div>
+</div>
+<div id="selected-employee-view-cont" *ngIf="selectedEmployee">
+	<div id="selected-employee-view" class="scrollbar scrollbar-y">
+		<div id="selected-employee-view-details">
+			<h1>{{ selectedEmployee.name }}</h1>
+			<p><strong>ID:</strong> {{ selectedEmployee.id }}</p>
+			<p><strong>Phone:</strong> {{ selectedEmployee.phone }}</p>
+			<p><strong>Email:</strong> {{ selectedEmployee.email }}</p>
+			<p><strong>Address:</strong> {{ selectedEmployee.address }}</p>
+			<p><strong>Salary:</strong> Rs {{ selectedEmployee.salary }}</p>
+			<p><strong>Role:</strong> {{ getFormatterRole(selectedEmployee.role) }}</p>
+			<p><strong>Birthday:</strong> {{ selectedEmployee.dob }}</p>
+			<p><strong>Employee Since:</strong> {{ selectedEmployee.employeeSince }}</p>
+			<div class="form">
+				<button class="action">Add New Shift</button>
+			</div>
+		</div>
+		<div class="table-cont" id="employee-shifts-view" *ngIf="loadedEmployeeShifts.length">
+			<table>
+				<tbody>
+					<tr>
+						<th>Date</th>
+						<th>Start Time</th>
+						<th>End Time</th>
+					</tr>
+					@for (shift of loadedEmployeeShifts; track $index) {
+						<tr>
+							<td [title]="shift.shiftDate">{{ shift.shiftDate }}</td>
+							<td [title]="shift.startTime">{{ shift.startTime }}</td>
+							<td [title]="shift.endTime">{{ shift.endTime }}</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<h1 *ngIf="loadedEmployeeShifts.length === 0">No shift has been made for this employee yet</h1>
+	</div>
+	<div class="back-btn" title="back" (click)="clearSelectedEmployee()"></div>
 </div>

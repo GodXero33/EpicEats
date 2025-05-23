@@ -505,6 +505,7 @@ body {
 		width: fit-content;
 		height: fit-content;
 		border-collapse: collapse;
+		min-width: 100%;
 	}
 
 	th, td {
