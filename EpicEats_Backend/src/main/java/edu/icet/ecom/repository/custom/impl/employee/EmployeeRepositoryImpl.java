@@ -301,6 +301,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			binds.add(employee.getPhone());
 		}
 
+		if (binds.isEmpty()) return new Response<>(List.of(), ResponseType.FOUND);
+
 		conditions.add("is_terminated = FALSE");
 
 		if (!optionalConditions.isEmpty()) conditions.add("(" + String.join(" OR ", optionalConditions) + ")");
