@@ -34,6 +34,13 @@ public class UserController {
 	public CustomHttpResponse<TokenAndUser> login (@RequestBody User user) {
 		final Response<TokenAndUser> response = this.userService.verify(user);
 
+		if (response.getStatus() == ResponseType.SUCCESS) {
+			final Response<Boolean> lastloginResponse = this.userService.setLastLogin(user.getUsername());
+
+			if (lastloginResponse.getStatus() == ResponseType.SERVER_ERROR) return this.controllerResponseUtil.getServerErrorResponse();
+			if (lastloginResponse.getStatus() == ResponseType.FAILED) return new CustomHttpResponse<>(HttpStatus.INTERNAL_SERVER_ERROR, null, "Failed to update user last login");
+		}
+
 		return switch (response.getStatus()) {
 			case SUCCESS -> new CustomHttpResponse<>(HttpStatus.OK, response.getData(), "Authorized");
 			case SERVER_ERROR -> this.controllerResponseUtil.getServerErrorResponse();

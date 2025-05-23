@@ -101,6 +101,26 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	@Override
+	public Response<Boolean> setLastLogin (String username) {
+		try {
+			return (Integer) this.crudUtil.execute(
+				"""
+				UPDATE `user`
+				SET last_login = ?
+				WHERE username = ?
+				""",
+				DateTimeUtil.getCurrentDateTime(),
+				username
+			) == 0 ?
+				new Response<>(false, ResponseType.FAILED) :
+				new Response<>(true, ResponseType.SUCCESS);
+		} catch (SQLException exception) {
+			this.logger.error(exception.getMessage());
+			return new Response<>(false, ResponseType.SERVER_ERROR);
+		}
+	}
+
+	@Override
 	public Response<UserEntity> add (UserEntity entity) {
 		try {
 			return (Integer) this.crudUtil.execute(
