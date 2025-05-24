@@ -37,8 +37,19 @@ class EmployeeBuilder {
 		return this;
 	}
 
-	public role (role: EmployeeRole): EmployeeBuilder {
-		this.employee.role = role;
+	public role (role: EmployeeRole | string): EmployeeBuilder {
+		if (typeof role === 'string') {
+			const key = Object.keys(EmployeeRole).find(k => k.toLowerCase() === role.toLowerCase());
+
+			if (key) {
+				this.employee.role = EmployeeRole[key as keyof typeof EmployeeRole];
+			} else {
+				console.warn(`Unknown role string: ${role}`);
+			}
+		} else {
+			this.employee.role = role;
+		}
+
 		return this;
 	}
 

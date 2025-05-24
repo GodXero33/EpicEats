@@ -4,6 +4,7 @@ import { Employee } from '../../../model/employee/employee.model';
 import { EmployeeRole } from '../../../enum/employee-role.enum';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { EmployeeShift } from '../../../model/employee/employee.shift.model';
 
 @Component({
   selector: 'app-add-employee-shift',
@@ -12,52 +13,43 @@ import { CommonModule } from '@angular/common';
   styleUrl: './add-employee-shift.component.css'
 })
 export class AddEmployeeShiftComponent {
-  public id: number = 1;
-  public name: string = '';
-  public phone: string = '';
-  public email: string = '';
-  public address: string = '';
-  public salary: number = 0;
-  public role: string = 'CASHIER';
-  public dob: string = '';
-
+  public filterEmployee!: Employee;
   private isInvertSorted: boolean = false;
-  private filterStringValue: string | null = null;
   public loadedEmployees: Array<Employee> = [];
-  public viewableEmployees: Array<Employee> = [];
+  public loadedEmployeeShifts: Array<EmployeeShift> = [];
+  public selectedEmployee: Employee | null = null;
+  public isEmployeesLoaded: boolean = false;
 
-  public nameField!: ElementRef;
-  @ViewChild('phoneField') phoneField!: ElementRef;
-  @ViewChild('emailField') emailField!: ElementRef;
-  @ViewChild('addressField') addressField!: ElementRef;
-  @ViewChild('salaryField') salaryField!: ElementRef;
-  @ViewChild('roleSelect') roleSelect!: ElementRef;
-  @ViewChild('dobField') dobField!: ElementRef;
+  public searchEmployeeIdField!: ElementRef;
 
-  @ViewChild('nameField') set _nameField (reference: ElementRef) {
-    this.nameField = reference;
+  @ViewChild('searchEmployeeEmailField') searchEmployeeEmailField!: ElementRef;
+  @ViewChild('searchEmployeeDobField') searchEmployeeDobField!: ElementRef;
+  @ViewChild('searchEmployeePhoneField') searchEmployeePhoneField!: ElementRef;
 
-    this.nameField.nativeElement.focus();
+  @ViewChild('searchEmployeeIdField') set _searchEmployeeIdField (reference: ElementRef) {
+    this.searchEmployeeIdField = reference;
+
+    this.searchEmployeeIdField.nativeElement.focus();
   }
 
-  constructor (private apiService: ApiService) {}
+  constructor (private apiService: ApiService) {
+    this.clearInputs();
+  }
 
   public searchEmployee (): void {
     this.loadAllEmployees();
   }
 
-  public searchedEmployeeListBackBtnOnClick (): void {
+  public clearLoadedEmployeesList (): void {
     this.loadedEmployees.length = 0;
+    this.isEmployeesLoaded = false;
   }
 
   private clearInputs (): void {
-    this.name = '';
-    this.phone = '';
-    this.email = '';
-    this.address = '';
-    this.salary = 0;
-    this.role = 'CASHIER';
-    this.dob = '';
+    this.filterEmployee = Employee.builder()
+      .role('CASHIER')
+      .salary(0)
+      .build();
   }
 
   public onKeydown (event: KeyboardEvent): void {
@@ -65,53 +57,29 @@ export class AddEmployeeShiftComponent {
 
     const target = event.target;
 
-    if (target == this.nameField.nativeElement) {
-      this.phoneField.nativeElement.focus();
+    if (target == this.searchEmployeeIdField.nativeElement) {
+      this.searchEmployeeEmailField.nativeElement.focus();
       return;
     }
 
-    if (target == this.phoneField.nativeElement) {
-      this.emailField.nativeElement.focus();
+    if (target == this.searchEmployeeEmailField.nativeElement) {
+      this.searchEmployeeDobField.nativeElement.focus();
       return;
     }
 
-    if (target == this.emailField.nativeElement) {
-      this.addressField.nativeElement.focus();
+    if (target == this.searchEmployeeDobField.nativeElement) {
+      this.searchEmployeePhoneField.nativeElement.focus();
       return;
     }
 
-    if (target == this.addressField.nativeElement) {
-      this.salaryField.nativeElement.focus();
+    if (target == this.searchEmployeePhoneField.nativeElement) {
+      this.searchEmployee();
     }
-  }
-
-  public filterAllEmployees (): void {
-    if (this.filterStringValue == null || this.filterStringValue.length == 0) {
-      this.viewableEmployees = this.loadedEmployees.filter(employee => employee);
-      return;
-    }
-
-    const value: string = this.filterStringValue.trim().toLowerCase();
-
-    const filterEmployees = (employee: Employee): Employee | undefined => {
-      if (
-        employee.role.toString().toLowerCase().includes(value) ||
-        employee.name.toString().toLowerCase().includes(value) ||
-        employee.phone.toString().toLowerCase().includes(value) ||
-        employee.email.toString().toLowerCase().includes(value)
-      ) return employee;
-
-      return undefined;
-    }
-
-    this.viewableEmployees = this.loadedEmployees.filter(filterEmployees);
   }
 
   private sortEmployees (employeeComparator: (a: Employee, b: Employee) => number): void {
     this.isInvertSorted = !this.isInvertSorted;
     this.loadedEmployees = this.loadedEmployees.sort(employeeComparator);
-
-    this.filterAllEmployees();
   }
 
   public sortById (): void {
@@ -144,18 +112,18 @@ export class AddEmployeeShiftComponent {
       (a: Employee, b: Employee) => new Date(b.dob).getTime() - new Date(a.dob).getTime());
   }
 
-  public loadAllEmployees (): void {
-    const filterEmployee = Employee.builder()
-      .email(this.email)
-      .dob(this.dob)
-      .id(this.id)
-      .phone(this.phone)
-      .build();
+  public sortByEmployeeSince (): void {
+    this.sortEmployees(this.isInvertSorted ?
+      (a: Employee, b: Employee) => new Date(a.employeeSince).getTime() - new Date(b.employeeSince).getTime() :
+      (a: Employee, b: Employee) => new Date(b.employeeSince).getTime() - new Date(a.employeeSince).getTime());
+  }
 
-    this.apiService.post('/employee/filter', filterEmployee).subscribe({
+  public loadAllEmployees (): void {
+    this.apiService.post('/employee/filter', this.filterEmployee).subscribe({
       next: (response) => {
         if (!Array.isArray(response)) return;
 
+        this.isEmployeesLoaded = true;
         this.loadedEmployees.length = 0;
 
         response.forEach((employeeData: Employee) => this.loadedEmployees.push(Employee.builder()
@@ -167,10 +135,9 @@ export class AddEmployeeShiftComponent {
           .salary(employeeData.salary)
           .role(employeeData.role)
           .dob(employeeData.dob)
+          .employeeSince(employeeData.employeeSince)
           .build()
         ));
-
-        this.filterAllEmployees();
       },
       error: (error) => {
         console.error(error.message);
@@ -182,5 +149,58 @@ export class AddEmployeeShiftComponent {
     const value = role.toString().toLowerCase();
 
     return value[0].toUpperCase() + value.substring(1);
+  }
+
+  private loadSelectedEmployeeShift (): void {
+    if (!this.selectedEmployee) return;
+
+    this.apiService.get(`/employee/shift/by-employee/${this.selectedEmployee.id}`).subscribe({
+      next: (response: any) => {
+        if (!Array.isArray(response.shifts)) return;
+
+        this.loadedEmployeeShifts.length = 0;
+
+        response.shifts.forEach((employeeShiftData: EmployeeShift) => this.loadedEmployeeShifts.push(EmployeeShift.builder()
+          .id(employeeShiftData.id)
+          .shiftDate(employeeShiftData.shiftDate)
+          .startTime(employeeShiftData.startTime)
+          .endTime(employeeShiftData.endTime)
+          .build()
+        ));
+
+        this.loadedEmployeeShifts.sort((a, b) => {
+          const dateCompare = b.shiftDate.localeCompare(a.shiftDate);
+
+          return dateCompare !== 0 ? dateCompare : b.startTime.localeCompare(a.startTime);
+        });
+      },
+      error: (error) => {
+        console.error(error.message);
+      }
+    });
+  }
+
+  public onSearchedEmployeesTableClick (event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedRow = target.closest('tr');
+
+    if (!clickedRow || clickedRow.parentElement?.tagName === 'THEAD') return;
+
+    const tbody = clickedRow.closest('tbody');
+
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const index = rows.indexOf(clickedRow) - 1;
+
+    if (index < 0) return;
+
+    this.selectedEmployee = this.loadedEmployees[index];
+
+    this.loadSelectedEmployeeShift();
+  }
+
+  public clearSelectedEmployee (): void {
+    this.selectedEmployee = null;
   }
 }
